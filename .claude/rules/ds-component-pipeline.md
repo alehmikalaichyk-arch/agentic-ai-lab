@@ -100,7 +100,7 @@ acceptance-criteria checklist:
 
 | Section | Content |
 |---|---|
-| `## Visual` | The Storybook preview link from the CI comment on this PR, **or** screenshots of the component in its main states. Required — see the reason below. |
+| `## Visual` | **Both**: a live link to the draft's own story, and screenshots. See "Serving the draft" at the end of the visual-draft section — the link is what gets the draft looked at, the screenshots are what survive after the server stops. |
 | `## Draft reuse` | If a draft exists: which of its decisions the spec adopted, and which were rejected. If no draft was made: one line saying why. |
 
 The `## Visual` section is what makes the human control point real. A reviewer approving a spec
@@ -234,6 +234,34 @@ around it — and it is pinned by regression tests rather than by this paragraph
 If either fact stops holding, those tests fail. They exist so that a future edit to the
 classifier or the hook cannot silently reclassify every draft as component source.
 
+
+### Serving the draft — the agent starts it and reports the exact story URL
+
+**When PR-1 opens, the agent starts a local Storybook and reports two links: the pull
+request, and the draft's own story.** Not the Storybook root — the story. "It is in
+there somewhere, look for it" is how a checkpoint quietly becomes optional.
+
+```bash
+npm run storybook &
+./tools/draft-links.sh <component>
+```
+
+Neither obvious alternative gives one click. A published Storybook deploys from the
+main branch, so it cannot show a draft that lives on a spec branch — it would appear
+after the merge it was supposed to inform. A CI artifact is a zip to download and
+unpack. Both are worth having; neither is a link.
+
+Two obligations come with the link, because a link that misleads is worse than none:
+
+- **Say that it is local and temporary.** The server stops when the session does, and
+  a reviewer clicking a dead localhost link assumes they broke something.
+- **Attach screenshots anyway.** They are the durable record — the thing still
+  readable when someone re-reads the pull request in a month to ask why a decision
+  was made.
+
+Resolve the URL from the running server's index, never by composing it from the
+title. Storybook slugs story ids by its own rules, and a guessed id loads the shell
+and silently shows nothing — indistinguishable from a draft that renders empty.
 
 ## Changing an EXISTING Component
 
