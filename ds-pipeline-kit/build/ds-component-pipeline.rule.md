@@ -166,7 +166,8 @@ appeared in `storybook-static/index.json` and CI's index cross-check passed — 
 could not load the module, so every draft rendered `Cannot find module './.storybook/…'` instead of
 a picture. `build-storybook` exits 0 either way. The only way to notice was to open the story,
 which is the one thing the artifact exists for. Full measurement:
-`component-prototypes/README.md`; pinned by `tools/visual-draft-boundaries.test.ts`, which fails
+`component-prototypes/README.md`. **This kit ships no test pinning it** — in the system it came
+from, one existed and failed
 any `stories` glob in `.storybook/main.ts` carrying a dot-directory segment.
 
 **A draft is TypeScript, and is typechecked.** `tsconfig.json` includes this directory, so
@@ -227,7 +228,7 @@ around it — and it is pinned by regression tests rather than by this paragraph
 
 | Claim | Test | Runs in |
 |---|---|---|
-| A spec PR carrying a draft stays `SPEC_ONLY`; a draft adds no component to the one-per-PR count | `tools/visual-draft-boundaries.test.ts` (the DS repository) | `npm test`, CI |
+| A spec PR carrying a draft stays `SPEC_ONLY`; a draft adds no component to the one-per-PR count | **nothing in this kit** — the classifier behaves this way, and no test pins it. Write one, or verify it by hand on the first draft PR | — |
 | Neither hook condition fires on a write to a draft path | `ds-pipeline-guard.test.sh` (ships with the hook, Level 2) | CI |
 
 If either fact stops holding, those tests fail. They exist so that a future edit to the
@@ -461,7 +462,7 @@ Two consequences of the fix worth stating, because both are easy to read backwar
 - **An addendum-only PR moved from `NONE` to `SPEC_ONLY`.** Job 1 passes `SPEC_ONLY`; Job 2 counts
   `components`, which a document path never contributes to, so it passes with an empty count; Job 3
   short-circuits on any non-`COMPONENT_SOURCE` classification. All three are pinned by tests
-  (`tools/pr1-document-boundary.test.ts`, `tools/check-frozen-spec-on-base.test.ts`) rather than
+  (tests you will have to write; this kit ships none of them) rather than
   asserted here.
 
 #### What the guard enforces here, and what it deliberately does not
