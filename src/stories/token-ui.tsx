@@ -47,30 +47,48 @@ export function Swatch({ token, compact = false }: { token: TokenEntry; compact?
   );
 }
 
+/**
+ * One colour step: a clean chip with its label BELOW it.
+ *
+ * The label sits outside the chip rather than on top of it. Inside, it has to be
+ * legible against an arbitrary token value, which is a contrast problem with no
+ * good answer at the dark end of a ramp — the darkest steps rendered a label
+ * nobody could read, and the very darkest rendered one nobody could see at all.
+ * Putting it underneath removes the problem instead of tuning around it, and it
+ * also leaves the chip showing the colour and nothing else, which is what a
+ * reviewer is trying to look at.
+ */
+export function Chip({
+  token,
+  label,
+  width = 'w-20',
+}: {
+  token: TokenEntry;
+  label: string;
+  width?: string;
+}) {
+  return (
+    <div className={`${width} shrink-0`}>
+      <div
+        className="h-16 rounded-sm border border-outline-subtle"
+        style={{ background: token.value }}
+        title={`${token.name} — ${token.value}`}
+      />
+      <div className="mt-1 break-words text-xs leading-tight text-fg-default">{label}</div>
+      <div className="break-words text-xs leading-tight text-fg-subtle">{token.value}</div>
+    </div>
+  );
+}
+
 /** One primitive family as a row of steps — the shape a palette is actually read in. */
 export function Ramp({ family, steps }: { family: string; steps: TokenEntry[] }) {
   return (
-    <div className="mb-6">
+    <div className="mb-8">
       <div className="mb-2 text-sm text-fg-subtle">{family}</div>
-      <div className="flex flex-wrap gap-1">
-        {steps.map((step) => {
-          const onDark = (contrast(step.value, '#ffffff') ?? 1) >= 3;
-          return (
-            <div
-              key={step.name}
-              className="flex h-16 w-20 flex-col justify-end rounded-sm border border-outline-subtle p-1"
-              style={{ background: step.value }}
-              title={`${step.name} — ${step.value}`}
-            >
-              <span
-                className="text-xs"
-                style={{ color: onDark ? '#ffffff' : '#0d1119' }}
-              >
-                {step.name.replace(`${family}-`, '')}
-              </span>
-            </div>
-          );
-        })}
+      <div className="flex flex-wrap gap-2">
+        {steps.map((step) => (
+          <Chip key={step.name} token={step} label={step.name.replace(`${family}-`, '')} />
+        ))}
       </div>
     </div>
   );
