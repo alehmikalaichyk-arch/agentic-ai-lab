@@ -49,6 +49,17 @@ Two pull requests. One mandatory human checkpoint between the decision and the c
 branch*, so a spec added in the same pull request as the implementation does not satisfy it. That
 single property is what makes PR-1 a real checkpoint instead of a convention.
 
+## The published Storybook
+
+**https://alehmikalaichyk-arch.github.io/agentic-ai-lab/**
+
+Rebuilt and republished on every push to `main`. This link is not a convenience: stage #4.5 of
+the pipeline asks the owner to *look* at a component before its spec is frozen, and that only
+happens if looking costs one click. Where the Storybook build runs but is not published, every
+review turns into "run it locally so I can look" and the checkpoint gets skipped for being
+expensive — measured, and the reason the publishing workflow shipped with the scaffold rather
+than later.
+
 ## Running it
 
 ```bash
