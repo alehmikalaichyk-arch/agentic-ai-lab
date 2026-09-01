@@ -47,8 +47,8 @@ which is what `docs/verify-pipeline-loaded.md` exists to separate.
 
 | | |
 |---|---|
-| Branch | `spec/horizontal-stepper` — created, rebased onto `390218b`, **zero commits of its own** |
-| `main` at handover | `390218b fix(ds-context): a design system with no components is a Warning, not Catastrophic (#12)` |
+| Branch | `spec/horizontal-stepper` — created, rebased onto `f135d17`, **zero commits of its own** |
+| `main` at handover | `f135d17 fix: four drift findings from the first real pipeline run (#13)` |
 | `npm install` | exit 0 |
 | `npm run build:tokens` | exit 0 — `generated/` populated, 427 `--ds-*` custom properties |
 | gh identity | active account `alehmikalaichyk-arch`; `permissions` → `push: true`, `admin: true` |
@@ -66,52 +66,68 @@ detect, which is precisely why it cannot be accepted as a stage having run.
 
 ---
 
-## Drift already established — re-confirm, do not re-derive
+## Drift found, and what happened to it
 
-Each item was checked against the live repository. Two of them change what the next session can do
-and are being fixed on `main`; see "Blocked on two fixes" below.
+Four findings came out of the stopped session. **All four are fixed on `main` in `f135d17`**, and
+each fix below was independently re-verified rather than taken on report. They are kept here
+because the next session should know what was true and why the current state is not an accident.
 
-### Affects HorizontalStepper directly
+### 1. The visual draft was ungoverned — FIXED
 
-1. **The visual draft is ungoverned, and the pipeline rule claims the opposite.** The rule states
-   *"A draft is TypeScript, and is typechecked. `tsconfig.json` includes this directory."* It does
-   not. `tsconfig.json` `include` is `["src", "generated", ".storybook", "prototypes",
-   "vitest.config.ts"]` — `prototypes`, **not** `component-prototypes`. `lint` is
-   `eslint 'src/**/*.{ts,tsx}' 'prototypes/**/*.{ts,tsx}'`, the same miss. So a draft can carry a
-   type error no gate sees — the exact failure the rule's own PR #127 measurement records.
+The rule states *"A draft is TypeScript, and is typechecked. `tsconfig.json` includes this
+directory."* It did not: `include` listed `prototypes`, not `component-prototypes`, and `lint`
+globbed the same two directories. A draft could carry a type error no gate saw — the exact failure
+the rule's own PR #127 measurement records.
 
-2. **PR-1 cannot carry a Storybook preview link.** `ci.yml` has no Storybook build, no artifact
-   upload and no PR comment. `storybook-pages.yml` triggers on `push: branches: [main]` and
-   `workflow_dispatch` only — no `pull_request`. The published Storybook is therefore built from
-   `main`, so a draft on a spec branch does not appear there until PR-1 merges — after the freeze
-   it exists to inform. A visual draft the owner cannot see is not a checkpoint.
+Now: `tsconfig.json` `include` carries `component-prototypes`, and `lint` is
+`eslint --no-error-on-unmatched-pattern 'src/**' 'prototypes/**' 'component-prototypes/**'`. The
+flag is there because both draft directories are empty between components, and a lint that goes red
+when there is nothing to lint teaches everyone to ignore it. Verified by mutation: a type error in a
+draft now fails.
 
-3. **`component-prototypes/` does not exist yet.** The draft will be the first thing in it.
-   `.storybook/main.ts` already globs it, so it will be indexed once created.
+### 2. PR-1 could not show the owner anything — FIXED
 
-### Kit bugs — neither `ds-context` nor `ds-governance` reads `ds-kit.config.yml` at all
+`ci.yml` had no Storybook build and `storybook-pages.yml` triggers only on push to `main`, so a
+draft on a spec branch stayed invisible until after the merge it was meant to inform.
 
-`grep 'ds-kit.config'` returns zero hits in both skills, while the config's own header says a
-project-specific value found elsewhere in the kit is a bug to report. Hardcoded instead:
-`src/components/ui/`, `tokens/`, `generated/`, `src/lib/utils.ts`, `--ds-` (should read
-`tokens_namespace.css_prefix`), `npm run test:e2e` (the config sets `e2e: null`), the eleven colour
-families, `governance_owner`.
+Now: `ci.yml` runs on `pull_request`, builds Storybook and uploads it via `upload-artifact` as
+`storybook-<PR number>` (~2 MB). **Not a link** — a reviewer downloads the artifact and opens it. So
+PR-1's mandatory `## Visual` section points at the CI artifact, with screenshots as a fallback
+rather than the only option.
 
-`ds-context` §6 says *"Do not bake any inventory list into the snapshot template"*; §7 then bakes an
-eight-entry `stack:` list of which **four are false here** — no shadcn (`components.json` absent),
-no Radix (zero packages), no Webpack (Vite 6 + `@vitejs/plugin-react`), no Playwright.
+### 3. The skills did not read `ds-kit.config.yml` — FIXED, and the measurement was understated
 
-### Enforcement stated but absent
+The stopped session reported two skills ignoring the config. The real number was **nine of ten**,
+while the config's header claimed all of them read it.
 
-- The rule cites `tools/visual-draft-boundaries.test.ts`, `tools/pr1-document-boundary.test.ts` and
-  `tools/check-frozen-spec-on-base.test.ts` as the pins for load-bearing claims. **None exists.**
+The fix is architectural rather than ten amendments: **`ds-context` is the single reader**, at its
+new §0 *"Resolve the paths before reading anything"*, and carries the resolved values into the
+Context Snapshot under `paths` — which every downstream skill already consumes. So nine skills still
+do not open the file, by design, and the header's claim is now true because it describes what
+happens.
+
+**This makes `ds-context` §0 load-bearing for the whole run.** If stage #1 does not read
+`ds-kit.config.yml` as its first action, that is a regression — report it rather than working
+around it.
+
+### 4. Tests named as pins did not exist — FIXED
+
+The rule cited `tools/visual-draft-boundaries.test.ts`, `tools/pr1-document-boundary.test.ts` and
+`tools/check-frozen-spec-on-base.test.ts` as the pins for load-bearing claims. None existed. The
+references are corrected, and `ds-pipeline-kit/verify.sh`'s existing `check_absent "no reference to
+unshipped enforcers"` guard now covers those three names, so the class cannot silently return.
+
+### Still true, and still unfixed — report if it matters, do not fix here
+
 - The rule describes ESLint "features 289/290" as a blocking mechanical floor for raw hex literals
   and arbitrary px values. `.eslintrc.cjs` has no hex rule, no arbitrary-value rule and no import
   restriction — only recommended sets plus two react-hooks rules. Governance §15's Blocker tier has
   no mechanical enforcer; only `token-guardian`, in session.
 - Governance §11 "current CI gating" asserts Playwright (absent) and lists lint as a *gap* (it
-  runs). Actual `ci.yml`: `npm ci` → `check-claude-dir-in-sync` → `check-agents-exist` →
-  `check-prototypes-are-ungated` → `build:tokens` → `typecheck` → `lint` → `test`.
+  runs).
+- `ds-context` §6 says *"Do not bake any inventory list into the snapshot template"*; §7 then bakes
+  an eight-entry `stack:` list of which **four are false here** — no shadcn (`components.json`
+  absent), no Radix (zero packages), no Webpack (Vite 6 + `@vitejs/plugin-react`), no Playwright.
 
 ### Behaving as documented
 
@@ -134,17 +150,15 @@ no Radix (zero packages), no Webpack (Vite 6 + `@vitejs/plugin-react`), no Playw
 
 ---
 
-## Blocked on two fixes — do not start PR-1 until the owner confirms
+## Not blocked — the run goes end to end
 
-Drift items 1 and 2 are being fixed on `main`. Both gate stage #4.5 rather than merely annoying it:
+An earlier revision of this document held the run before stage #4.5, because a draft the owner
+could not see is not a checkpoint and a draft that can carry an unseen type error is the failure the
+kit's own measurements record. Both were fixed in `f135d17` before the next session started, so the
+hold is lifted and the run goes Step 0 through PR-1 without stopping.
 
-- **the Storybook link (item 2)** — a draft the owner cannot see is not a checkpoint, and the
-  freeze gate is the whole reason the draft step exists;
-- **the `component-prototypes/` typecheck gap (item 1)** — a draft that can carry an unseen type
-  error is the failure the kit's own measurements record.
-
-The next session runs Step 0 through stage #4 regardless. It stops before the draft and PR-1 until
-the owner says both have landed.
+Rebase onto `f135d17` or later first. On an older base the draft is neither typechecked nor built
+into a reviewable artifact, and the run silently reverts to the state that caused the hold.
 
 ---
 
@@ -177,16 +191,13 @@ copy is needed:
   brief: /Users/olegmikolajcik/pegbo/docs/design-system/component-requirements/horizontal-stepper.md
   spec:  /Users/olegmikolajcik/pegbo/apps/shared/design-tokens/docs/component-specs/horizontal-stepper.md
 
-HOLD — read before planning the run.
-Two defects that gate the visual draft are being fixed on main. Run Step 0 through
-stage #4, then STOP and ask the owner to confirm both have landed before doing
-STEP 5 or STEP 6:
-  - ci.yml builds no Storybook and comments no link; storybook-pages.yml triggers
-    only on push to main + workflow_dispatch. So a draft on a spec branch is
-    invisible to the owner until after the merge it was meant to inform.
-  - component-prototypes/ is in neither the lint globs nor the tsconfig "include",
-    so a draft can carry a type error that no gate sees.
-Do not work around either. Do not fix either on this branch.
+BASE REQUIREMENT — rebase onto f135d17 or later before doing anything.
+Two defects that gated the visual draft were fixed there: component-prototypes/ is
+now typechecked and linted, and CI builds Storybook on every pull request and
+uploads it as an artifact. On an older base the draft is neither checked nor
+reviewable and the run silently loses both. Verify, do not assume:
+  grep -n component-prototypes tsconfig.json package.json
+  grep -n "pull_request\|upload-artifact" .github/workflows/ci.yml
 
 ALREADY DONE — verify, do not redo:
   - Branch spec/horizontal-stepper exists, is rebased onto main, and has ZERO
@@ -218,13 +229,22 @@ refused by the harness. If the verdict is anything other than LOADED, STOP.
 STEP 2 — stages #1 and #2, delegated to the agent ds-kit.config.yml names as
 agents.implementer. Do not run them yourself in this session — one context must not
 run ds-governance and then author the spec that governance governs.
-  #1 ds-context     — the Context Snapshot. It should now produce a snapshot with a
-                      WARNING about the empty component inventory rather than
-                      halting. That warning is correct information: this is the
-                      first component in the repository. Carry it into stage #0.
+  #1 ds-context     — the Context Snapshot. Two things to watch, both load-bearing:
+                      (a) its FIRST action must be reading ds-kit.config.yml (§0).
+                          ds-context is the single reader of the config for the whole
+                          kit and carries resolved paths into the snapshot under
+                          `paths`; downstream skills take their paths from there and
+                          never open the file. If §0 does not happen, that is a
+                          REGRESSION — report it, do not work around it.
+                      (b) it should report the empty component inventory as a
+                          WARNING, not halt. That warning is correct information:
+                          this is the first component in the repository. Carry it
+                          into the stage #0 brief as a real input to the
+                          requirements, not as noise to suppress.
   #2 ds-governance  — the Governance Rule Set.
 Report where the live repository contradicts what a skill asserts. The previous
-session found substantial drift; re-confirm rather than inherit it.
+session found four drift items, all since fixed; re-confirm rather than inherit,
+and expect to find different ones.
 
 STEP 3 — stage #0, component-requirements-builder, same agent.
 Feed it the two input documents as the owner's ask. Both outputs matter:
@@ -250,12 +270,13 @@ Output: docs/component-specs/horizontal-stepper.md
     like `rounded-pg-xs` does not exist. Verify each binding resolves to a real
     utility in generated/tailwind-theme.css and show it doing so.
 
-Then STOP and report, per the HOLD above.
-
-STEP 5 — the visual draft, same agent. ONLY after the owner confirms the two fixes
-landed. component-prototypes/ (ds-kit.config.yml paths.drafts) does not exist yet;
-the draft will be the first thing in it. Render the stepper at its states and
-actually look at it — a draft catches geometry and contrast no gate catches.
+STEP 5 — the visual draft, same agent. component-prototypes/ (ds-kit.config.yml
+paths.drafts) holds only a .gitkeep; the draft will be the first real thing in it.
+Render the stepper at its states and actually look at it — a draft catches geometry
+and contrast no gate catches.
+It IS typechecked and linted now, so run both and report the results:
+  npm run typecheck > /tmp/tc.log 2>&1; echo $?; tail -20 /tmp/tc.log
+  npm run lint      > /tmp/lint.log 2>&1; echo $?; tail -20 /tmp/lint.log
 
 STEP 6 — open PR-1. A human merges it; you do not.
 Before opening, run: git diff --name-only main...HEAD
@@ -267,8 +288,15 @@ further: a new commit resets the gate to pending and silently invalidates an
 approval already given.
 The PR body needs a `## Visual` section — required by the rule, and the reason is
 that a reviewer approving a spec they have not seen rendered is approving prose.
-Note in the body whether the guard was live during this work; a gate's state during
-a change belongs in the record.
+CI now builds Storybook on every pull request and uploads it as an artifact named
+`storybook-<PR number>` (~2 MB), so point `## Visual` at that artifact — it is a
+download, not a link, so say so plainly — and add screenshots of the main states as
+a fallback. Confirm the artifact actually exists on YOUR pr before citing it:
+  gh run list --branch spec/horizontal-stepper --limit 3
+  gh api repos/alehmikalaichyk-arch/agentic-ai-lab/actions/artifacts \
+    --jq '.artifacts[] | select(.name|startswith("storybook")) | "\(.name) \(.size_in_bytes)"'
+Also note in the body whether the guard was live during this work; a gate's state
+during a change belongs in the record.
 
 CONSTRAINTS, each a real boundary:
 - This repository has exactly three runtime dependencies: class-variance-authority,
