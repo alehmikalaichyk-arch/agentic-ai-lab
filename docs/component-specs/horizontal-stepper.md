@@ -73,6 +73,25 @@ are therefore drawn against components that are **not present** — they describ
 future collision rather than reconciling a real one. Governance §15 classes "new component boundary
 overlap" as Requires-Review for precisely this situation; it is folded into **OD-001**.
 
+**One honest qualification, from the visual draft.** Rendered, the strip's rhythm reads as
+**progress** first and **position** second: the eye takes the contiguous dark run of completed
+segments before it finds the marker. The four rows above separate this component from a progress
+indicator, and the rendering does not support that separation as strongly as the prose does.
+
+Three things follow, and the first is the one not to skip:
+
+- **It changes nothing about the boundary.** The boundary is an *API and accessibility* contract —
+  no `role`, no `aria-valuenow`, no `value`/`max` prop, no announced magnitude — and a visual
+  impression cannot cross it. What an assistive technology reports is unaffected, and that is what
+  the four rows are about.
+- **It is a known cost of the form**, recorded rather than fixed. Any left-to-right strip of segments
+  in two weights will read as a fill; that is what makes the form legible at a glance and it is the
+  same property that makes it look like progress. A component that avoided it would be a different
+  anatomy, which CR-016 forbids.
+- **It is worse under FB-2's option B**, and that is where it bears on a live decision — see the
+  whole-strip percentage reading recorded there. The observation therefore argues *for* CR-007 as
+  written, not against this component's existence.
+
 HorizontalStepper is **inert**: nothing focusable, nothing clickable, no interactive state, and no
 prop that enables interaction later. Governance §6.2 names steppers in the inert set by name, so
 this is a local rule the component obeys, not a preference it expresses. See the accessibility
@@ -166,10 +185,22 @@ together those two sentences select the scheme: **one segment, one solid tone, t
 No segment is ever partly filled; no segment is a bare outline; every segment is the same width and
 the same height (CR-002, CR-016).
 
-**This is where OD-002 has a price, and the price is measurable.** The source system's scheme carries the
-state distinction in fill *extent* — full, half, none — on one fill colour, which measures
-**10.12:1** against its track. A tone scheme has to find its distinction inside a grey ramp, and
-this palette's resting greys are not spaced for it:
+**This is where OD-002 has a price, and the price is measurable.** The source system's scheme carries
+the state distinction in fill *extent* — full, half, none — on one fill colour against a track. Bound
+to the tokens **this** spec names, that pair is `surface-accent-grey-boldest` against
+`surface-neutral-boldest`, and it measures **7.55:1**.
+
+> **This figure read 10.12:1 until the visual draft, and 10.12:1 was wrong here.** It is the source
+> system's own measurement, taken against `surface-neutral-bold` `#e4e6ed` — a track token this spec
+> **rejects** in the table below, for an unrelated reason. Quoting it imported a number measured
+> against a token this document does not use, into the one table the owner decides FB-2 from. That is
+> exactly the transcription failure D1 exists to prevent, committed inside the section that costs the
+> decision. Corrected in all three places it appeared, and recorded rather than silently overwritten.
+> One consequence stays open and is stated in FB-2: under the extent scheme the track token is a
+> fresh choice, so 7.55:1 is the figure *with this spec's current faint tone*, not a floor.
+
+A tone scheme has to find its distinction inside a grey ramp instead, and this palette's resting
+greys are not spaced for it:
 
 | Adjacent pair, as rendered side by side | Ratio |
 |---|---:|
@@ -192,10 +223,12 @@ Three things follow, and all three are stated rather than one of them being quie
   decorative by construction (A11Y-002). This is the same argument `badge.md` makes for its `dot`.
 - **It is still a real weakness of the scheme, and it is escalated**, non-blocking, to
   `ds-governance` (#2) as a palette gap: the resting grey ramp has no mid step.
-- **Resolving OD-002 toward the source system's override removes the weakness entirely** — the distinction
-  becomes extent at 10.12:1 rather than tone at 2.67:1. That is a quantified input to the owner's
-  decision that neither input document contains, and it is the reason this spec measured the
-  alternative instead of merely recording that one exists.
+- **Resolving OD-002 toward the source system's override removes the weakness entirely** — the
+  distinction becomes extent at **7.55:1** rather than tone at 2.67:1, and stops resting on tone at
+  all. That is a quantified input to the owner's decision that neither input document contains, and
+  it is the reason this spec measured the alternative instead of merely recording that one exists.
+  What the ratio cannot show is that the two schemes degrade differently as segments narrow — see
+  FB-2, which is where that evidence lands.
 
 **Rejected, with reasons:**
 
@@ -363,6 +396,20 @@ Two escalations follow, both non-blocking, both to `ds-governance` (#2):
   The motion namespaces are an open door of the same shape, and `src/tailwind-surface.test.ts` —
   which exists precisely because "the theme file said everything was fine" — asserts nothing about
   them.
+
+  **And the door is propped open by this file.** Tailwind 4 auto-detects its sources and scans
+  tracked Markdown, so the paragraph above — the one warning an implementer *not* to write
+  `transition-all duration-150 ease-out` — puts exactly those three class names in front of the
+  scanner and **materialises all three utilities into the compiled stylesheet.** Verified by
+  compiling with this spec file as the only source: `.transition-all`, `.duration-150` and
+  `.ease-out` are all emitted, alongside `.bg-surface-accent-grey-boldest` from the Tokens table.
+
+  Nothing renders wrong — the classes apply to no element. The consequence is for the *guard*, not
+  for the page: a future check that greps the compiled CSS for motion utilities would be defeated by
+  the document that forbids them, and would report a violation no component committed. Whoever
+  writes that guard must scan **component source**, not build output. Recorded here because it is
+  the kind of fact that is discovered twice — once by the person who writes the guard, and once by
+  the person who cannot work out why it is red.
 - **needs-new-token (emission, not value):** the ten motion properties exist and are unreachable. If
   motion is ever wanted in a component, publishing them is the prerequisite.
 
@@ -417,18 +464,83 @@ against a dark background and the upcoming segment becomes the most prominent on
 Recorded as a boundary rather than defended in code, because a component cannot see what it is
 sitting on and a prop that asked would be a placement API this spec does not want (CR-009).
 
+### D14 — What happens below the width the text needs
+
+**All three of the following were found by rendering the visual draft, not by reasoning about it.**
+The spec said "the count is what survives every squeeze" and "the text row clips", and the draft
+showed that the first held only above a width the spec never named and the second was not implemented
+by anything. Both are specified here.
+
+**A separator never outlives its label.** Measured at a container width of about 80px: the label
+shrank to a rendered width of 0px and the row read `Step 2 of 4 ·` — a trailing middot with nothing
+after it. The cause is a category error in the original anatomy, not a layout bug: the separator was
+rendered on whether the `label` **prop** was present, while the label's **visibility** is a layout
+outcome. Those are different facts and the spec conflated them.
+
+The rule, stated as an invariant rather than as a width: **the separator is a property of the
+rendered label, not of the prop.** Structurally, the separator and the label text occupy one clipping
+box with the separator first (Anatomy), so there is no width at which the box can show the separator
+and not the label — they shrink, truncate and disappear as a unit. `Step 2 of 4 ·` with nothing after
+it is out of contract at **every** width, and a test facet asserts it at the width that produced it.
+
+This also fixes a case the Edge cases table did have — `label=""` — for a reason it did not state.
+The table covered "no label supplied" and "empty label"; it did not cover **"label supplied,
+non-empty, and squeezed to zero"**, which is a third case and the only one that renders wrongly.
+
+**The count never shrinks, and the component's minimum width is its own content.** Measured at a
+container width of 64px: the count overflowed the root by 7.44px — the root kept the container's
+width and the text escaped its own box, silently. Three options were available: accept that overflow,
+clip the count mid-word, or state a floor.
+
+**A floor, and the floor is `min-content`.** The count is the normative carrier of the whole
+component — CR-001 and CR-004 put the position in text, and every argument in D4 about the indicator
+being decorative rests on the count being readable. A scheme that clips the count mid-word defeats
+the requirement everything else leans on, so option 2 is not available on the merits. Between the
+other two, an unstated overflow is the worse failure because it is invisible in review: the
+component looks fine and its text sits outside it.
+
+So the root carries `min-w-min` — CSS `min-width: min-content` — and the count carries `shrink-0`.
+Below its own intrinsic width the component **does not shrink**; the consumer's container is what
+overflows, which is a visible, attributable layout error owned by the party that chose the width.
+Stated as a contract term: **a consumer must not place this component in a container narrower than
+its min-content width.** No px value is authored, because the intrinsic width depends on the digit
+count and the font and a fixed number would be a guess that goes stale.
+
+Recorded as a specified floor rather than as a fourth open decision, deliberately: the choice follows
+from CR-001 and CR-004 rather than from taste, and the owner already has two blockers that genuinely
+need them.
+
+### D15 — The text row's internal spacing is a bound token, not a space character
+
+The text row is a flex row, because truncation requires one. Flex collapses the ordinary whitespace
+that would otherwise sit either side of the middot, so a gap has to be chosen or the count, the
+separator and the label render jammed together. The original Tokens table bound two gaps —
+segment-to-segment and text-row-to-indicator — and was silent about this third one, which meant the
+value would have been settled by whoever implemented it first.
+
+It binds `gap-1`, resolving to `var(--ds-spacing-unit)` — 4px, half the other two gaps. Added as the
+thirteenth row of the Tokens table so that it is specified rather than inherited from a draft.
+
+Deliberately **not** the same token as the other two gaps, and by the same argument D6 makes about
+those: these are three separate questions that happen to have related answers. This one separates
+words on one line; the other two separate a rule from a rule, and a line of type from a rule. A later
+change to any of them must not be applied to the others.
+
 ---
 
 ## Anatomy
 
 ```
 root                      data-slot="horizontal-stepper"
-                          flex column, gap-2, height derived (D6)
+                          flex column, gap-2, min-w-min, height derived (D6)
 ├── text row              data-slot="horizontal-stepper-text"
-│   │                     single line, clipped, never wraps
+│   │                     flex row, gap-1, single line, never wraps
 │   ├── count             "Step 3 of 4"      font-body-sm-moderate, fg-default   REQUIRED
-│   ├── separator         "·"                fg-subtle, aria-hidden              only with a label
-│   └── label             "Project Budget"   font-body-sm-default, fg-subtle     optional, truncates
+│   │                     shrink-0 — never shrinks, never truncates
+│   └── label group       data-slot="horizontal-stepper-label"
+│       │                 min-w-0, truncates as ONE box (D14)
+│       ├── separator     "·"                fg-subtle, aria-hidden
+│       └── label text    "Project Budget"   font-body-sm-default, fg-subtle
 └── indicator             data-slot="horizontal-stepper-indicator"
                           aria-hidden, flex row, gap-2
     └── segment × total   equal width (flex-1), h-1.5, rounded-xs,
@@ -437,13 +549,19 @@ root                      data-slot="horizontal-stepper"
 
 - **Root** — a `<div>` with no role. Carries the type and the resting foreground, so the count needs
   no colour of its own: it *is* the root style.
-- **Text row** — one line. It clips; it never wraps and never grows. This is the whole of CR-017's
-  mechanism.
-- **Count** — `Step {current} of {total}`, composed by the component (D9). Never truncates.
-- **Separator** — a middot, rendered only when a label is present. `aria-hidden`, so the announced
-  reading is "Step 3 of 4 Project Budget" rather than a punctuation mark read aloud.
-- **Label** — the current step's name only. Truncates with an ellipsis. It is the only element that
-  gives up space (CR-012).
+- **Text row** — one line. A flex row, never wrapping and never growing. This is the whole of
+  CR-017's mechanism. Being a flex row is not incidental: truncation requires it, and flex collapses
+  the ordinary whitespace a middot would otherwise sit in, which is why the row's internal spacing is
+  a bound token rather than a space character (D15).
+- **Count** — `Step {current} of {total}`, composed by the component (D9). `shrink-0`: it never
+  shrinks, never wraps and never truncates, at any container width (D14).
+- **Label group** — the separator and the label text in **one** clipping box, in that order. The
+  group is the only element that gives up space (CR-012), and it gives up the separator and the
+  label together. See D14 — a separator that outlives its label is out of contract at every width.
+- **Separator** — a middot. `aria-hidden`, so the announced reading is "Step 3 of 4 Project Budget"
+  rather than a punctuation mark read aloud. Rendered as part of the label group, never as a sibling
+  of it.
+- **Label text** — the current step's name only. Truncates with an ellipsis.
 - **Indicator** — `aria-hidden` in its entirety, including every segment. Decorative: it restates
   what the count already says.
 - **Segment** — internal, and deliberately not exported. A consumer never composes segments; the
@@ -573,6 +691,12 @@ said everything was fine while `bg-red-500` was still a working class.
 | segment thickness | `h-1.5` | `calc(var(--ds-spacing-unit) * 1.5)` |
 | gap, segment to segment | `gap-2` | `calc(var(--ds-spacing-unit) * 2)` |
 | gap, text row to indicator | `gap-2` | `calc(var(--ds-spacing-unit) * 2)` |
+| gap, within the text row (count / separator / label) | `gap-1` | `var(--ds-spacing-unit)` — D15 |
+
+Two layout utilities the component also carries are **not** token bindings and are listed separately
+so they are not mistaken for one: `min-w-min` on the root and `shrink-0` on the count (D14). Both
+resolve to CSS keywords — `min-width: min-content`, `flex-shrink: 0` — and carry no design value, so
+there is no token for them to bypass.
 
 Every one resolves through a semantic role to a primitive. **No primitive is bound**: primitives are
 deliberately withheld from `@theme`, so `bg-brand-500` is not a class that renders wrong — it is a
@@ -703,8 +827,12 @@ Case by case:
 | Narrow container, no label | The count and the full indicator both remain (CR-012). |
 | Narrow container, long label | The label gives up space first; the count never truncates and the indicator never breaks. |
 | `label=""` or whitespace only | Treated as absent — no separator is rendered. Inherited from `badge.md`, which renders nothing at all for whitespace-only `children`. |
+| **Label present and squeezed to zero width** | The separator goes with it. The label group is one clipping box, so no width renders a trailing `·` with nothing after it. Found in the visual draft at ~80px, where the row read `Step 2 of 4 ·` — D14. |
+| **Container narrower than the component's min-content width** | The component does not shrink and does not clip the count; the **container** overflows. `min-w-min` on the root, `shrink-0` on the count. Found in the visual draft at 64px, where the count escaped the root by 7.44px — D14. |
 
-**The count is what survives every squeeze.** If a width is too narrow for both, the label loses.
+**The count is what survives every squeeze** — and D14 is what makes that true rather than
+aspirational. It held only above a width the spec had never named, which is exactly the kind of
+sentence a rendering falsifies and a document cannot.
 
 ---
 
@@ -745,11 +873,15 @@ reaches for a behavioural primitive.
 | tone distribution | At `current = 3` of `4`: two completed, one current, one upcoming — asserted by the bound token classes. |
 | no partial fill | No segment carries a width other than the shared equal width; nothing renders a nested fill element. This is CR-007 made mechanical, and it is the test that must be rewritten first if OD-002 resolves the other way. |
 | first / final | Correct distribution at both ends; no rendering in which every segment is completed. |
-| token bindings | Each of the twelve bindings under **Tokens** appears on the element the anatomy places it on. |
+| token bindings | Each of the thirteen bindings under **Tokens** appears on the element the anatomy places it on. |
 | contrast pairs | `src/tokens.test.ts` gains `['fg-default', 'surface-page']` and `['fg-subtle', 'surface-page']` in `PAIRS`, and `['fg-subtlest', 'surface-page']` in `KNOWN_BELOW_AA`. |
-| label absent | No separator element and no label element are rendered. |
+| label absent | No separator element and no label group are rendered. |
 | label present | Count, separator and label render, in that order. |
 | empty label | `""` and whitespace-only are treated as absent. |
+| no dangling separator | At a container width of 80px with a label supplied, the separator is not the last visible glyph. Asserted on the **rendered** boxes at that width, not on the presence of the `label` prop — the prop is present in the failing case, which is the whole point (D14). |
+| count never shrinks | At a container width of 64px the count's rendered width equals its width at 640px, and its text is uncut. |
+| min-content floor | The root's rendered width is never less than its min-content width; where the container is narrower, the overflow is the container's and the count still sits inside the root's box (D14). |
+| text-row gap | The count, separator and label are separated by the `gap-1` binding, not by whitespace in the markup — a text node between them would collapse under flex. |
 | height invariance | The rendered height is equal with no label, with a label, and with a long label. Measured from the rendered box, not asserted from a class name (CR-017). |
 | no trailing whitespace | The indicator's bottom edge equals the root's bottom edge. Measured from the rendered boxes — a class-name assertion would not catch a stray margin. |
 | no tab stop | No element inside the component has a `tabindex`, and the container holds no focusable element. |
@@ -771,8 +903,13 @@ scenarios exist*.
 
 `FirstStep` · `MiddleStep` · `FinalStep` · `WithLabel` · `LongLabel` · `TwoSteps` · `FourSteps` ·
 `SixSteps` · `EightSteps` (above the designed range, no ceiling) · `NarrowContainer` (no label,
-label, long label) · `OnPageSurface` (the second supported background, D13) · `TopPlacement` ·
-`BottomPlacement` · `AboveActionPanel` (the flush seam of D6).
+label, long label) · `SqueezedLabel` (~80px, the dangling-separator case — D14) · `BelowMinContent`
+(64px, the overflow case — D14) · `OnPageSurface` (the second supported background, D13) ·
+`TopPlacement` · `BottomPlacement` · `AboveActionPanel` (the flush seam of D6).
+
+`SqueezedLabel` and `BelowMinContent` exist because both defects were invisible in every scenario
+above them: each renders correctly at every width the other stories use. A scenario list that only
+shows a component working is a list that cannot fail.
 
 `TopPlacement`, `BottomPlacement` and `AboveActionPanel` compose the component into a page and
 **must show the flow controls outside it** — that is the point of those scenarios, and a reader must
@@ -804,6 +941,8 @@ The first ten mirror the brief's own list, in its order. The rest are this spec'
 | AC16 | A caller passing `tabIndex`, `role` or an activation handler gets exactly one development warning | governance §6.2 |
 | AC17 | Nothing in the component transitions or animates | D10 |
 | AC18 | Placed directly above a filled panel, the indicator meets it flush — no band of the wrong background between them | D6 |
+| AC19 | No container width renders a separator with no label after it | D14, CR-012 |
+| AC20 | The count is never shrunk, wrapped or clipped at any container width; below the component's min-content width the container overflows, not the count | D14, CR-001 |
 
 **The brief's eleventh criterion — "it reads as chrome, not as the subject of the page" (CR-015) —
 is deliberately absent from this list**, for the reason the brief gives: it is a relative judgement
@@ -817,7 +956,7 @@ visual draft at stage #4.5.
 
 | Requirement | Spec section | Contract |
 |---|---|---|
-| CR-001 | Purpose and boundary; Anatomy | — |
+| CR-001 | Purpose and boundary; Anatomy; D14 | — |
 | CR-002 | Anatomy; States | — |
 | CR-003 | States; D4; D5 | — |
 | CR-004 | Accessibility contract (A11Y-007) | — |
@@ -828,8 +967,8 @@ visual draft at stage #4.5.
 | CR-009 | Placement; D13 | — |
 | CR-010 | Placement; Purpose and boundary | — |
 | CR-011 | Behaviour; Edge cases | — |
-| CR-012 | Edge cases; Anatomy | — |
-| CR-013 | Content guidelines; D9 | — |
+| CR-012 | Edge cases; Anatomy; D14 | — |
+| CR-013 | Content guidelines; D9; D15 | — |
 | CR-014 | Content guidelines | — |
 | CR-015 | D8; Tokens; Acceptance criteria (excluded, with reason) | — |
 | CR-016 | Anatomy; D4 | — |
@@ -937,16 +1076,40 @@ specification and a sketch.
 
 **What the choice costs, measured — this is new, and it is why the blocker is worth the wait:**
 
-| | CR-007 as written (this spec) | The source system's override |
+Option A is CR-007 as written and is what this spec specifies. Option B is the source system's
+override. Neither column is a recommendation; the right-hand one is specified to the same depth as
+the left so that the owner compares two components rather than a component and a sketch.
+
+| | **A** — CR-007 as written (this spec) | **B** — the source system's override |
 |---|---|---|
-| Mechanism | three tones, one per state | one fill colour at three extents |
-| State distinction | **2.67:1** at its weakest adjacent pair | **10.12:1**, fill against track |
+| Mechanism | three tones, one per state | one fill colour at two extents plus a constant half |
+| State distinction | **2.67:1** at its weakest adjacent pair | **7.55:1**, fill against track — with this spec's faint tone as the track. Under B the track token is a fresh choice and could be lighter still |
 | Survives colour-blindness | yes — the tones differ in lightness | yes — extent is not a colour distinction at all |
+| **Degrades as segments narrow** | **badly** — the distinction is width-independent as a ratio and not as a percept | **well** — extent is a shape cue, and shape survives narrowing better than tone |
 | Requires a palette the repository does not have | yes, to clear 3:1 (D4) | no |
-| Risk it introduces | none | a half-filled bar can read as "50 % of this step is done" — the exact misreading CR-007 exists to prevent |
+| Risk it introduces | none | the whole strip reads as a percentage — see below |
+
+**Two things the ratio table cannot show, from the visual draft.** Both were found by rendering,
+both bear on this decision, and neither is derivable from a contrast measurement.
+
+- **2.67:1 is width-independent; being able to *see* it is not.** At 640px across four steps the
+  current-versus-completed distinction is comfortably legible. At 256px across eight steps —
+  segments of about 25px — the current segment has to be hunted for. The ratio is identical in both
+  renderings, because a contrast ratio is a property of two colours and not of the area carrying
+  them. **This is the strongest argument against option A**, and it exists nowhere in D4's numbers.
+  Option B is the mirror image: as segments narrow, a half-filled bar stays a half-filled bar.
+- **Option B's risk is broader than "a half-filled segment reads as 50 % of a step".** That is the
+  per-segment misreading CR-007 names, and it is the smaller half of the problem. Rendered, the
+  damage is at whole-strip level: `[half, empty, empty, empty]` reads as a bar **12.5 % full**, and
+  `[full, full, full, half]` as one **87.5 % full**. Option B does not merely risk a misreading of
+  one segment — it turns the component into a percentage, which is the thing the boundary contract
+  spends four rows separating it from. That sharpens CR-007's case rather than weakening it, and it
+  is recorded on the option this spec does *not* specify, so the owner is not choosing from a
+  one-sided brief.
 
 Option 3 from the brief — drop CR-007 and let the spec choose — is not recommended here either, for
-the brief's reason: an unstated rule is how "half full" later becomes "42 per cent".
+the brief's reason: an unstated rule is how "half full" later becomes "42 per cent". The whole-strip
+reading above is that sentence with a number attached.
 
 **Not a blocker: OD-003 (motion).** Resolved in D10 — the repository's token layer cannot express it,
 so the component does not animate. Two non-blocking escalations were raised instead of a decision
@@ -1083,6 +1246,37 @@ contradictions:
       misused. This component's label is arbitrary consumer prose in a fixed-height strip, where
       truncation is the requirement rather than a symptom.
     status: resolved
+  - id: c7
+    description: >
+      Anatomy rendered the separator on the presence of the `label` PROP, while CR-012 makes the
+      label's visibility a layout outcome. At ~80px the label shrank to 0px and the row rendered
+      `Step 2 of 4 ·` — a separator outliving the label it separates. Found in the visual draft;
+      not derivable from the document, which was self-consistent and wrong.
+    resolution: >
+      The separator and the label text now occupy one clipping box, separator first (D14). No
+      width can show one without the other. A required test facet asserts it on the rendered boxes
+      at the width that produced the defect, not on the prop.
+    status: resolved
+  - id: c8
+    description: >
+      "The count is what survives every squeeze" (Edge cases) and "the text row clips" (Anatomy)
+      were both false below the count's intrinsic width: measured at 64px the count overflowed the
+      root by 7.44px, and nothing in the spec clipped it or set a floor.
+    resolution: >
+      D14 states the floor: min-w-min on the root, shrink-0 on the count. The component never
+      shrinks below its min-content width and never clips the count; a narrower container overflows
+      instead, which is a visible error owned by whoever chose the width. Clipping the count was
+      rejected on the merits — CR-001 and CR-004 make it the normative carrier.
+    status: resolved
+  - id: c9
+    description: >
+      The Tokens table bound two gaps and was silent on the spacing between count, separator and
+      label. The text row must be a flex row for truncation, and flex collapses the whitespace a
+      middot would sit in, so the value could not be left unstated without #5 choosing it.
+    resolution: >
+      A thirteenth token binding, gap-1 -> var(--ds-spacing-unit) (D15), set independently of the
+      other two gaps for the reason D6 gives about those two.
+    status: resolved
 
 cross_spec_consistency:
   - convention: "inert component keeps the wide React.HTMLAttributes rest type"
@@ -1154,7 +1348,11 @@ escalations:
       not its motion namespaces. `duration-150` and `ease-out` compile and resolve to values
       byte-identical to --ds-motion-duration-normal and --ds-motion-easing-ease-out, so a design
       value can bypass the token layer and still render correctly. src/tailwind-surface.test.ts
-      asserts nothing about it.
+      asserts nothing about it. Additionally: Tailwind 4 scans tracked Markdown, so THIS SPEC FILE
+      emits .transition-all, .duration-150 and .ease-out into the compiled stylesheet purely by
+      naming them in the paragraph that forbids them — verified by compiling with the spec as the
+      only source. Nothing renders wrong, but a guard that greps build output for motion utilities
+      would be defeated by the document forbidding them. Such a guard must scan component source.
   - target: ds-governance
     reason: needs-new-token
     blocking: false
