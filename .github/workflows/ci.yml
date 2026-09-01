@@ -32,6 +32,11 @@ jobs:
       - name: pipeline copies are in sync
         run: bash tools/check-claude-dir-in-sync.sh
 
+      # The orchestrator delegates by NAME. An agent named in ds-kit.config.yml and
+      # absent from .claude/agents/ is a stage that fails downstream of its cause.
+      - name: every agent the config names exists
+        run: bash tools/check-agents-exist.sh
+
       - run: npm run build:tokens
       - run: npm run typecheck
       - run: npm run lint
