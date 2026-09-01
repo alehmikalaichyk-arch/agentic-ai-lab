@@ -3,3 +3,4 @@ generated/
 storybook-static/
 *.log
 .DS_Store
+.identifiers
