@@ -65,7 +65,44 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CFG="${DS_KIT_CONFIG:-${SCRIPT_DIR}/../../ds-kit.config.yml}"
+
+# ---------------------------------------------------------------------------
+# Locate ds-kit.config.yml.
+#
+# Search order, and each entry is there because one of them is wrong somewhere:
+#
+#   1. $DS_KIT_CONFIG        — explicit wins; this is what the tests set.
+#   2. repository root       — where INSTALL.md tells you to put it, and where
+#                              this script lives when copied to <repo>/tools/.
+#   3. one level up          — same layout, invoked from a subdirectory.
+#   4. two levels up         — the position inside the kit itself
+#                              (repo-enforcement/tools/), so the kit's own tests
+#                              keep working unchanged.
+#
+# The two-levels-up form used to be the ONLY default, which was correct inside
+# the kit and wrong in every repository the kit was installed into: the lookup
+# landed outside the repository, every key read back empty, and the script died
+# on `set -u` with a bare exit 2 and no message. A gate that fails without saying
+# why reads as a broken repository rather than a missing file.
+_find_kit_config() {
+  local here; here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  local candidate
+  if [ -n "${DS_KIT_CONFIG:-}" ]; then printf '%s' "$DS_KIT_CONFIG"; return 0; fi
+  if candidate="$(git rev-parse --show-toplevel 2>/dev/null)/ds-kit.config.yml" && [ -f "$candidate" ]; then
+    printf '%s' "$candidate"; return 0
+  fi
+  for candidate in "${here}/../ds-kit.config.yml" "${here}/../../ds-kit.config.yml"; do
+    [ -f "$candidate" ] && { printf '%s' "$candidate"; return 0; }
+  done
+  return 1
+}
+
+CFG="$(_find_kit_config || true)"
+if [ ! -f "$CFG" ]; then
+  echo "::error::ds-kit.config.yml not found. Looked for \$DS_KIT_CONFIG, then the repository root, then one and two directories above $(dirname "${BASH_SOURCE[0]}"). Copy it to the repository root (see the kit's INSTALL.md) or set DS_KIT_CONFIG. Failing closed: without it this gate cannot resolve which paths hold component source." >&2
+  exit 1
+fi
+
 
 # --- configuration surface ---------------------------------------------------
 read_key() {
