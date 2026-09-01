@@ -95,6 +95,13 @@ storybook_conventions:
   default_decorators: <e.g. theme/token provider, if the DS requires one>
 ```
 
+**That block is the shape, not the values.** #6 takes #1's values even where they
+contradict the illustration above — `autodocs: false` and `tags: []` are the correct
+output when that is what #1 measured. #1 may also carry `title_pattern_status`,
+`title_groups_attested` and `inconsistencies`; a `title_pattern` marked `unattested`
+(no component story exists yet) is still #1's declaration and is used as given. A
+listed inconsistency is reported in the Story Generation Report, never resolved here.
+
 If #1 does not yet expose `storybook_conventions`, #6 uses documented defaults
 (CSF 3, `Components/<Component>`, autodocs on) and records the gap as a
 non-blocking escalation to #1 (`reason: missing-storybook-conventions`). This is
@@ -323,10 +330,11 @@ handoff:
 
 ## 12. Cross-skill prerequisite
 
-- **`ds-context` (#1)** should add a `storybook_conventions` block
-  (`csf_version`, `title_pattern`, `autodocs`, `tags`, `default_decorators`) to
-  its Context Snapshot so #6 reads conventions from an authoritative source
-  rather than from defaults. Additive; until then #6 defaults and reports the gap.
+- **`ds-context` (#1)** — **satisfied.** #1 emits `storybook_conventions`
+  (`csf_version`, `title_pattern`, `autodocs`, `tags`, `default_decorators`, plus
+  provenance fields) in its Context Snapshot Contract, derived per #1 §7a. #6 reads it
+  from there. The default-and-report path in §3 remains for a snapshot produced before
+  that block existed; it should no longer fire.
 
 ---
 
