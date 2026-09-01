@@ -36,7 +36,7 @@ function Swatch({ token }: { token: string }) {
   return (
     <div className="flex items-center gap-3">
       <div
-        className="size-10 shrink-0 rounded-md border border-border-default"
+        className="size-10 shrink-0 rounded-md border border-outline-default"
         style={{ background: value }}
       />
       <div className="min-w-0">
@@ -61,27 +61,39 @@ const SEMANTIC_FG = [
   'fg-default', 'fg-subtle', 'fg-subtlest', 'fg-disabled', 'fg-inverse',
   'fg-brand', 'fg-brand-bold', 'fg-link',
   'fg-status-danger', 'fg-status-warning', 'fg-status-success', 'fg-status-info',
+  'fg-accent-grey-boldest', 'fg-accent-blue-boldest', 'fg-accent-green-boldest',
+  'fg-accent-amber-boldest', 'fg-accent-red-boldest',
 ];
 
 const SEMANTIC_SURFACE = [
-  'surface-page', 'surface-default', 'surface-sunken', 'surface-inverse',
+  'surface-page', 'surface-default', 'surface-raised', 'surface-sunken', 'surface-inverse',
   'surface-neutral-subtlest', 'surface-neutral-subtle', 'surface-neutral-bold', 'surface-neutral-boldest',
   'surface-brand-subtlest', 'surface-brand-subtle', 'surface-brand-bold',
-  'surface-status-danger-subtlest', 'surface-status-warning-subtlest',
-  'surface-status-success-subtlest', 'surface-status-info-subtlest',
+  'surface-status-danger', 'surface-status-warning', 'surface-status-success', 'surface-status-info',
+  'surface-accent-grey-subtlest', 'surface-accent-blue-subtlest', 'surface-accent-green-subtlest',
+  'surface-accent-amber-subtlest', 'surface-accent-red-subtlest',
 ];
 
-const BORDERS = ['border-subtle', 'border-default', 'border-strong', 'border-brand', 'border-focused', 'border-danger'];
+const OUTLINES = ['outline-subtle', 'outline-default', 'outline-strong', 'outline-brand', 'outline-focus', 'outline-input'];
 
 /** The pairings a component is allowed to use, checked live against the built tokens. */
 const PAIRS: Array<[string, string]> = [
-  ['fg-subtle', 'surface-neutral-subtlest'],
-  ['fg-brand-bold', 'surface-brand-subtlest'],
-  ['fg-status-success', 'surface-status-success-subtlest'],
-  ['fg-status-warning', 'surface-status-warning-subtlest'],
-  ['fg-status-danger', 'surface-status-danger-subtlest'],
+  ['fg-accent-grey-boldest', 'surface-accent-grey-subtlest'],
+  ['fg-accent-blue-boldest', 'surface-accent-blue-subtlest'],
+  ['fg-accent-green-boldest', 'surface-accent-green-subtlest'],
+  ['fg-accent-amber-boldest', 'surface-accent-amber-subtlest'],
+  ['fg-accent-red-boldest', 'surface-accent-red-subtlest'],
   ['fg-default', 'surface-default'],
-  ['fg-inverse', 'surface-neutral-boldest'],
+  ['fg-subtle', 'surface-default'],
+  ['fg-inverse', 'surface-inverse'],
+];
+
+/** Pairings that read as obviously correct and do not clear AA. Shown deliberately. */
+const TRAPS: Array<[string, string]> = [
+  ['fg-accent-red', 'surface-accent-red-subtlest'],
+  ['fg-accent-blue', 'surface-accent-blue-subtlest'],
+  ['fg-brand-bold', 'surface-brand-subtlest'],
+  ['fg-inverse', 'surface-brand-bold'],
   ['fg-disabled', 'surface-default'],
 ];
 
@@ -97,7 +109,7 @@ function Tokens() {
 
       <Section
         title="Foreground roles"
-        note="Named by the job, not the colour. A role can be re-pointed at a different primitive without touching a single component."
+        note="Named by the job, not the colour. A role can be re-pointed at a different primitive without touching a single component. -boldest orders steps within a family; it does not promise a dark or light value."
       >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
           {SEMANTIC_FG.map((t) => <Swatch key={t} token={t} />)}
@@ -113,9 +125,12 @@ function Tokens() {
         </div>
       </Section>
 
-      <Section title="Borders">
+      <Section
+        title="Outlines"
+        note="Borders are an outline-* role here, not border-*. One role for focus across every component, so focus looks the same everywhere."
+      >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {BORDERS.map((t) => <Swatch key={t} token={t} />)}
+          {OUTLINES.map((t) => <Swatch key={t} token={t} />)}
         </div>
       </Section>
 
@@ -125,7 +140,7 @@ function Tokens() {
       >
         <table className="w-full max-w-3xl text-left text-sm">
           <thead>
-            <tr className="border-b border-border-default text-fg-subtle">
+            <tr className="border-b border-outline-default text-fg-subtle">
               <th className="py-2 font-weight-medium">Foreground</th>
               <th className="py-2 font-weight-medium">Surface</th>
               <th className="py-2 font-weight-medium">Ratio</th>
@@ -140,7 +155,7 @@ function Tokens() {
               // Shown rather than hidden, so the exception is visible as an exception.
               const intentional = fg === 'fg-disabled';
               return (
-                <tr key={`${fg}-${bg}`} className="border-b border-border-subtle">
+                <tr key={`${fg}-${bg}`} className="border-b border-outline-subtle">
                   <td className="py-2 text-fg-default">{fg}</td>
                   <td className="py-2 text-fg-subtle">{bg}</td>
                   <td className="py-2 text-fg-default">{ratio.toFixed(2)}:1</td>
@@ -158,14 +173,36 @@ function Tokens() {
             })}
           </tbody>
         </table>
+        <h3 className="mt-8 mb-1 text-md text-fg-default">Pairings that look right and are not</h3>
+        <p className="mb-3 max-w-2xl text-sm text-fg-subtle">
+          The matching foreground on a soft accent surface does not clear AA — only the -boldest
+          step does. These are shown rather than hidden, because a rule nobody can see the
+          evidence for decays into folklore within a few components.
+        </p>
+        <table className="w-full max-w-3xl text-left text-sm">
+          <tbody>
+            {TRAPS.map(([fg, bg]) => {
+              const ratio = contrast(readVar(`--ds-${fg}`), readVar(`--ds-${bg}`));
+              return (
+                <tr key={`trap-${fg}-${bg}`} className="border-b border-outline-subtle">
+                  <td className="py-2 text-fg-default">{fg}</td>
+                  <td className="py-2 text-fg-subtle">{bg}</td>
+                  <td className="py-2 text-fg-default">{ratio.toFixed(2)}:1</td>
+                  <td className="py-2 text-fg-status-danger">below AA</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </Section>
 
       <Section title="Type scale">
         <div className="space-y-2">
-          {(['xs', 'sm', 'md', 'lg', 'xl'] as const).map((size) => (
-            <div key={size} className="flex items-baseline gap-4">
-              <span className="w-8 text-xs text-fg-subtlest">{size}</span>
-              <span className={`text-${size} text-fg-default`}>
+          {(['font-body-xs-moderate', 'font-body-sm-moderate', 'font-body-md-moderate',
+             'font-heading-sm-strong', 'font-heading-md-strong'] as const).map((utility) => (
+            <div key={utility} className="flex items-baseline gap-4">
+              <span className="w-56 shrink-0 text-xs text-fg-subtlest">{utility}</span>
+              <span className={`${utility} text-fg-default`}>
                 The quick brown fox jumps over the lazy dog
               </span>
             </div>

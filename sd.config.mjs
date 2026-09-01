@@ -1,19 +1,27 @@
 /**
- * Style Dictionary build for the demo design system.
+ * Style Dictionary build.
  *
- * Reads DTCG token files from tokens/ and produces three artifacts under generated/:
+ * Reads DTCG token files from tokens/ and produces four artifacts under generated/:
  *
- *   tokens.css          :root block of --ds-* custom properties. The runtime source
- *                       of every design value.
- *   tokens.ts           the same values as typed TypeScript constants, for the rare
- *                       case where a value is needed in JS rather than CSS.
- *   tailwind-theme.css  a Tailwind 4 @theme block that binds Tailwind's utility
- *                       namespaces to the custom properties above.
+ *   tokens.css           :root block of --ds-* custom properties. The runtime source
+ *                        of every design value.
+ *   tokens.ts            the same values as typed TypeScript constants.
+ *   tailwind-theme.css   a Tailwind 4 @theme block binding Tailwind's utility
+ *                        namespaces to the custom properties above.
+ *   font-utilities.css   Tailwind 4 @utility blocks for the COMPOSITE font tokens.
  *
- * The last one is what makes `bg-surface-accent` a real class. Tailwind 4 derives
- * utilities from the variables declared in @theme, so a token that is not published
- * there has no utility — which is deliberate: primitives stay unpublished, and a
- * component reaching for `bg-neutral-900` finds no such class.
+ * The third is what makes `bg-surface-brand-bold` a real class, and the fourth is
+ * what makes `font-body-sm-moderate` one.
+ *
+ * Two rules are enforced here rather than in review, because here they are the
+ * difference between a class existing and not existing:
+ *
+ *   1. Primitives are NOT published. A colour step (`brand-500`, `neutral-100`) has
+ *      no Tailwind utility at all, so a component cannot reach past the semantic
+ *      layer even by accident.
+ *   2. A composite font token is published as ONE utility setting all four
+ *      properties together. Publishing size, weight and line-height separately is
+ *      exactly what lets them drift apart at a call site.
  *
  * generated/ is not committed. Every script that needs it runs build:tokens first.
  */
@@ -21,25 +29,19 @@ import StyleDictionary from 'style-dictionary';
 
 const PREFIX = 'ds';
 
-/** `fg.default` -> `--ds-fg-default` */
 const cssVarName = (token) => `--${PREFIX}-${token.path.join('-')}`;
 
 /**
- * Which token groups become Tailwind utilities, and under which namespace.
+ * Groups published as Tailwind utilities, and the namespace each lands in.
  *
- * Absence from this table is meaningful. `color.*` (the primitives) is absent, so
- * no utility exists for a raw palette step — the strict primitive -> semantic ->
- * component chain the governance skill requires is enforced here, at the point
- * where a class either exists or does not.
+ * `keepGroup` is not cosmetic: three groups share the `color` namespace, so dropping
+ * the group name would collapse `fg.default` and `surface.default` into a single
+ * --color-default, and the second would silently win.
  */
 const TAILWIND_NAMESPACES = [
-  // `keepGroup` is not cosmetic. Three groups share the `color` namespace, so
-  // dropping the group name collapses fg.default and surface.default into one
-  // --color-default and the second silently wins. Where the namespace holds one
-  // group only, the group name is dropped and `radius.sm` becomes --radius-sm.
   { group: 'fg', namespace: 'color', keepGroup: true },
   { group: 'surface', namespace: 'color', keepGroup: true },
-  { group: 'border', namespace: 'color', keepGroup: true },
+  { group: 'outline', namespace: 'color', keepGroup: true },
   { group: 'radius', namespace: 'radius' },
   { group: 'shadow', namespace: 'shadow' },
   { group: 'font-size', namespace: 'text' },
@@ -50,21 +52,43 @@ const TAILWIND_NAMESPACES = [
 ];
 
 /**
- * Groups that reach CSS as --ds-* variables but get NO Tailwind utility.
+ * Groups that reach CSS as --ds-* variables but deliberately get NO utility.
  *
- * Not an oversight in each case, a decision: `palette` is the primitive layer and
- * must stay unreachable from a component; `motion`, `z-index`, `layout` and
- * `shared` are consumed through var() in a component's own styles, where the
- * value needs a name rather than a class.
+ * Each is a decision, not an omission. `chart`, `chip`, `input` and `shared` are
+ * component-layer values consumed through var() by the component that owns them;
+ * `motion`, `z-index` and `layout` need a name rather than a class; `font` is
+ * composite and published through @utility instead; `spacing` drives Tailwind's
+ * numeric scale and is handled separately below.
  */
-const UNPUBLISHED_GROUPS = ['palette', 'motion', 'z-index', 'layout', 'shared'];
+const UNPUBLISHED_GROUPS = [
+  'chart', 'chip', 'input', 'shared', 'motion', 'z-index', 'layout', 'font',
+];
+
+/**
+ * A primitive colour step: `brand-500`, `neutral-100`, `chart-blue-300`, `black`.
+ *
+ * Matched by SHAPE rather than listed by name, because the palette families are
+ * named after places and adding one must not need a code change to stay unpublished.
+ * Getting this backwards — publishing a primitive — does not produce a wrong colour.
+ * It produces a class that works, which is how a semantic layer gets bypassed.
+ */
+const isPrimitiveColour = (group) =>
+  /^[a-z][a-z-]*-\d{2,3}$/.test(group) || group === 'black' || group === 'white';
+
+const isComposite = (token) => {
+  const v = token.$value ?? token.value;
+  return v !== null && typeof v === 'object';
+};
 
 StyleDictionary.registerFormat({
   name: 'css/tokens',
   format: ({ dictionary }) => {
-    const lines = dictionary.allTokens.map(
-      (t) => `  ${cssVarName(t)}: ${t.$value ?? t.value};`,
-    );
+    // A composite token has an object value and becomes a set of utilities, not a
+    // custom property. Emitting it here would write "[object Object]" into the
+    // stylesheet — valid CSS, completely inert, and invisible until someone looks.
+    const lines = dictionary.allTokens
+      .filter((t) => !isComposite(t))
+      .map((t) => `  ${cssVarName(t)}: ${t.$value ?? t.value};`);
     return [
       '/* GENERATED by style-dictionary — do not edit. Source: tokens/ */',
       ':root {',
@@ -78,12 +102,15 @@ StyleDictionary.registerFormat({
 StyleDictionary.registerFormat({
   name: 'ts/tokens',
   format: ({ dictionary }) => {
-    // JSON.stringify, not a hand-rolled quote. Font stacks and shadow values contain
-    // apostrophes ('Lexend Deca', 'SF Mono'), and wrapping those in single quotes
-    // produces a file that is valid to look at and a syntax error to compile.
-    const entries = dictionary.allTokens.map(
-      (t) => `  ${JSON.stringify(t.path.join('.'))}: ${JSON.stringify(String(t.$value ?? t.value))},`,
-    );
+    // JSON.stringify, not a hand-rolled quote. Font stacks contain apostrophes
+    // ('Lexend Deca'), and wrapping those in single quotes produces a file that
+    // looks fine and is a syntax error to compile.
+    const entries = dictionary.allTokens
+      .filter((t) => !isComposite(t))
+      .map(
+        (t) =>
+          `  ${JSON.stringify(t.path.join('.'))}: ${JSON.stringify(String(t.$value ?? t.value))},`,
+      );
     return [
       '// GENERATED by style-dictionary — do not edit. Source: tokens/',
       'export const tokens = {',
@@ -100,40 +127,44 @@ StyleDictionary.registerFormat({
   name: 'css/tailwind-theme',
   format: ({ dictionary }) => {
     const out = [];
+    const unclassified = new Set();
+
     for (const token of dictionary.allTokens) {
       const [group, ...rest] = token.path;
+      if (isComposite(token)) continue;
+      if (isPrimitiveColour(group) || UNPUBLISHED_GROUPS.includes(group)) continue;
 
-      if (UNPUBLISHED_GROUPS.includes(group)) continue;
-
-      const named = TAILWIND_NAMESPACES.find((n) => n.group === group);
-      if (named) {
-        // The group name is dropped when it already IS the namespace: radius.sm
-        // publishes --radius-sm, not --radius-radius-sm (which yields the class
-        // `rounded-radius-sm` and reads like a typo because it is one). For a
-        // renamed group — font-size -> text — the group name is dropped too, and
-        // only the leaf path remains.
-        const suffix = named.keepGroup ? token.path.join('-') : rest.join('-');
-        out.push(`  --${named.namespace}-${suffix}: var(${cssVarName(token)});`);
-        continue;
-      }
       if (group === 'spacing' && rest[0] === 'base') {
         // Tailwind multiplies this one to derive the whole numeric scale
-        // (p-4 -> calc(var(--spacing) * 4)), so it is published under its own name.
+        // (p-4 -> calc(var(--spacing) * 4)), so it publishes under its own name.
         out.push(`  --spacing: var(${cssVarName(token)});`);
         continue;
       }
-      // Anything else is a token group nobody has decided about. Failing loudly
-      // beats emitting a variable under a guessed namespace, because a guessed
-      // namespace produces a class that half-works and is found much later.
+      if (group === 'spacing') continue;
+
+      const named = TAILWIND_NAMESPACES.find((n) => n.group === group);
+      if (!named) {
+        unclassified.add(group);
+        continue;
+      }
+      const suffix = named.keepGroup ? token.path.join('-') : rest.join('-');
+      out.push(`  --${named.namespace}-${suffix}: var(${cssVarName(token)});`);
+    }
+
+    // A token group nobody has classified is a decision waiting to be made, not a
+    // value to guess a namespace for. A guessed namespace produces a class that
+    // half-works, and those surface much later than a failed build.
+    if (unclassified.size) {
       throw new Error(
-        `token group '${group}' is neither published (TAILWIND_NAMESPACES) nor ` +
-          `deliberately withheld (UNPUBLISHED_GROUPS). Add it to one of them in sd.config.mjs.`,
+        `token group(s) ${[...unclassified].sort().join(', ')} are neither published ` +
+          `(TAILWIND_NAMESPACES) nor deliberately withheld (UNPUBLISHED_GROUPS / ` +
+          `isPrimitiveColour). Classify them in sd.config.mjs.`,
       );
     }
+
     // A duplicate variable name is the one failure this format can produce that
-    // looks completely fine in the output: the file is valid CSS, the build is
-    // green, and one of the two tokens simply stops existing. Caught here rather
-    // than found later by someone wondering why a colour will not change.
+    // looks completely fine: valid CSS, green build, and one of the two tokens
+    // silently stops existing.
     const seen = new Map();
     for (const line of out) {
       const name = line.trim().split(':')[0];
@@ -145,12 +176,47 @@ StyleDictionary.registerFormat({
       }
       seen.set(name, line);
     }
+
     return [
       '/* GENERATED by style-dictionary — do not edit. Source: tokens/ */',
       '@theme inline {',
       ...out,
       '}',
       '',
+    ].join('\n');
+  },
+});
+
+StyleDictionary.registerFormat({
+  name: 'css/font-utilities',
+  format: ({ dictionary }) => {
+    // Style Dictionary's css transform group already collapses a DTCG `typography`
+    // token into the CSS `font` shorthand — "300 0.75rem/1.125rem 'Lexend Deca', ...".
+    // So the utility binds the whole shorthand through one variable rather than
+    // re-deriving four properties, and there is exactly one place the value lives.
+    const composites = dictionary.allTokens.filter((t) => t.path[0] === 'font');
+
+    const blocks = composites.flatMap((token) => {
+      const name = token.path.join('-'); // font.body.sm.moderate -> font-body-sm-moderate
+      // `font:` the shorthand, not four separate declarations. A call site that can
+      // set the size without the line-height is a call site where they drift apart,
+      // and binding the variable (rather than inlining the value) is what keeps the
+      // utility and the token the same fact.
+      return [`@utility ${name} {`, `  font: var(${cssVarName(token)});`, `}`, ''];
+    });
+
+    if (blocks.length === 0) {
+      throw new Error(
+        'no composite font tokens found — expected tokens/typography/font.json to ' +
+          'contain $type: typography entries under a `font` group. An empty utilities ' +
+          'file would leave every `font-body-*` class silently undefined.',
+      );
+    }
+
+    return [
+      '/* GENERATED by style-dictionary — do not edit. Source: tokens/typography/font.json */',
+      '',
+      ...blocks,
     ].join('\n');
   },
 });
@@ -164,6 +230,7 @@ export default {
       files: [
         { destination: 'tokens.css', format: 'css/tokens' },
         { destination: 'tailwind-theme.css', format: 'css/tailwind-theme' },
+        { destination: 'font-utilities.css', format: 'css/font-utilities' },
       ],
     },
     ts: {

@@ -1,10 +1,30 @@
 /*
  * The stylesheet Storybook and any consumer load.
  *
- * Order is load-bearing: the token :root block has to exist before the @theme
- * block references it, and Tailwind's own layers come last so utilities win over
- * the base reset.
+ * The order is load-bearing, and the third step is the one that is easy to omit
+ * and impossible to notice:
+ *
+ *   1. tokens.css        declares every --ds-* custom property
+ *   2. tailwindcss       brings in Tailwind's engine AND its default palette
+ *   3. the reset below   deletes that default palette
+ *   4. tailwind-theme    binds our semantic roles into Tailwind's namespaces
+ *   5. font-utilities    the composite type utilities
+ *
+ * Without step 3, `bg-red-500`, `text-neutral-900` and `bg-slate-100` are all real,
+ * working classes — Tailwind ships a full palette of its own. Every rule about a
+ * strict primitive -> semantic chain is then advisory, because the shortcut past it
+ * renders perfectly. Withholding OUR primitives is not enough; the framework's have
+ * to go too.
  */
 @import '../generated/tokens.css';
-@import '../generated/tailwind-theme.css';
 @import 'tailwindcss';
+
+@theme {
+  /* Delete Tailwind's built-in colour palette. `--color-*: initial` clears the whole
+     namespace, so the only colours that exist afterwards are the ones the next import
+     declares. A component reaching for `bg-red-500` gets no class at all. */
+  --color-*: initial;
+}
+
+@import '../generated/tailwind-theme.css';
+@import '../generated/font-utilities.css';

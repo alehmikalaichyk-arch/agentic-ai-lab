@@ -1,21 +1,24 @@
 {
   "z-index": {
-    "$description": "Stacking order, named by what stacks rather than by number. A component that invents its own z-index is how an overlay ends up behind the thing it overlays.",
     "overlay": {
-      "$value": "300",
-      "$type": "number"
+      "$value": 300,
+      "$type": "number",
+      "$description": "Modal backdrop overlay"
     },
     "modal": {
-      "$value": "500",
-      "$type": "number"
+      "$value": 500,
+      "$type": "number",
+      "$description": "Modal content container"
     },
     "popover": {
-      "$value": "600",
-      "$type": "number"
+      "$value": 600,
+      "$type": "number",
+      "$description": "Portal-rendered dropdowns (Select, Multiselect, DropdownMenu, DatePicker) — always above modal"
     },
     "toast": {
-      "$value": "700",
-      "$type": "number"
+      "$value": 700,
+      "$type": "number",
+      "$description": "Toast region — always above popover, so an open dropdown cannot cover a failure message. Governance Owner decision 2026-08-18 (toast brief OD-002); see docs/component-specs/toast.md"
     }
   }
 }
