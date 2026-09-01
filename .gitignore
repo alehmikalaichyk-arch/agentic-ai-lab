@@ -4,3 +4,13 @@ storybook-static/
 *.log
 .DS_Store
 .identifiers
+
+# Single-use working files: session prompts, handovers, scratch notes.
+#
+# They are messages, not artifacts. A prompt for the next session is stale the
+# moment that session ends, and committing one puts a second document about the
+# same component next to the spec — which is how two documents come to disagree
+# about a contract a human already merged.
+#
+# Write them here, paste them into the chat, let them rot.
+.scratch/
