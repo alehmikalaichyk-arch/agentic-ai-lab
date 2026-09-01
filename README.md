@@ -22,7 +22,8 @@ read them in pairs.
 | `generated/` | Built from `tokens/`. **Not committed** — every script that needs it runs `build:tokens` first. |
 | `src/components/ui/` | Component source. |
 | `docs/component-specs/` | The frozen specs. One per component, merged before its implementation. |
-| `component-prototypes/` | Visual drafts — throwaway renderings the owner looks at *before* a spec is frozen. |
+| `component-prototypes/` | Visual drafts of a single component — what the owner looks at *before* a spec is frozen (stage #4.5). |
+| `prototypes/` | **Whole-screen prototypes. No spec, no gates, disposable.** A different thing from a draft — see [its README](prototypes/README.md). |
 | `.github/workflows/` | CI, the three structural gates, the review gate, and Storybook publishing. |
 
 **Before demonstrating any of this, verify it actually loaded** — in a fresh clone and a fresh
@@ -56,6 +57,33 @@ in the implementing session does not.
 CI if a name there has no agent behind it. A rule that names an enforcer which does
 not exist is enforced by nothing — and this repository shipped exactly that until the
 agents were written.
+
+### Two zones, and the rule between them
+
+The repository does two things that want opposite speeds.
+
+| | Component pipeline | `prototypes/` |
+|---|---|---|
+| Pace | Deliberately slow — spec, draft, human merge before any code | Deliberately fast — build it, look at it, throw it away |
+| Gates | All four | **None.** A prototypes-only diff classifies as `NONE` — verified, not assumed |
+| Output | A component the system depends on for years | An answer to one question |
+
+Run prototypes through the pipeline and they stop being prototypes. Loosen the
+pipeline so prototypes fit and there is no pipeline. Hence two zones and one rule:
+
+**A prototype never becomes a component by being moved.** When a prototype shows that
+a component is needed, that component enters at stage #0 with a requirements brief
+like any other. What the prototype contributes is evidence — the strongest kind,
+because the need was demonstrated rather than predicted.
+
+`tools/check-prototypes-are-ungated.sh` fails CI if a classified path ever grows to
+contain `prototypes/`, since the first symptom would otherwise be a prototype PR
+demanding a frozen spec.
+
+**Prototypes are still type-checked and linted.** "No gates" means no *process* gates
+— not that a draft may be broken. That distinction was worth enforcing: they were
+outside `tsconfig` until a deliberate type error passed every check, which is exactly
+the failure the kit's own measurements record.
 
 ### Why the pipeline is here twice
 
