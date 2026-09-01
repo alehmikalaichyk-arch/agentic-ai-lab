@@ -3,7 +3,7 @@ artifact: horizontal-stepper-brief
 component: HorizontalStepper
 status: draft
 date: 2026-09-01
-source_ask: two externally-authored documents from the pegbo design system, read as owner prose
+source_ask: two externally-authored documents from another design system, read as owner prose
 consumers_today: []          # verified zero by repository search — see Consumer impact
 consumers_candidate: []      # verified zero — this repository contains no product application
 ---
@@ -404,8 +404,8 @@ placed in the section they bear on are not repeated here.
 > exists at the code layer at all.
 >
 > **[Repo audit 2026-09-01 · class F]** **Token prefix — the ask binds a namespace this repository
-> does not have.** The source specification writes `--pegbo-*` in 9 places (7 distinct tokens;
-> `--pegbo-fg-default` twice; one bare `--pegbo-*` in prose). This repository's namespace is `--ds`,
+> does not have.** The source specification writes its own namespace prefix in 9 places (7 distinct
+> tokens; the foreground-default token twice; one bare prefix wildcard in prose). This repository's namespace is `--ds`,
 > set in `ds-kit.config.yml` as `tokens_namespace.css_prefix: "--ds"`, with 427 `--ds-*` custom
 > properties in `generated/tokens.css`. **All seven bound tokens exist here under the new prefix**,
 > each verified individually: `--ds-font-family-base` (:397), `--ds-font-size-md` (:407),
