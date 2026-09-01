@@ -22,9 +22,28 @@ PATTERNS_FILE="${IDENTIFIERS_FILE:-.identifiers}"
 fail=0
 
 if [ ! -f "$PATTERNS_FILE" ]; then
+  # Locally a missing file is a setup step. In CI it is a lie: the step goes green
+  # having read nothing, and a green step is indistinguishable from a clean
+  # repository. This shipped that way for one commit — the pull request that
+  # introduced it claimed the check "fails CI on any of it", and it could not have.
+  if [ -n "${CI:-}" ]; then
+    echo "::error::$PATTERNS_FILE is absent, so this check would verify NOTHING."
+    echo "           In CI the file is written from the SOURCE_IDENTIFIERS secret."
+    echo "           Set it:  gh secret set SOURCE_IDENTIFIERS < .identifiers"
+    echo "           Failing rather than passing: a green step that read no patterns"
+    echo "           is worse than no step, because it is mistaken for evidence."
+    exit 1
+  fi
   echo "SKIP: no $PATTERNS_FILE — this check verifies NOTHING until you create one."
-  echo "      Copy .identifiers.example and fill it in."
+  echo "      Copy .identifiers.example and fill it in. (Local run; in CI this fails.)"
   exit 0
+fi
+
+# A file that exists but holds no usable pattern is the same failure wearing a
+# different hat.
+if ! grep -qE '^[^#[:space:]].*\|' "$PATTERNS_FILE"; then
+  echo "::error::$PATTERNS_FILE contains no '<label>|<regex>' lines — nothing would be checked."
+  exit 1
 fi
 
 while IFS= read -r line; do

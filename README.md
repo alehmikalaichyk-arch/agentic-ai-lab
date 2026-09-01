@@ -26,6 +26,17 @@ read them in pairs.
 | `prototypes/` | **Whole-screen prototypes. No spec, no gates, disposable.** A different thing from a draft — see [its README](prototypes/README.md). |
 | `.github/workflows/` | CI, the three structural gates, the review gate, and Storybook publishing. |
 
+### Single-use files do not get committed
+
+Session prompts, handovers and scratch notes go in `.scratch/`, which is gitignored.
+They are messages, not artifacts.
+
+The reason is not tidiness. A prompt restating what the spec already says puts a
+second document about the same component next to the one a human merged — and two
+documents about one contract eventually disagree, with nothing to say which is
+right. Anything durable belongs in the spec, this README, or a rule. Anything that
+expires when a session ends belongs in `.scratch/` and then in the chat.
+
 **Before demonstrating any of this, verify it actually loaded** — in a fresh clone and a fresh
 session: [docs/verify-pipeline-loaded.md](docs/verify-pipeline-loaded.md). A session with no
 skills loaded behaves exactly like one that did not need them, until the moment the process
