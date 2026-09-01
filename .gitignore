@@ -4,3 +4,9 @@ storybook-static/
 *.log
 .DS_Store
 .identifiers
+
+# Scratch space for things that help a person and should never be reviewed:
+# session prompts to copy out, notes, throwaway measurements. A prompt for the
+# next session is a message, not an artifact — it has no reviewer and expires
+# the moment it is used, so it does not belong in a pull request.
+.scratch/
