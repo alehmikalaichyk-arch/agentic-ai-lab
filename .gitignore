@@ -14,3 +14,11 @@ storybook-static/
 #
 # Write them here, paste them into the chat, let them rot.
 .scratch/
+
+# Byproducts of a FAILING vitest browser test: a screenshot of the page, and the
+# same image again as a reporter attachment. Debugging aids with a lifetime of
+# one run — never a review artifact. Both are pointed here rather than at their
+# defaults, because the screenshot default is `src/__screenshots__/`, which puts
+# untracked binaries inside a tracked source directory.
+.vitest-screenshots/
+.vitest-attachments/

@@ -57,7 +57,11 @@ paths:
   tokens: "tokens/"
   generated: "generated/"
   stories_config: ".storybook/"
-  e2e: "e2e/"            # reserved; no suite here yet
+  # The browser-rendered test suite. It is NOT under `e2e/` and there is no such
+  # directory: these are vitest browser-mode tests that live beside the source
+  # they cover and opt in by filename, so that a test needing real layout is
+  # visible in the file tree rather than hidden behind a runner.
+  e2e: "src/**/*.browser.test.{ts,tsx}"
   utils: "src/lib/utils.ts"
 
 # ----------------------------------------------------------------------------
@@ -76,6 +80,11 @@ tokens_namespace:
 # Script names as they appear in package.json. The quality gate runs these by
 # name — it never assumes a command string. A value of `null` means "this
 # project has no such stage"; the gate reports it as not-run rather than failing.
+#
+# `test` runs BOTH vitest projects — `unit` in jsdom and `browser` in real
+# Chromium — so the gate's test stage covers everything that can run. `test:unit`
+# exists for the fast inner loop and is deliberately not wired to any stage here:
+# a gate that runs the cheap half is a gate that measures the cheap half.
 npm_scripts:
   typecheck: "typecheck"
   lint: "lint"
@@ -83,7 +92,18 @@ npm_scripts:
   build: "build"
   build_tokens: "build:tokens"
   build_storybook: "build-storybook"
-  e2e: null              # this repository has no end-to-end stage yet
+  # The `e2e` KEY is the kit's; what it points at here is a browser-mode
+  # component suite, not an end-to-end suite. There is no application to drive
+  # end to end — the repository is a design system. What this stage buys is the
+  # thing jsdom cannot do: real layout, so `getBoundingClientRect()` returns
+  # measured pixels instead of zeroes, and axe-core's `color-contrast` rule
+  # actually runs. Both were stage-#8 blockers before this existed.
+  #
+  # It overlaps the `test` stage on purpose. `test` already runs this project, so
+  # naming it here is redundant to the run and NOT redundant to the report: with
+  # `null` the gate printed the browser stage as not-run, which read as "this
+  # project has no such capability" long after it had one.
+  e2e: "test:browser"
 
 # ----------------------------------------------------------------------------
 # 5. Required status checks
@@ -154,6 +174,10 @@ review:
 # ----------------------------------------------------------------------------
 # 8. Accessibility floor
 # ----------------------------------------------------------------------------
+# The automated scan is a direct axe-core harness run in the `browser` vitest
+# project — NOT @storybook/addon-a11y, which is configured `test: 'todo'` and
+# reports without failing. The reasoning, and what was rejected, is in the header
+# of src/a11y-test-utils.ts; it is not restated here.
 a11y:
   wcag_level: "AA"
   wcag_version: "2.2"
