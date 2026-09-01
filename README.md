@@ -117,6 +117,28 @@ cp -r ds-pipeline-kit/plugin/skills/. .claude/skills/
 cp ds-pipeline-kit/plugin/agents/ds-pipeline-orchestrator.md .claude/agents/
 ```
 
+### Deployed is not loaded, and loaded is not current
+
+The same failure has a runtime half. [docs/verify-pipeline-loaded.md](docs/verify-pipeline-loaded.md)
+is the procedure; these are the three things it exists to separate, each learned by being caught
+out by it.
+
+**A skill that loaded and a skill that was read off disk are indistinguishable in the output.** An
+agent asked to follow `SKILL.md` by path produces entirely plausible work. The only reliable
+discriminator is the `Base directory for this skill:` line the harness emits on invocation — it
+must be inside this repository, because a same-named skill from another project loads silently.
+
+**An agent that resolves is not an agent that can run a stage.** Every stage is a skill
+invocation, so a delegate without the `Skill` tool is present, addressable by name, and unable to
+do anything. Ask it to enumerate its own tool schema rather than reading its definition file.
+
+**Agent definitions are read at session start; `.claude/settings.json` is re-read live.** Both were
+observed in one session: a hook fix pulled mid-run took effect immediately, while a fix adding the
+`Skill` tool to the delegates sat on disk with the old roster still in memory and nothing
+signalling the disagreement. `tools/check-agents-exist.sh` reads the disk, so it passed throughout.
+An agent-definition change needs a session restart. Whether skills reload live is not established —
+one surface refreshes and one does not, so do not assume a third.
+
 ## The shape of the process
 
 ```
@@ -186,7 +208,7 @@ npm run storybook        # http://localhost:6006
 |---|---|
 | `npm run build:tokens` | Style Dictionary → `generated/{tokens.css,tokens.ts,tailwind-theme.css}` |
 | `npm run typecheck` | `tsc --noEmit` |
-| `npm run lint` | ESLint over `src/` |
+| `npm run lint` | ESLint over `src/`, `prototypes/` and `component-prototypes/` |
 | `npm test` | Vitest |
 | `npm run build-storybook` | Static Storybook into `storybook-static/` |
 
@@ -211,6 +233,20 @@ enough: Tailwind ships a full palette of its own, so `bg-red-500`, `text-neutral
 Tailwind for real and asserts both halves — reading the theme file was exactly what said
 everything was fine.
 
+**Colour is the only namespace where both halves are done.** `src/styles.css` resets `--color-*`
+and nothing else, and the token build publishes colour, type, radius, shadow and spacing to
+Tailwind — but not motion. So `tokens.css` defines ten `--ds-motion-*` properties that reach no
+utility, while Tailwind's own `duration-*` and `ease-*` survive the reset and compile. The
+collision is worse than a plain gap: `duration-150` is `150ms`, byte-identical to
+`--ds-motion-duration-normal`, and `ease-out` is `cubic-bezier(0, 0, 0.2, 1)`, byte-identical to
+`--ds-motion-easing-ease-out`. Writing `transition-all duration-150 ease-out` therefore renders
+*exactly right* through a channel that bypasses the token layer entirely, and no test says
+otherwise. Verify a utility by compiling, never by grepping `generated/tailwind-theme.css`.
+
+A guard for this has to scan component source, not build output. Tailwind v4 scans tracked
+Markdown, so a document warning against those three classes emits them into the compiled
+stylesheet — the prose forbidding them would defeat the check looking for them.
+
 Three traps worth knowing before you add a token:
 
 - **`-bold` means different things on different roles.** On a foreground role it means *darker
@@ -222,6 +258,13 @@ Three traps worth knowing before you add a token:
   `surface-accent-red-subtlest` is **3.12:1**; only the `-boldest` step passes. The pairing that
   reads as obviously correct is the wrong one, so both directions are asserted in
   `src/tokens.test.ts` — the passing pairs *and* the tempting ones that fail.
+- **`default` is the lighter weight in the type scale.** `--ds-font-body-sm-default` is weight
+  **300** and `--ds-font-body-sm-moderate` is **400**. Binding a label to `moderate` and its
+  subordinate text to `default` inverts the hierarchy while looking correct in a diff.
+- **Which page surface a component lands on can decide AA.** `fg-subtlest` measures 4.73:1 on
+  white and **4.49:1** on `surface-page` — passing and failing across the two surfaces this
+  palette ships. A component that does not choose its own background cannot bind it. The pair is
+  in neither list in `src/tokens.test.ts`, so this one is documented and not yet asserted.
 
 The build refuses to guess: an unclassified token group, or two tokens publishing the same
 Tailwind variable, each stop the build with a message naming them.
