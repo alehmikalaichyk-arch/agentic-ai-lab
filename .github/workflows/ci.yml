@@ -49,6 +49,25 @@ jobs:
       - name: every configured key actually parses
         run: bash tools/check-config-readable.sh
 
+      # This repository is public and on a personal account. Token descriptions were
+      # copied verbatim from the system these tokens were adapted from, and carried
+      # internal decisions, ticket ids and a person's name — inside prose that reads
+      # like ordinary documentation, which is why nothing noticed.
+      # The patterns cannot live in the repository — a check that lists the brand it
+      # forbids publishes that brand. They cannot be absent either: the step then
+      # reads nothing and goes green, which is how this shipped for one commit. So
+      # they come from a secret, written to the gitignored path the script reads,
+      # and the script fails rather than skips when CI is set and the file is
+      # missing or empty.
+      - name: no identifiers from the source organisation
+        env:
+          SOURCE_IDENTIFIERS: ${{ secrets.SOURCE_IDENTIFIERS }}
+        run: |
+          if [ -n "$SOURCE_IDENTIFIERS" ]; then
+            printf '%s\n' "$SOURCE_IDENTIFIERS" > .identifiers
+          fi
+          bash tools/check-no-source-identifiers.sh
+
       - run: npm run build:tokens
       - run: npm run typecheck
       - run: npm run lint

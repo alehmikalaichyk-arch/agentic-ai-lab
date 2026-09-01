@@ -129,7 +129,12 @@ After the spec is written, the draft is rendered, and both are reviewed locally:
   and nothing else. The draft does not change the PR's `SPEC_ONLY` classification.
 - PR title: `spec(<component>): component spec — PR-1`
 - PR body carries the `## Visual` and `## Draft reuse` sections required by the rule.
-- The agent reports the PR URL to you.
+- Before reporting, the agent starts a local Storybook and resolves the draft's exact
+  story URL from the running server's index — never composed from the title, since a
+  guessed id loads the shell and shows nothing.
+- The agent reports **two** links: the pull request, and the draft's story. It states
+  that the draft link is local and stops with the session, and attaches screenshots as
+  the record that outlives it.
 
 **→ HARD STOP. Do not proceed to stage #5 until the human spec-merge checkpoint passes.**
 
