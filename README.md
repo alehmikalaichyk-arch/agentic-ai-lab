@@ -49,6 +49,21 @@ Two pull requests. One mandatory human checkpoint between the decision and the c
 branch*, so a spec added in the same pull request as the implementation does not satisfy it. That
 single property is what makes PR-1 a real checkpoint instead of a convention.
 
+**Two honest caveats, stated because a demonstration that hides them is a sales pitch.**
+
+Branch protection here runs with `enforce_admins` **off** — the kit's runbook recommends starting
+that way, since turning it on before the gates have proven themselves is a fast way to freeze a
+repository. The consequence is real: a repository administrator's `git push` straight to `main`
+**succeeds**, with GitHub printing the required-checks notice and pushing anyway. On a
+one-person repository the process is therefore voluntary for that one person. It has already
+happened once here, and the commit was kept rather than rewritten — see the history.
+
+And `review-approved` needs an approving review from someone who is not the author. With a single
+contributor there is nobody to give it, so pull requests here are merged with an administrator
+override. That is a scaffolding-phase exception, not the intended flow: the moment a second
+reviewer exists — a person or an automated one with repository access — the override stops being
+needed.
+
 ## The published Storybook
 
 **https://alehmikalaichyk-arch.github.io/agentic-ai-lab/**

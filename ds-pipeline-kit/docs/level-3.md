@@ -54,6 +54,14 @@ Worth stating, because "we have CI gates" is where teams stop reading.
 
 - **Nothing, until branch protection is applied.** Until then the gates report a red X and the
   Merge button still works. A failing check that does not block is a notification.
+- **Nothing against a repository administrator, until you turn that on.** The runbook has
+  `enforce_admins` off deliberately — turning it on before the gates have proven themselves is
+  the second-most-common way to freeze a repository. The consequence, though, is that an admin's
+  `git push` to the protected branch **succeeds silently**: GitHub prints the required-checks
+  notice and pushes anyway. On a one-person repository that means the process is voluntary for
+  the one person, which is worth knowing before demonstrating it to anyone. Turn it on once the
+  gates have blocked a real pull request — and note that with `review-approved` required and no
+  second reviewer, nothing can then be merged at all until one exists.
 - **Quality.** These gates decide the *shape* of a pull request — how many components, which
   file classes together, what exists on base. They never run your build, your tests, or your
   linter. Wire those separately; the quality gate skill (#8) describes what to aggregate.
