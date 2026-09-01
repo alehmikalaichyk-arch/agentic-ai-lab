@@ -19,7 +19,27 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CFG="${DS_KIT_CONFIG:-${SCRIPT_DIR}/../../ds-kit.config.yml}"
+# Locate ds-kit.config.yml. The two-levels-up form is correct inside the kit
+# (repo-enforcement/scripts/) and wrong in every repository the kit is installed
+# into, where INSTALL.md puts this file at <repo>/scripts/ — two levels up from
+# there is outside the repository. Searched in order: $DS_KIT_CONFIG, the git
+# repository root, then one and two levels up.
+_find_kit_config() {
+  local candidate
+  if [ -n "${DS_KIT_CONFIG:-}" ]; then printf '%s' "$DS_KIT_CONFIG"; return 0; fi
+  if candidate="$(git rev-parse --show-toplevel 2>/dev/null)/ds-kit.config.yml" && [ -f "$candidate" ]; then
+    printf '%s' "$candidate"; return 0
+  fi
+  for candidate in "${SCRIPT_DIR}/../ds-kit.config.yml" "${SCRIPT_DIR}/../../ds-kit.config.yml"; do
+    [ -f "$candidate" ] && { printf '%s' "$candidate"; return 0; }
+  done
+  return 1
+}
+CFG="$(_find_kit_config || true)"
+if [ ! -f "$CFG" ]; then
+  echo "ds-kit.config.yml not found. Looked for \$DS_KIT_CONFIG, the repository root, then one and two directories above ${SCRIPT_DIR}. Without it this script cannot resolve the branch name or the required check names — and applying protection with the wrong check names produces a repository where every pull request is permanently pending." >&2
+  exit 1
+fi
 
 REPO=""
 APPLY=0
