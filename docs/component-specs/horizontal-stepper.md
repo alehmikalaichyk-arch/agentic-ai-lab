@@ -2,7 +2,7 @@
 component: HorizontalStepper
 spec_version: v1
 spec_schema_version: 1
-lifecycle: draft
+lifecycle: freeze_candidate
 change_type: new_component
 archetype: status-like
 archetype_secondary: navigation-like
@@ -15,14 +15,17 @@ requirements_brief: docs/component-requirements/horizontal-stepper.md
 > is frozen by being merged to the main branch. `freeze_candidate` is a ceiling the spec must
 > *earn* by passing every gate below — not a value assigned to satisfy an instruction.
 
-> **This spec is `draft`, deliberately, and it is still the right thing to put in PR-1.** Two
-> decisions it needs belong to this repository's Governance Owner and to nobody else — see
-> **Freeze blockers**. They are not gaps the author can close by writing more; writing them
-> anyway is how another organisation's judgement gets laundered into this one. Every
-> `freeze_requirements` flag below is `true`; the lifecycle is held at `draft` by the two
-> blockers alone, per `component-spec-writer` §8. When the owner answers them at PR-1, the
-> answers land in this file and the lifecycle advances to `freeze_candidate` in the same pull
-> request, before the merge that freezes it.
+> **This spec is `freeze_candidate`, and that is as far as it goes.** It was held at `draft`
+> through authoring and the visual draft, because two decisions it needed belonged to this
+> repository's Governance Owner and to nobody else — writing them anyway is how another
+> organisation's judgement gets laundered into this one. **Both were decided on 2026-09-01**, the
+> brief's own blocking decisions were resolved with them, and every §8 gate now passes: all ten
+> `freeze_requirements` flags `true`, every contradiction resolved, no open questions, no freeze
+> blockers. The decisions and the alternatives they chose between are kept below under
+> **Decisions taken at the freeze**, not deleted — a resolved decision that discards its options
+> cannot be reviewed later, only re-litigated.
+>
+> What remains is not this document's to do: a human merging PR-1 is what makes this spec frozen.
 
 ## Provenance — what this spec is made of, and what it refused
 
@@ -40,12 +43,16 @@ documents rests on **that system's** owner, on a precedent component in that sys
 reference screen in that system, it does not transfer, because none of the three exists here. D1
 lists what survived that filter.
 
-**Two conditions of `component-spec-writer` are not met by the brief, and neither is hidden.** §7
-requires a brief in `ready-for-spec-authoring`; this one reads `status: draft`. §8c states that a
-brief carrying a *blocking* open decision is not consumable at all; this one carries two. The spec
-was authored against it under explicit instruction, and the consequence is recorded rather than
-absorbed: both are freeze blockers below, and the brief's promotion is a precondition of the freeze
-in exactly the same way the owner's two answers are.
+**Two conditions of `component-spec-writer` were not met by the brief while this spec was authored,
+and neither was hidden.** §7 requires a brief in `ready-for-spec-authoring`; it read
+`status: draft`. §8c states that a brief carrying a *blocking* open decision is not consumable at
+all; it carried two. The spec was authored against it under explicit instruction, and the gap was
+recorded as a freeze blocker (FB-3) rather than absorbed.
+
+**Both conditions are now met**, verified on the brief's own branch rather than taken on report: it
+reads `status: ready-for-spec-authoring`, and its `OD-001` and `OD-002` are both marked *(Resolved.)*
+and dated 2026-09-01. The precondition that made FB-3 a blocker is satisfied by fact, not by
+decision — which is why it is recorded below as resolved by fact.
 
 ---
 
@@ -71,7 +78,11 @@ Governance §12 lists six boundary pairs and none of them reaches a stepper; of 
 does name, only Badge exists in this repository, and only as a spec. Three of the four rows above
 are therefore drawn against components that are **not present** — they describe the shape of a
 future collision rather than reconciling a real one. Governance §15 classes "new component boundary
-overlap" as Requires-Review for precisely this situation; it is folded into **OD-001**.
+overlap" as Requires-Review for precisely this situation; it was folded into FB-1 and **approved on
+that footing** — the Governance Owner granted option 1 on 2026-09-01, which is the option that
+accepts a boundary recorded in the abstract and fills it in when a neighbour ships. Governance §12
+was deliberately **not** amended (option 2 was available and not taken), so it still contains no
+stepper pair. Adding one is future work for whoever ships the first neighbour.
 
 **One honest qualification, from the visual draft.** Rendered, the strip's rhythm reads as
 **progress** first and **position** second: the eye takes the contiguous dark run of completed
@@ -88,9 +99,9 @@ Three things follow, and the first is the one not to skip:
   in two weights will read as a fill; that is what makes the form legible at a glance and it is the
   same property that makes it look like progress. A component that avoided it would be a different
   anatomy, which CR-016 forbids.
-- **It is worse under FB-2's option B**, and that is where it bears on a live decision — see the
-  whole-strip percentage reading recorded there. The observation therefore argues *for* CR-007 as
-  written, not against this component's existence.
+- **It would have been worse under FB-2's option B** — see the whole-strip percentage reading
+  recorded there. The observation argued *for* CR-007 as written, not against this component's
+  existence, and CR-007 as written is what the owner chose on 2026-09-01.
 
 HorizontalStepper is **inert**: nothing focusable, nothing clickable, no interactive state, and no
 prop that enables interaction later. Governance §6.2 names steppers in the inert set by name, so
@@ -122,7 +133,7 @@ Everything else was re-derived or dropped. Dropped, with the reason:
 | The 44px fixed root height and its bottom-alignment mechanism | An owner decision of theirs, dated 2026-08-31. D6 derives a height instead of asserting one. |
 | The `textSize` prop | Same owner, same date; no `CR` asks for it. D7. |
 | The `textInset` prop | Exists for a full-bleed reference screen that does not exist here. D7. |
-| The half-filled current segment — the source specification's decision to fill the current segment exactly half way, as a constant marker of position | That system's owner overrode their CR-007 to permit it. Ours has not. **OD-002.** |
+| The half-filled current segment — the source specification's decision to fill the current segment exactly half way, as a constant marker of position | That system's owner overrode their CR-007 to permit it. Ours **declined** it on 2026-09-01: CR-007 stands as written. FB-2. |
 | `motion.duration-normal` on the fill transition | Not expressible from this repository's token layer. D10, measured. |
 | `fg.subtlest` on the separator | 4.49:1 on `surface-page` here. D12, measured. |
 | The machine-readable `contract:` block | No schema document exists in this repository to write it against. D11. |
@@ -137,8 +148,11 @@ because the set it ranges over is empty: `src/components/ui/` contains only `.gi
 a stable API", which is a claim about the future in a repository with **zero** call sites.
 
 The strategy decision is this skill's to make (`component-spec-writer` §1) and it is made: **new
-component**. The §15 *approval* for it is not this skill's and is not the source system's governance owner's —
-it is **OD-001**, and it is a freeze blocker.
+component**. The §15 *approval* for it is not this skill's and is not the source system's governance
+owner's — it was FB-1, and it was **granted on 2026-09-01 by this repository's Governance Owner**,
+on both grounds, taking option 1: the boundary is recorded in the abstract, to be filled in when a
+neighbour ships. The weakness of the decision-tree grounds is not retracted by that approval — it is
+what the approval was granted in spite of, and it stays on the record above.
 
 ### D3 — Fully inert, and the two safeguards governance §6.2 actually requires
 
@@ -185,7 +199,9 @@ together those two sentences select the scheme: **one segment, one solid tone, t
 No segment is ever partly filled; no segment is a bare outline; every segment is the same width and
 the same height (CR-002, CR-016).
 
-**This is where OD-002 has a price, and the price is measurable.** The source system's scheme carries
+**This is where CR-007 has a price, and the price is measurable.** It was the substance of FB-2, and
+the owner **accepted this price on 2026-09-01** in declining the alternative. It is kept in full,
+because the cost of a decision is the part most worth being able to re-read. The source system's scheme carries
 the state distinction in fill *extent* — full, half, none — on one fill colour against a track. Bound
 to the tokens **this** spec names, that pair is `surface-accent-grey-boldest` against
 `surface-neutral-boldest`, and it measures **7.55:1**.
@@ -193,11 +209,14 @@ to the tokens **this** spec names, that pair is `surface-accent-grey-boldest` ag
 > **This figure read 10.12:1 until the visual draft, and 10.12:1 was wrong here.** It is the source
 > system's own measurement, taken against `surface-neutral-bold` `#e4e6ed` — a track token this spec
 > **rejects** in the table below, for an unrelated reason. Quoting it imported a number measured
-> against a token this document does not use, into the one table the owner decides FB-2 from. That is
+> against a token this document does not use, into the one table the owner decided FB-2 from. That is
 > exactly the transcription failure D1 exists to prevent, committed inside the section that costs the
 > decision. Corrected in all three places it appeared, and recorded rather than silently overwritten.
-> One consequence stays open and is stated in FB-2: under the extent scheme the track token is a
-> fresh choice, so 7.55:1 is the figure *with this spec's current faint tone*, not a floor.
+> **The correction landed before the decision, which is the only reason it matters**: the owner
+> declined the alternative on 2026-09-01 against 7.55:1, not against the 10.12:1 that was never this
+> repository's number. One caveat stated at the time and now moot: under the extent scheme the track
+> token would have been a fresh choice, so 7.55:1 was the figure *with this spec's faint tone*, not a
+> floor. The extent scheme was not adopted, so no track token is owed.
 
 A tone scheme has to find its distinction inside a grey ramp instead, and this palette's resting
 greys are not spaced for it:
@@ -223,12 +242,17 @@ Three things follow, and all three are stated rather than one of them being quie
   decorative by construction (A11Y-002). This is the same argument `badge.md` makes for its `dot`.
 - **It is still a real weakness of the scheme, and it is escalated**, non-blocking, to
   `ds-governance` (#2) as a palette gap: the resting grey ramp has no mid step.
-- **Resolving OD-002 toward the source system's override removes the weakness entirely** — the
-  distinction becomes extent at **7.55:1** rather than tone at 2.67:1, and stops resting on tone at
-  all. That is a quantified input to the owner's decision that neither input document contains, and
-  it is the reason this spec measured the alternative instead of merely recording that one exists.
-  What the ratio cannot show is that the two schemes degrade differently as segments narrow — see
-  FB-2, which is where that evidence lands.
+- **Resolving FB-2 toward the source system's override would have removed the weakness entirely** —
+  the distinction would become extent at **7.55:1** rather than tone at 2.67:1, and would stop
+  resting on tone at all. That was a quantified input to the owner's decision that neither input
+  document contains, and it is the reason this spec measured the alternative instead of merely
+  recording that one exists. What the ratio cannot show is that the two schemes degrade differently
+  as segments narrow — see FB-2, which is where that evidence lands.
+
+  **The owner declined it on 2026-09-01 and accepted the 2.67:1 scheme**, with this measurement in
+  front of them. The weakness above is therefore a known, accepted property of the shipped
+  component — not an unresolved finding, and not an invitation to re-open the decision at review.
+  The escalation in the bullet above is the route by which it improves.
 
 **Rejected, with reasons:**
 
@@ -626,8 +650,10 @@ props of the component, and they differ only in tone (D4, D5).
 | current | index === `current` | `surface-accent-grey-boldest` |
 | upcoming | index > `current` | `surface-neutral-boldest` |
 
-**No segment is ever partly filled** (CR-007, and OD-002 — the one place the two input documents
-contradict each other).
+**No segment is ever partly filled** (CR-007). This was the one place the two input documents
+contradicted each other; the Governance Owner settled it on 2026-09-01 in favour of CR-007 as
+written (FB-2). No prop, no input and no internal state may make a segment's fill anything other
+than whole or absent.
 
 **The component itself has no states.** No hover, focus, active, pressed, selected, disabled,
 loading or error. A hover style would promise an affordance the component does not have — the same
@@ -871,7 +897,7 @@ reaches for a behavioural primitive.
 |---|---|
 | segment count | Renders exactly `total` segments, checked at 2, 4 and 6. |
 | tone distribution | At `current = 3` of `4`: two completed, one current, one upcoming — asserted by the bound token classes. |
-| no partial fill | No segment carries a width other than the shared equal width; nothing renders a nested fill element. This is CR-007 made mechanical, and it is the test that must be rewritten first if OD-002 resolves the other way. |
+| no partial fill | No segment carries a width other than the shared equal width; nothing renders a nested fill element. This is CR-007 made mechanical. FB-2 settled it in favour of CR-007 on 2026-09-01, so this facet is now a permanent assertion rather than a provisional one. |
 | first / final | Correct distribution at both ends; no rendering in which every segment is completed. |
 | token bindings | Each of the thirteen bindings under **Tokens** appears on the element the anatomy places it on. |
 | contrast pairs | `src/tokens.test.ts` gains `['fg-default', 'surface-page']` and `['fg-subtle', 'surface-page']` in `PAIRS`, and `['fg-subtlest', 'surface-page']` in `KNOWN_BELOW_AA`. |
@@ -962,7 +988,7 @@ visual draft at stage #4.5.
 | CR-004 | Accessibility contract (A11Y-007) | — |
 | CR-005 | Public API | — |
 | CR-006 | Content guidelines; Public API | — |
-| **CR-007** | **States; D4 — stands as written, and is contested by OD-002** | — |
+| **CR-007** | **States; D4 — stands as written; the contest recorded at FB-2 was decided in its favour, 2026-09-01** | — |
 | CR-008 | D3; Accessibility contract | — |
 | CR-009 | Placement; D13 | — |
 | CR-010 | Placement; Purpose and boundary | — |
@@ -1040,39 +1066,82 @@ This spec is additive. Nothing that ships today changes when it merges.
 - [x] edge cases complete
 - [x] boundary contract complete (drawn without local precedent — see Purpose and boundary)
 - [x] acceptance criteria complete
-- [ ] **freeze blockers empty** — two remain, below
+- [x] **freeze blockers empty** — all three resolved on 2026-09-01, recorded below
 
-Every authoring gate passes. The spec is held at `draft` by the blockers alone, which is the state
-`component-spec-writer` §8 requires: a spec may not advance to `freeze_candidate` while any freeze
-blocker stands, regardless of how complete it is.
+Every gate passes, so the spec stands at `freeze_candidate`. It is not `frozen` and this document
+cannot make it so: a spec is frozen by being present on `origin/main`, and the merge of PR-1 is the
+act. `freeze_candidate` is the ceiling `component-spec-writer` §3 permits any author, human or
+agent, to write.
 
-### Freeze blockers
+### Decisions taken at the freeze
 
-**FB-1 — OD-001: the governance §15 Requires-Review approval has not been granted *here*.**
-Two grounds apply: "new component" (decision tree §7) and "new component boundary overlap" (§12).
-The source documents record both being granted — by **that system's** governance owner, on 2026-08-31.
-That approval does not transfer, and the boundary question is harder here than it was there:
-governance §12 contains no stepper pair, and of the components a boundary would be drawn against,
-only Badge exists. This repository's Governance Owner (§17, *Design System Maintainer*) must grant
-or decline. The options the brief sets out, unchanged:
+All three blockers that held this spec at `draft` are resolved. **The options each decision chose
+between are kept in full**, along with the arguments that framed them: a resolved decision that
+deletes its alternatives cannot be reviewed later, only re-litigated. What changed is the verdict
+line, not the reasoning above it.
+
+**FB-1 — OD-001: the governance §15 Requires-Review approval.**
+Two grounds applied: "new component" (decision tree §7) and "new component boundary overlap" (§12).
+The source documents record both being granted — by **that system's** governance owner, on
+2026-08-31. **That approval did not transfer**, and it is important that this stays on the record:
+the objection was never that no approval existed, only that it belonged to someone else. The
+boundary question was also harder here than it was there — governance §12 contains no stepper pair,
+and of the components a boundary would be drawn against, only Badge exists. The options the brief
+set out:
 
 1. approve the new component and record its boundary in the abstract, to be filled in when a
-   neighbour ships — **this spec is written for this option**, and its boundary contract says so;
+   neighbour ships — **this spec was written for this option**, and its boundary contract says so;
 2. approve it and add the stepper pair to governance §12 first;
 3. decline, on the grounds that a component with zero in-tree consumers has not yet demonstrated
    the "reusable pattern with a stable API" that decision-tree step 4 requires.
 
-**FB-2 — OD-002: whether a segment may be drawn partly filled.**
-The two input documents contradict each other, and this repository's owner has not chosen. The
-brief's CR-007 forbids a partly-filled segment. The source specification fills the current segment
-exactly half way and records **its** owner overriding **its** CR-007 on 2026-08-31, reasoning that a
-constant half is a marker of position rather than a report of progress. That override belongs to
-someone else.
+> **RESOLVED — GRANTED, option 1.** Decided 2026-09-01 by this repository's Governance Owner (§17,
+> *Design System Maintainer*). Both grounds approved together: new component, and new component
+> boundary overlap. The boundary stands **recorded in the abstract** — three of its four rows are
+> drawn against components that do not exist here, and they are to be filled in when a neighbour
+> ships. The spec's boundary contract needs no change, because it was written for this option and
+> says so. Option 2 was not taken, so governance §12 still contains no stepper pair; that remains
+> true of this repository until someone adds one.
 
-**What this spec does in the interim:** CR-007 stands as written. D4 and D5 specify a three-tone
-scheme with no partial fill, and the required test facets assert it. The spec is authored on that
-basis so the owner is choosing between two *specified* components rather than between a
-specification and a sketch.
+**FB-2 — OD-002: whether a segment may be drawn partly filled.**
+The two input documents contradicted each other. The brief's CR-007 forbids a partly-filled segment.
+The source specification fills the current segment exactly half way and records **its** owner
+overriding **its** CR-007 on 2026-08-31, reasoning that a constant half is a marker of position
+rather than a report of progress. That override belonged to someone else.
+
+**What this spec did in the interim:** CR-007 stood as written. D4 and D5 specify a three-tone
+scheme with no partial fill, and the required test facets assert it. The spec was authored on that
+basis so the owner chose between two *specified* components rather than between a specification and
+a sketch.
+
+> **RESOLVED — DECLINED. CR-007 stands as written; option A.** Decided 2026-09-01 by this
+> repository's Governance Owner. Three solid tones; the source system's override is **not** adopted
+> here. No segment is ever drawn partly filled, and no prop, input or internal state may make one so.
+>
+> **The cost the owner accepted, stated as accepted and not re-argued.** The state distinction now
+> rests on **adjacent tones at 2.67:1** rather than on **extent at 7.55:1**, and it degrades as
+> segments narrow: at roughly 25px segments — 256px across eight steps — the current segment has to
+> be hunted for, which the visual draft measured. Neither adjacent tone pair clears SC 1.4.11's 3:1,
+> and this palette cannot supply one that does (D4). **This is an accepted trade, not an oversight
+> and not a defect to be re-opened at review.** The three non-blocking escalations that describe the
+> underlying palette gap stand unchanged, and they are the route by which this improves — not a
+> second attempt at the decision.
+>
+> What made the trade acceptable is on the record too: the position is carried by text at all times
+> (CR-001, CR-004), the indicator is `aria-hidden` decoration, the three tones differ in *lightness*
+> so the ordering survives colour-vision deficiency and greyscale, and option B would have turned the
+> whole strip into a percentage — `[full, full, full, half]` reading as 87.5 % full — which is what
+> CR-007 exists to prevent.
+
+**FB-3 — the brief's promotion. Resolved by fact, not by decision.**
+`component-spec-writer` §7 requires a brief in `ready-for-spec-authoring`, and §8c holds that a
+brief carrying a blocking open decision is not consumable at all. The brief read `status: draft`
+and carried two blocking decisions while this spec was authored.
+
+> **RESOLVED.** Verified on the brief's own branch rather than taken on report: it now reads
+> `status: ready-for-spec-authoring`, and its `OD-001` and `OD-002` are both marked *(Resolved.)*,
+> dated 2026-09-01. This blocker needed no decision of its own — it cleared when FB-1 and FB-2 were
+> answered, exactly as it said it would.
 
 **What the choice costs, measured — this is new, and it is why the blocker is worth the wait:**
 
@@ -1127,7 +1196,7 @@ spec_status:
   component: HorizontalStepper
   spec_version: v1
   spec_schema_version: 1
-  lifecycle: draft            # held here by freeze_blockers, not by an incomplete section
+  lifecycle: freeze_candidate # the ceiling any author may write; `frozen` is what merging makes true
   change_type: new_component
   archetype: status-like
   archetype_secondary: navigation-like
@@ -1151,7 +1220,7 @@ spec_status:
       - "the label truncates, where badge.md's label deliberately does not — CR-012 requires the label to yield space first; badge's rule follows from its Tag boundary, which does not apply here"
       - "three props (current, total, label), where the source specification has five — textSize and textInset are that owner's decisions and no CR asks for them (D7)"
       - "height derived from type + gap + track, where the source specification pins 44px on the root and bottom-aligns to absorb a textSize change (D6)"
-      - "three solid tones, where the source specification uses one fill colour at three extents — CR-007 stands as written here (D4, and FB-2)"
+      - "three solid tones, where the source specification uses one fill colour at three extents — CR-007 stands as written here; confirmed by the Governance Owner on 2026-09-01 (D4, and FB-2)"
       - "the current segment is the strongest tone, where the source specification makes 'done' the strongest — rejected on the first-step rendering (D5)"
       - "separator binds fg-subtle, where the source specification binds fg.subtlest — 4.49:1 on surface-page here (D12)"
       - "type is sm and there is no size axis, where the source specification defaults to md with a textSize prop — CR-015, and no axis to hang md on (D8)"
@@ -1201,11 +1270,14 @@ contradictions:
       a constant half as a marker of position; the brief carries CR-007 as written. The two input
       documents contradict each other.
     resolution: >
-      Not resolved by this skill, because it is not this skill's to resolve — it is a decision
-      reserved to this repository's Governance Owner. The spec is authored on CR-007 as written,
-      the alternative is specified and costed under FB-2, and the contradiction is carried as a
-      freeze blocker rather than closed by an author's preference.
-    status: open
+      Decided 2026-09-01 by this repository's Governance Owner: DECLINED — CR-007 stands as
+      written, three solid tones, the source system's override not adopted. Not resolved by this
+      skill, deliberately, because it was never this skill's to resolve; it was carried as a
+      freeze blocker with both options specified and costed until the owner answered. The accepted
+      cost is recorded verbatim under FB-2: the state distinction rests on adjacent tones at
+      2.67:1 rather than extent at 7.55:1, and degrades at roughly 25px segments. An accepted
+      trade, not an oversight.
+    status: resolved
   - id: c3
     description: >
       CR-004 requires the position to survive poor colour discrimination, while the three-tone
@@ -1320,24 +1392,25 @@ open_questions: []
   # RESOLVED in D10 rather than left open: the repository's token layer cannot express an
   # animation, so the answer is forced. The two escalations below replace it.
 
-freeze_blockers:
-  - >
-    FB-1 / OD-001 — the governance §15 Requires-Review approval for a new component AND for a new
-    component boundary overlap has not been granted by THIS repository's Governance Owner. The
-    approval recorded in the source documents was granted by a different design system's owner on
-    2026-08-31 and does not transfer.
-  - >
-    FB-2 / OD-002 — whether a segment may be drawn partly filled is undecided. The brief's CR-007
-    forbids it; the source specification overrides that requirement on another owner's
-    authority. The spec is authored on CR-007 as written and the alternative is specified and
-    costed, but the disputed sentence IS the requirement, so the segment's appearance cannot be
-    frozen while it stands.
-  - >
-    Precondition, not a decision — the Component Requirements Brief at
-    docs/component-requirements/horizontal-stepper.md reads `status: draft`.
-    component-spec-writer §7 requires `ready-for-spec-authoring`, and §8c states that a brief
-    carrying a blocking open decision is not consumable at all. Both conditions clear together
-    when the owner answers FB-1 and FB-2 and the brief is promoted.
+freeze_blockers: []
+  # All three resolved 2026-09-01. Kept in prose under "Decisions taken at the freeze" with the
+  # options each chose between, rather than deleted:
+  #   FB-1 / OD-001 — governance §15 Requires-Review, both grounds (new component; new component
+  #     boundary overlap). GRANTED, option 1, by this repository's Governance Owner. The boundary
+  #     stands recorded in the abstract, to be filled in when a neighbour ships. The source
+  #     system's 2026-08-31 approval remains non-transferable — that objection was about whose
+  #     approval it was, never about whether one existed.
+  #   FB-2 / OD-002 — partial fill. DECLINED; CR-007 stands as written, option A, three solid
+  #     tones. Accepted cost, recorded and not softened: the state distinction rests on adjacent
+  #     tones at 2.67:1 rather than extent at 7.55:1, and degrades at roughly 25px segments.
+  #   FB-3 — the brief's promotion. Resolved by fact: verified on its own branch to read
+  #     status: ready-for-spec-authoring with OD-001 and OD-002 both marked Resolved, 2026-09-01.
+
+  # No `decision_log:` key is added here, and the omission is deliberate. `component-spec-writer`
+  # §9 fixes this block's structure; a new sibling key is an invented field with no schema behind
+  # it and no consumer, which is the same objection D11 makes to writing a `contract:` block this
+  # repository has no schema document for. The decisions live in prose, where a reviewer reads
+  # them, and in the comment above, where a grep finds them.
 
 escalations:
   - target: ds-governance
