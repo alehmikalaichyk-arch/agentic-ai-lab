@@ -46,9 +46,27 @@ for key in implementer gate; do
     echo "::error::$CFG sets agents.$key = '$name', and no file in $AGENT_DIR declares that name."
     echo "           Available: $(for f in "$AGENT_DIR"/*.md; do awk '/^name:/{printf "%s ", $2; exit}' "$f"; done)"
     fail=1
-  else
-    echo "agents.$key = '$name' -> $found"
+    continue
   fi
+
+  # Existing is not the same as being able to do the job. Both delegates run pipeline
+  # STAGES, and a stage is a skill invocation — so an agent without the `Skill` tool
+  # is present, resolvable, and unable to run a single stage. That failure surfaces
+  # only when the orchestrator has already delegated, mid-run, as a question about
+  # how to proceed rather than as a broken configuration.
+  #
+  # Found exactly that way: both agents shipped without it, and the run stopped at
+  # stage #1.
+  tools_line=$(grep -m1 '^tools:' "$found" || true)
+  case "$tools_line" in
+    *Skill*) echo "agents.$key = '$name' -> $found (can run skills)" ;;
+    *)
+      echo "::error::agents.$key = '$name' ($found) has no 'Skill' tool, so it cannot run a pipeline stage."
+      echo "           Its tools line is: ${tools_line:-<absent>}"
+      echo "           Every stage is a skill invocation. Add Skill to that line."
+      fail=1
+      ;;
+  esac
 done
 
 exit "$fail"

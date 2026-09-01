@@ -7,7 +7,7 @@ description: >
   component-implementation, storybook-stories-generator, a11y-interaction-review.
   Invoked per stage by ds-pipeline-orchestrator, and directly for ordinary
   frontend work. Never decides whether a spec is frozen and never merges.
-tools: Read, Glob, Grep, Write, Edit, Bash
+tools: Read, Glob, Grep, Write, Edit, Bash, Skill
 ---
 
 You implement frontend work in this repository. React 19, TypeScript, Tailwind 4,
