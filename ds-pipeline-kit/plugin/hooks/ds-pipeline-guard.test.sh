@@ -32,6 +32,32 @@ fi
 SESSION_FILE=$(mktemp /tmp/ds-pipeline-session-selftest.XXXXXX)   # /tmp literal: the guard's comparison root is fixed
 trap 'rm -f "$SESSION_FILE"' EXIT
 
+# Branch isolation for tests that assert behaviour "on a non-protected branch".
+# Defined here rather than halfway down the file because five tests below said
+# "non-protected branch" in their NAME and then read whatever branch the checkout
+# happened to be on. Run the suite from a spec/* branch — which is exactly when the
+# guard matters most, during PR-1 — and those five failed. A precondition stated in a
+# test's name and not established in its body is not a precondition.
+FAKE_BRANCH_DIR=""
+make_fake_git() {
+  FAKE_BRANCH_DIR=$(mktemp -d)
+  cat > "$FAKE_BRANCH_DIR/git" <<FAKEGIT
+#!/bin/bash
+# an earlier change: skip a leading `-C <dir>` — the guard resolves git relative to the file.
+if [ "\$1" = "-C" ]; then shift 2; fi
+if [ "\$1" = "rev-parse" ] && [ "\$2" = "--abbrev-ref" ] && [ "\$3" = "HEAD" ]; then
+  echo "$1"
+  exit 0
+fi
+exec /usr/bin/git "\$@"
+FAKEGIT
+  chmod +x "$FAKE_BRANCH_DIR/git"
+}
+drop_fake_git() {
+  [ -n "$FAKE_BRANCH_DIR" ] && rm -rf "$FAKE_BRANCH_DIR"
+  FAKE_BRANCH_DIR=""
+}
+
 reset_session() {
   > "$SESSION_FILE"
 }
@@ -106,7 +132,9 @@ fi
 # ── Test 6: Component source write on a non-protected branch → allow (exit 0) ─
 # No prior spec write in session. Branch = feature/button-impl (not protected).
 reset_session
-actual=$(printf '{"tool": "Write", "file_path": "src/components/ui/button.tsx"}' | DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+make_fake_git "feature/button-impl"
+actual=$(printf '{"tool": "Write", "file_path": "src/components/ui/button.tsx"}' | PATH="$FAKE_BRANCH_DIR:$PATH" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+drop_fake_git
 actual="${actual##*$'\n'}"
 if [ "$actual" -eq 0 ]; then
   echo "PASS: Source write on non-protected branch, clean session → allow (exit 0)"
@@ -314,8 +342,10 @@ fi
 
 # ── Test 12: In-session source then spec for same component → block (exit 2) ──
 reset_session
-printf '{"tool": "Write", "file_path": "src/components/ui/slider.tsx"}' | DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null
-actual=$(printf '{"tool": "Write", "file_path": "docs/component-specs/slider.md"}' | DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+make_fake_git "feature/slider-impl"
+printf '{"tool": "Write", "file_path": "src/components/ui/slider.tsx"}' | PATH="$FAKE_BRANCH_DIR:$PATH" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null
+actual=$(printf '{"tool": "Write", "file_path": "docs/component-specs/slider.md"}' | PATH="$FAKE_BRANCH_DIR:$PATH" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+drop_fake_git
 actual="${actual##*$'\n'}"
 if [ "$actual" -eq 2 ]; then
   echo "PASS: In-session source→spec mixing (same component) → block (exit 2)"
@@ -328,9 +358,11 @@ fi
 # ── Test 13: In-session writes for DIFFERENT components → no cross-contamination
 reset_session
 # Write spec for "button"
-printf '{"tool": "Write", "file_path": "docs/component-specs/button.md"}' | DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null
+make_fake_git "feature/checkbox-impl"
+printf '{"tool": "Write", "file_path": "docs/component-specs/button.md"}' | PATH="$FAKE_BRANCH_DIR:$PATH" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null
 # Write source for "checkbox" (different component) → should be allowed
-actual=$(printf '{"tool": "Write", "file_path": "src/components/ui/checkbox.tsx"}' | DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+actual=$(printf '{"tool": "Write", "file_path": "src/components/ui/checkbox.tsx"}' | PATH="$FAKE_BRANCH_DIR:$PATH" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+drop_fake_git
 actual="${actual##*$'\n'}"
 if [ "$actual" -eq 0 ]; then
   echo "PASS: In-session spec for button + source for checkbox (different) → allow (exit 0)"
@@ -500,25 +532,6 @@ fi
 # research/ branch, turning a real regression into a green run or vice versa. This helper removes
 # that ambient dependency. (Unlike the inline fake-git blocks above it uses its own temp DIR, so
 # it never drops a `git` binary into the shared temp directory.)
-FAKE_BRANCH_DIR=""
-make_fake_git() {
-  FAKE_BRANCH_DIR=$(mktemp -d)
-  cat > "$FAKE_BRANCH_DIR/git" <<FAKEGIT
-#!/bin/bash
-# an earlier change: skip a leading `-C <dir>` — the guard resolves git relative to the file.
-if [ "\$1" = "-C" ]; then shift 2; fi
-if [ "\$1" = "rev-parse" ] && [ "\$2" = "--abbrev-ref" ] && [ "\$3" = "HEAD" ]; then
-  echo "$1"
-  exit 0
-fi
-exec /usr/bin/git "\$@"
-FAKEGIT
-  chmod +x "$FAKE_BRANCH_DIR/git"
-}
-drop_fake_git() {
-  [ -n "$FAKE_BRANCH_DIR" ] && rm -rf "$FAKE_BRANCH_DIR"
-  FAKE_BRANCH_DIR=""
-}
 
 # ── Test 18: Addendum write on a non-protected branch → allow (exit 0) ────────
 # The everyday retrofit PR-1 case, mirroring test 5 for a spec.
@@ -947,8 +960,10 @@ rm -f "$PARENT_BAIT"
 #    sanitiser would "pass" these tests by disabling session tracking altogether.
 UUID_SID="0123abcd-4567-89ef-0123-456789abcdef"
 rm -f "${TMPDIR:-/tmp}/ds-pipeline-session-${UUID_SID}"
+make_fake_git "feature/card-impl"
 printf '{"session_id": "%s", %s}' "$UUID_SID" "$SRC_PAYLOAD" \
-  | env -u DS_SESSION_FILE TMPDIR="${TMPDIR:-/tmp}" bash "$GUARD" >/dev/null 2>&1
+  | env -u DS_SESSION_FILE PATH="$FAKE_BRANCH_DIR:$PATH" TMPDIR="${TMPDIR:-/tmp}" bash "$GUARD" >/dev/null 2>&1
+drop_fake_git
 if grep -qxF "src:card" "${TMPDIR:-/tmp}/ds-pipeline-session-${UUID_SID}" 2>/dev/null; then
   echo "PASS: UUID session_id still records session state (sanitiser did not break tracking)"
   PASS_COUNT=$((PASS_COUNT + 1))
@@ -977,8 +992,10 @@ rm -f "$DERIVED_PATH"
 # report PASS without the symlink ever existing — the exact vacuous-green shape these tests exist
 # to catch in the guard.
 if ln -s "$PATH_SANDBOX/derived-symlink-victim" "$DERIVED_PATH" 2>/dev/null; then
+  make_fake_git "feature/card-impl"
   printf '{"session_id": "%s", %s}' "$DERIVED_SID" "$SRC_PAYLOAD" \
-    | env -u DS_SESSION_FILE TMPDIR="${TMPDIR:-/tmp}" bash "$GUARD" >/dev/null 2>&1
+    | env -u DS_SESSION_FILE PATH="$FAKE_BRANCH_DIR:$PATH" TMPDIR="${TMPDIR:-/tmp}" bash "$GUARD" >/dev/null 2>&1
+  drop_fake_git
   if [ -s "$PATH_SANDBOX/derived-symlink-victim" ]; then
     echo "FAIL: derived session path was a symlink — append followed it to $PATH_SANDBOX/derived-symlink-victim"
     FAIL_COUNT=$((FAIL_COUNT + 1))
@@ -1003,8 +1020,10 @@ rm -f "$DERIVED_PATH" "$PATH_SANDBOX/derived-symlink-victim"
 : > "$PATH_SANDBOX/derived-hardlink-victim"
 rm -f "$DERIVED_PATH"
 if ln "$PATH_SANDBOX/derived-hardlink-victim" "$DERIVED_PATH" 2>/dev/null; then
+  make_fake_git "feature/card-impl"
   printf '{"session_id": "%s", %s}' "$DERIVED_SID" "$SRC_PAYLOAD" \
-    | env -u DS_SESSION_FILE TMPDIR="${TMPDIR:-/tmp}" bash "$GUARD" >/dev/null 2>&1
+    | env -u DS_SESSION_FILE PATH="$FAKE_BRANCH_DIR:$PATH" TMPDIR="${TMPDIR:-/tmp}" bash "$GUARD" >/dev/null 2>&1
+  drop_fake_git
   if [ -s "$PATH_SANDBOX/derived-hardlink-victim" ]; then
     echo "FAIL: derived session path was a hard link — append wrote through to $PATH_SANDBOX/derived-hardlink-victim"
     FAIL_COUNT=$((FAIL_COUNT + 1))
