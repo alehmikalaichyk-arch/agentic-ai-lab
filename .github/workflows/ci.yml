@@ -43,6 +43,12 @@ jobs:
       - name: the prototype zone is still outside the gates
         run: bash tools/check-prototypes-are-ungated.sh
 
+      # A key that reads as empty makes every tool use its built-in default and say
+      # nothing. Cheaper to catch here than to discover from a plan that describes
+      # the opposite of what is configured.
+      - name: every configured key actually parses
+        run: bash tools/check-config-readable.sh
+
       - run: npm run build:tokens
       - run: npm run typecheck
       - run: npm run lint

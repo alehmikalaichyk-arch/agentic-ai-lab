@@ -64,6 +64,18 @@ C1=$(read_key spec_pr_separation);        C1="${C1:-enforce-spec-pr-separation}"
 C2=$(read_key one_component_per_pr);      C2="${C2:-enforce-one-component-per-pr}"
 C3=$(read_key document_on_base);          C3="${C3:-require-document-on-base}"
 C4=$(read_key review_approved);           C4="${C4:-review-approved}"
+REQUIRE_REVIEW=$(read_key require_review_to_merge); REQUIRE_REVIEW="${REQUIRE_REVIEW:-true}"
+
+# One decision, two consumers: the plan that gets read and the JSON that gets written.
+# Computing them separately is how a dry run comes to describe something other than
+# what --apply does.
+if [ "$REQUIRE_REVIEW" = "false" ]; then
+  CONTEXTS="\"$C1\", \"$C2\", \"$C3\""
+  REVIEW_LINE="  - $C4  (REPORTED, NOT REQUIRED — require_review_to_merge: false)"
+else
+  CONTEXTS="\"$C1\", \"$C2\", \"$C3\", \"$C4\""
+  REVIEW_LINE="  - $C4"
+fi
 
 cat <<PLAN
 Repository : $REPO
@@ -72,7 +84,7 @@ Required checks:
   - $C1
   - $C2
   - $C3
-  - $C4
+$REVIEW_LINE
 
 Approving reviews required: 0
 
@@ -111,7 +123,7 @@ gh api -X PUT "repos/$REPO/branches/$BRANCH/protection" \
 {
   "required_status_checks": {
     "strict": true,
-    "contexts": ["$C1", "$C2", "$C3", "$C4"]
+    "contexts": [$CONTEXTS]
   },
   "enforce_admins": false,
   "required_pull_request_reviews": {
