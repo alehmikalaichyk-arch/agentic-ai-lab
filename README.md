@@ -25,6 +25,11 @@ read them in pairs.
 | `component-prototypes/` | Visual drafts — throwaway renderings the owner looks at *before* a spec is frozen. |
 | `.github/workflows/` | CI, the three structural gates, the review gate, and Storybook publishing. |
 
+**Before demonstrating any of this, verify it actually loaded** — in a fresh clone and a fresh
+session: [docs/verify-pipeline-loaded.md](docs/verify-pipeline-loaded.md). A session with no
+skills loaded behaves exactly like one that did not need them, until the moment the process
+depends on one.
+
 ### Why the pipeline is here twice
 
 `.claude/` and `ds-pipeline-kit/plugin/` hold the same ten skills and the same
