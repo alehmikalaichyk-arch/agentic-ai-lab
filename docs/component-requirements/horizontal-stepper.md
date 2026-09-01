@@ -1,7 +1,7 @@
 ---
 artifact: horizontal-stepper-brief
 component: HorizontalStepper
-status: draft
+status: ready-for-spec-authoring
 date: 2026-09-01
 source_ask: two externally-authored documents from another design system, read as owner prose
 consumers_today: []          # verified zero by repository search — see Consumer impact
@@ -48,7 +48,8 @@ workflows of a dozen or more stages.
 **No such flow exists in this repository**, and that is not a footnote. The use cases above are
 inherited from the ask, not observed here; this repository holds a design system and no product
 application. They are therefore statements of *intended* use with no in-tree instance to check
-them against — see Consumer impact, and OD-001.
+them against — see Consumer impact. The Governance Owner weighed exactly this before approving the
+component, and approved it anyway (OD-001).
 
 ---
 
@@ -154,8 +155,8 @@ distinction is a matter of tone, not of added ornament. Nothing distinguishes a 
 change, added iconography, or a size difference between segments (CR-002, CR-016).
 
 A step changes state only because the flow moved the user. The component itself never changes a
-step's state, and no state ever encodes partial completion within a step (CR-007, and OD-002,
-which is the one place that sentence is contested).
+step's state, and no state ever encodes partial completion within a step (CR-007). The ask's two
+documents disagreed on that sentence; it was decided in CR-007's favour — OD-002.
 
 Whether the change between states is animated is undecided — OD-003.
 
@@ -274,7 +275,7 @@ deliberately **not** in this list, because it cannot be judged here yet.
 - Back / Next / Continue / Finish / Cancel controls (CR-010).
 - Owning or validating the content of a step.
 - Breadcrumbs, arbitrary progress bars, branching flows, and nested or sub-steps.
-- Reporting progress *within* a step (CR-007, subject to OD-002).
+- Reporting progress *within* a step (CR-007).
 - Flows of a dozen stages or more (CR-011).
 - Migrating any existing implementation. There is none to migrate — see Consumer impact.
 
@@ -298,30 +299,72 @@ None on another component, and none on a new runtime package.
 
 ## Open decisions
 
-**OD-001 — The §15 Requires-Review approval.** *(Blocking.)* On two grounds, neither with local
-precedent. Governance §15 classes both "New component" and "New component boundary
-overlap" as Requires-Review, decided by the Governance Owner (§17: the role *Design System
-Maintainer*). The ask records that decision being taken and granted — by a **different** design
-system's Governance Owner, on 2026-08-31. It does not transfer. This repository's owner must grant
-or decline it, and the boundary question is harder here than it was there, because §12 contains no
-Stepper pair and none of the components a boundary would be drawn *against* exists. Options: (1)
-approve the new component and record its boundary in the abstract, to be filled in when a neighbour
-ships; (2) approve it and add the boundary pair to governance §12 first; (3) decline, on the
-grounds that a component with zero in-tree consumers has not yet demonstrated the "reusable pattern
-with a stable API" that decision-tree step 4 requires.
+**OD-001 — The §15 Requires-Review approval.** *(Resolved.)* **Granted on 2026-09-01 by this
+repository's Governance Owner** — the role *Design System Maintainer* (§17) — on both grounds
+together, "New component" and "New component boundary overlap", taking **option 1**: approve the
+new component and record its boundary **in the abstract**, to be filled in when a neighbour ships.
 
-**OD-002 — Whether a segment may be drawn partly filled.** *(Blocking.)* The two input documents
-contradict each other on this point and this repository's owner has not chosen between them. The
-ask's requirements forbid a partly-filled segment; the ask's specification then fills the current
-segment exactly half way and records its owner overriding that requirement on 2026-08-31, on the
-reasoning that a constant half is a *marker of position* rather than a report of progress. **Until
-the owner decides, this brief carries CR-007 as written** — no partial fill — because that is the
-formulation the owner's requirements document states and the override belongs to someone else.
-Blocking rather than deferred: the disputed sentence *is* the requirement, and #4 cannot specify a
-segment's appearance while what CR-007 should say is undecided. Options: (1) keep CR-007 as
-written; (2) make the same override here, in which case CR-007 is rewritten to permit a constant
-half that no input may drive; (3) drop CR-007 and let the spec choose, which this brief does not
-recommend — an unstated rule is how "half full" later becomes "42 per cent".
+**This is a local grant, and it is not the inherited one.** The ask records the same two grounds
+being approved on 2026-08-31 by a **different** design system's Governance Owner. That approval
+remains non-transferable and is still described as such in Audit history; nothing about it was
+adopted. The decision recorded here was taken independently, against this repository's own §12 —
+which contains no Stepper pair, and of whose named components only Badge exists. Option 1 accepts
+that consequence rather than working around it: a boundary cannot be drawn against components that
+are absent, so it is written in the abstract now and completed when there is something to draw it
+against.
+
+The reasoning and the alternatives are kept, because a resolved decision that deletes its options
+cannot be reviewed later. Governance §15 classes both grounds as Requires-Review, decided by the
+Governance Owner. The options as they stood:
+
+1. **Approve, and record the boundary in the abstract, to be filled in when a neighbour ships — taken.**
+2. Approve, and add the boundary pair to governance §12 first — not taken.
+3. Decline, on the grounds that a component with zero in-tree consumers has not yet demonstrated
+   the "reusable pattern with a stable API" that decision-tree step 4 requires — not taken.
+
+**OD-002 — Whether a segment may be drawn partly filled.** *(Resolved.)* **Decided on 2026-09-01 by
+this repository's Governance Owner in favour of CR-007 as written** — option 1: no segment is ever
+drawn partly filled, and the three step states are carried by three solid tones. **The source
+system's override is not adopted here.**
+
+The decision resolved a contradiction in the ask itself: its requirements forbid a partly-filled
+segment, while its specification fills the current segment exactly half way and records that
+system's owner overriding the requirement on 2026-08-31, on the reasoning that a constant half is a
+*marker of position* rather than a report of progress. That override belonged to someone else, and
+this repository has now decided the question for itself, the other way.
+
+**The cost was measured before the decision and accepted with it.** It is recorded because it is
+the part a later reader will want, and because it is a known trade rather than an oversight:
+
+| Scheme | What carries the state distinction | Ratio |
+|---|---|---|
+| Three solid tones — **chosen** | adjacent tones | **2.67:1** |
+| One tone at three extents — not chosen | fill extent | **7.55:1** |
+
+The distinction the component ships with is therefore roughly a third as strong as the alternative's,
+and **it degrades as the segments narrow** — at segments of around 25px the current one has to be
+hunted for. Accepted, not mitigated, and not to be re-argued from this table alone.
+
+The options as they stood:
+
+1. **Keep CR-007 as written — taken.**
+2. Make the same override here, rewriting CR-007 to permit a constant half that no input may
+   drive — not taken.
+3. Drop CR-007 and let the spec choose — not taken, and not recommended by this brief: an unstated
+   rule is how "half full" later becomes "42 per cent".
+
+<!-- repo-audit:begin -->
+> **[Repo audit 2026-09-01 · class F]** Both figures in the table above reproduce against this
+> repository's built tokens, computed with the WCAG relative-luminance formula from
+> `generated/tokens.css` rather than inherited from the ask. **2.67:1** is the step from
+> `--ds-surface-accent-grey-bold` `#6d7384` to `--ds-surface-accent-grey-boldest` `#2d3342` — the
+> weakest adjacent link in the chosen three-tone scheme, and therefore the ratio that governs it.
+> **7.55:1** is `--ds-surface-accent-grey-boldest` against `--ds-surface-neutral-boldest` `#c5c8d1`,
+> the not-chosen scheme's fill against its track. For scale, every adjacent pair inside the neutral
+> surface family alone is weaker still — 1.06:1, 1.11:1, 1.34:1, 1.34:1 — which is why the chosen
+> scheme reaches across two families to find 2.67:1 at all. Recorded as verification of a decision
+> already taken, not as an argument against it.
+<!-- repo-audit:end -->
 
 **OD-003 — Whether the change between step states is animated.** *(Non-blocking.)* An animated
 transition is observable behaviour and therefore a promise this brief would owe, but the owner's
