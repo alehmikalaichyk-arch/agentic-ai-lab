@@ -278,6 +278,43 @@ Feed it the two input documents as the owner's ask. Both outputs matter:
   - the repository feasibility audit — binding facts and named conflicts
 Report the audit IN FULL. A conflict it names is worth more than a brief it writes.
 
+THE SUCCESS CRITERION IS INVERTED — read this before you start.
+The skill's §10 says an externally-authored specification is "the primary target"
+of the audit: "written without repository access, it will assert primitives, rules
+and absences that do not hold." That is precisely this input.
+
+  The brief and the spec MUST differ from the pegbo source, and the differences
+  must be enumerated with reasons. Output that closely matches the source is a
+  FAILED run, not an efficient one — it means the stage transcribed instead of
+  auditing.
+
+Seven divergences are already measured and must each appear as its own line in the
+audit — what the source asserted, what this repository actually has, and which one
+the brief adopts. Do not silently correct them, and re-verify rather than trusting
+this list:
+  1. Token prefix — source binds --pegbo-*  (9 occurrences); here it is --ds-*.
+     All seven bound tokens DO exist here under the new prefix; verify each.
+  2. Format reference — source cites docs/component-specs/switch.md; absent here.
+  3. nearest_frozen_spec — source cites divider.md@v1.1; absent here.
+  4. The only spec in this repository is badge.md. Precedent must come from it or
+     from nothing, stated either way.
+  5. consumers_candidate — source names customer-workspace, spend-ui, client-ui
+     (and a Mantine stepper). None exists here.
+  6. D11 — the source's owner overrode requirement CR-007 on 2026-08-31. This
+     repository has a DIFFERENT owner and has made no such decision.
+  7. Contrast — the source measured against pegbo values. Re-measure here; this
+     repository's --ds-fg-default is #0d1119.
+
+TWO BOUNDARIES:
+  - The pegbo documents are INPUT to #0, read like an owner's prose. They are NOT a
+    draft to edit. Do not open the source spec and modify it — read it, then
+    produce this repository's brief, and in STEP 4 this repository's spec from that
+    brief.
+  - Consumers: this repository has ZERO call sites. §10 requires a repository-wide
+    search "with verified status. Never estimate." So write "verified zero" as a
+    verified finding — a blank Consumers section is indistinguishable from an
+    unchecked one.
+
 Then open PR-0 with that ONE file and nothing else. Verify before opening:
   git diff --name-only main...HEAD
   # must print exactly: docs/component-requirements/horizontal-stepper.md
@@ -289,8 +326,11 @@ STEP 4 — stage #4, component-spec-writer, same agent.
 Switch back first: git checkout spec/horizontal-stepper
 The brief is in your session context; the spec does not need PR-0 merged.
 Output: docs/component-specs/horizontal-stepper.md
-  - The source spec is precedent and evidence, not a file to copy. Where this
-    repository differs, state what is true HERE.
+  - Author it FROM THE BRIEF you just produced, not from the pegbo spec. The pegbo
+    spec is precedent and evidence, never a file to copy or edit. The inverted
+    success criterion from STEP 3 applies here too: a spec that closely matches the
+    source is a failed run.
+  - Where this repository differs, state what is true HERE.
   - Never write `lifecycle: frozen`. freeze_candidate is the ceiling a spec earns;
     frozen is the merge.
   - The source spec's D3 — "fully non-interactive, with no interactive states at
@@ -377,6 +417,29 @@ Every token binding in the spec shown resolving to a real utility in `generated/
 **If one PR carries both documents, the run failed even though every check was green.** That is the
 whole point of the unenforced boundary above, and it is the cheapest thing on this page to get
 wrong.
+
+### The success criterion is inverted, and this is the part most likely to be read backwards
+
+The obvious reading — *the closer the output is to the pegbo spec, the better the run went* — is
+exactly wrong. `component-requirements-builder` §10 states that an externally-authored
+specification is **"the primary target"** of the audit, *"written without repository access, it
+will assert primitives, rules and absences that do not hold."*
+
+So:
+
+> **The output must DIFFER from the source, with the differences enumerated and reasoned. A close
+> match is a failed run — it means the stage transcribed instead of auditing.**
+
+Seven divergences are already measured (token prefix, two missing sibling specs, the badge-only
+precedent, three foreign consumers, decision D11, and contrast). Each owes its own line in the
+audit: what the source asserted, what this repository has, which one the brief adopts. A silent
+correction is as much a failure as a transcription — the audit's value is the naming, not the fix.
+
+**Why a real source beats a blank page here.** With no reference document, nothing distinguishes
+"the agent wrote a good spec" from "the agent wrote a plausible one" short of a human reading it
+slowly. With one, the run has a measurable result: did it catch the divergences, and did it name
+them? That is why adapting a specified component tests *more* than authoring an unspecified one,
+not less.
 
 ## What is worth noticing regardless of outcome
 
