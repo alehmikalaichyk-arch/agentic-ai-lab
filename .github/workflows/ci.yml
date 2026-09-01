@@ -25,6 +25,13 @@ jobs:
       # so typecheck, test and the Storybook build all read artifacts that do not
       # exist until this runs. A green run without it means the later stages
       # measured an empty directory.
+      # Before anything else: the pipeline exists twice in this repository (the
+      # portable kit, and the .claude/ copy the agent session actually reads). Two
+      # copies that disagree means two processes, which is worse than one that is
+      # out of date.
+      - name: pipeline copies are in sync
+        run: bash tools/check-claude-dir-in-sync.sh
+
       - run: npm run build:tokens
       - run: npm run typecheck
       - run: npm run lint

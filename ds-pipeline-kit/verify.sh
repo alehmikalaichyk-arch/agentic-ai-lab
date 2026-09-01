@@ -148,6 +148,39 @@ for f in plugin/.claude-plugin/plugin.json .claude-plugin/marketplace.json \
   [ -f "$f" ] && pass "present: $f" || fail "missing: $f"
 done
 
+# The manifest has to be INSTALLABLE and COMPLETE, which are two different failures.
+#
+# `agents` is the trap, and it fails in both directions. As a directory string
+# (`"./agents/"`, symmetrical with `skills`) the manifest does not validate at all,
+# so `claude plugin install` — the command the README gives — refuses it. As a list
+# of files it validates AND installs, and the agent silently does not load: the
+# installed plugin reports Agents (0). The key that works is no key: agents/ is
+# auto-discovered, and declaring it suppresses that.
+#
+# Measured by installing each form and reading `claude plugin details`. Checked with
+# the CLI where available and structurally otherwise, so it cannot regress on a
+# machine without one.
+if [ -f plugin/.claude-plugin/plugin.json ]; then
+  if command -v claude >/dev/null 2>&1; then
+    if claude plugin validate plugin >/dev/null 2>&1 \
+       && ! python3 -c "
+import json, sys
+sys.exit(0 if 'agents' in json.load(open('plugin/.claude-plugin/plugin.json')) else 1)"; then
+      pass "plugin manifest validates, and leaves agents/ to auto-discovery"
+    else
+      fail "plugin manifest does NOT validate — 'claude plugin install' will refuse it"
+      claude plugin validate plugin 2>&1 | sed -n '2,6p' | sed 's/^/          /'
+    fi
+  else
+    python3 -c "
+import json, sys
+d = json.load(open('plugin/.claude-plugin/plugin.json'))
+sys.exit(1 if 'agents' in d else 0)" \
+      && pass "plugin manifest omits 'agents' so agents/ is auto-discovered (CLI absent)" \
+      || fail "plugin.json must NOT declare 'agents' — declaring it suppresses auto-discovery and the agent silently does not load"
+  fi
+fi
+
 if [ -f plugin/.claude-plugin/plugin.json ]; then
   python3 -c "import json,sys; d=json.load(open('plugin/.claude-plugin/plugin.json'));
 sys.exit(0 if d.get('name') and d.get('version') else 1)" \
