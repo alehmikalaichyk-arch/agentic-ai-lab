@@ -352,10 +352,18 @@ await explicit human sign-off.
 
 ## 11. Cross-skill prerequisites
 
-- **`ds-governance` (#2)** must expose a **WCAG applicability matrix** keyed
-  by archetype (`required` vs `not-applicable` per requirement) plus a severity
-  per requirement. Additive; until present, #7 treats missing entries as
-  `required` and notes the gap.
+- **`ds-governance` (#2) — per-requirement severity: satisfied.** #2 §15.2 and
+  `accessibility_floor.finding_severity` in the Rule Set supply it, as a derivation rule
+  (WCAG A/AA → blocker; spec-contract-only, including APG behaviour → requires-review;
+  AAA → warning) plus the current per-requirement instance. A requirement #7 adds later
+  takes the severity its source implies, and `default_when_unlisted: requires-review`
+  means no finding is suppressed into `uncheckable_requirements` for want of one.
+  `manual-required` capability does not change severity — it changes who verifies.
+- **`ds-governance` (#2) — WCAG applicability matrix: still open**, and deliberately so.
+  It is a per-archetype policy decision for the Governance Owner (#2 §18), not a gap to
+  be filled in passing. #7 fails safe without it: a missing entry is treated as
+  `required` and the gap noted, so the cost is a false finding a human dismisses rather
+  than a check that silently disappears.
 - **`storybook-stories-generator` (#6)** must satisfy the
   `interaction_story_contract` (story types, `play` behavior, naming). Aligned
   with #6's interaction-story ownership; this fixes the exact shape.

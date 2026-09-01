@@ -420,20 +420,24 @@ These are **prerequisites** — Guardian cannot operate at the scope claimed her
 until Governance adopts them. Per #2 §18, additive field changes do not require
 a `schema_version` bump.
 
-### Required additive updates to `ds-governance` (#2)
+### Required additive updates to `ds-governance` (#2) — **satisfied**
 
-1. **Add `rule_id` to every rule entry** in the Rule Set across
-   `token_architecture`, `token_naming_conventions`, `forbidden_patterns`. Use
-   the IDs in §7.
-2. **Add DTCG-completeness rules** `dtcg.missing-type` and
-   `dtcg.missing-description-semantic`, each with a severity. Without these,
-   Guardian lists them in `unchecked_rules` with `reason: missing-rule-id`.
-3. **Add the layer-bypass rule** `code.layer-bypass-via-css-var`, with a
-   severity. Without it, Guardian does not perform css-var-scan layer-bypass detection.
-4. **Add severity** to every new rule above.
+Governance now publishes a canonical rule index: #2 §15.1 (the table) and the `rules:`
+block of the Rule Set (#2 §16). All four items below are adopted, every id in §7 has a
+match, and every match carries a severity.
 
-If any of the above is not adopted, Guardian still runs — it checks fewer rules
-and reports the gaps transparently in `unchecked_rules`.
+1. **`rule_id` on every rule entry** across `token_architecture`,
+   `token_naming_conventions` and `forbidden_patterns`, using the IDs in §7. — done
+2. **DTCG-completeness rules** `dtcg.missing-type` (blocker) and
+   `dtcg.missing-description-semantic` (warning). — done
+3. **The layer-bypass rule** `code.layer-bypass-via-css-var` (blocker). — done
+4. **Severity on every rule above.** — done
+
+Reconcile against #2 anyway, every run: §3 is a reconciliation, not a one-time
+adoption check. If any of the above is later dropped, Guardian still runs — it checks
+fewer rules and reports the gaps transparently in `unchecked_rules`. That is the failure
+mode this list was written for, and it is a *quiet* one: the report reads as a pass while
+covering less. Read `unchecked_rules` before believing a clean run.
 
 ### Required boundary additions to `production-quality-gate` (#8) — future passport
 

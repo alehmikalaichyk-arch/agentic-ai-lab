@@ -118,7 +118,7 @@ All paths are relative to `ds_package_root`.
 | `src/components/` | Composite components (`breadcrumbs/`, `drawer/`, `global-header.tsx`, `page-shell.tsx`). |
 | `src/lib/utils.ts` | The `cn()` helper. Mandatory for all component styling. |
 | `generated/` | Derived artifacts. Never edited by hand. |
-| `.storybook/` | Storybook configuration. |
+| `.storybook/` | Storybook configuration. `main.ts` and `preview.ts` are the source of `storybook_conventions` (§7a). |
 | `playwright.config.ts` | E2E test config. |
 | `vitest.config.ts` | Unit test config. |
 | `webpack.config.js` | Build config. |
@@ -164,7 +164,11 @@ matters for determinism — every agent collects in the same sequence.
 6. `src/components/` — list directory. Capture subdirectory names and top-level
    component files.
 7. `generated/` — list directory. Capture file names verbatim.
-8. `README.md` — read for informational context only; reconcile against live
+8. `.storybook/main.ts` and `.storybook/preview.ts` — extract the `stories`
+   globs, `addons`, `framework`, and any global `tags` / `decorators`. Then glob
+   every `*.stories.tsx` the config actually matches and read each file's `meta`
+   block. This is what `storybook_conventions` is derived from — see §7a.
+9. `README.md` — read for informational context only; reconcile against live
    state, do not let it override.
 
 Do not bake any inventory list into this file or into the snapshot template.
@@ -226,6 +230,22 @@ configs:
   vitest: vitest.config.ts
   webpack: webpack.config.js
 
+storybook_conventions:              # consumed by #6; derived per §7a, never asserted
+  storybook_conventions_version: 1
+  storybook_version: <major.minor from versions.storybook>
+  framework: <.storybook/main.ts#framework.name>
+  addons: [<.storybook/main.ts#addons, verbatim>]
+  story_globs: [<.storybook/main.ts#stories, verbatim>]
+  csf_version: <2 | 3 — from the shape of the meta blocks that exist>
+  title_pattern: "<the pattern component stories use, e.g. Components/<ComponentName>>"
+  title_pattern_status: <attested | unattested>     # see §7a
+  title_groups_attested: [<top-level title segments actually present in the repo>]
+  autodocs: <true | false>          # true only if a global or per-meta autodocs tag exists
+  tags: [<global tags from .storybook/preview.ts; [] if none>]
+  default_decorators: [<from .storybook/preview.ts#decorators; [] if none>]
+  global_styles_import: <the stylesheet preview.ts imports, if any>
+  inconsistencies: [<any convention the repo does not apply uniformly — see §7a>]
+
 commands_source: package.json#scripts
 
 anomalies: [<see §8>]
@@ -239,6 +259,69 @@ sanctioned interface.
 The `schema_version` field allows the contract to evolve while keeping
 downstream skills version-aware. Increment it only on structural or breaking
 changes; additive field changes do not require a bump.
+
+---
+
+## 7a. Storybook conventions — measured, not assumed
+
+`storybook-stories-generator` (#6) is documented to consume Storybook conventions from
+this snapshot and **never invent them** (#6 §3). Until they were emitted here, #6 fell back
+to its documented defaults every run and filed the gap as
+`reason: missing-storybook-conventions` — which is a skill inventing a convention while
+reporting that it did not. The block in §7 closes that.
+
+The key names are #6's, not new ones: `csf_version`, `title_pattern`, `autodocs`, `tags`,
+`default_decorators`, and `storybook_conventions_version`, which #6 copies verbatim into
+its Story Generation Report.
+
+**Derive every value; assert none.** Each field has exactly one source:
+
+| Field | Source |
+|---|---|
+| `storybook_version`, `framework`, `addons`, `story_globs` | `package.json` and `.storybook/main.ts` |
+| `csf_version` | the shape of the `meta` blocks in the stories that exist — `const meta = {…} satisfies Meta<…>` + `StoryObj` is CSF 3; `storiesOf` or `Template.bind({})` is CSF 2 |
+| `title_pattern`, `title_groups_attested` | the `title:` field of every `meta` block, read, not guessed |
+| `autodocs`, `tags` | a global `tags` in `.storybook/preview.ts`, or per-`meta` tags. In Storybook 8 autodocs is opt-in **by tag** — the Storybook 7 `docs.autodocs` field in `main.ts` is gone, so its absence there proves nothing either way |
+| `default_decorators`, `global_styles_import` | `.storybook/preview.ts` |
+
+**If the repository is inconsistent, say so in `inconsistencies` — do not pick a winner.**
+Two stories with incompatible title schemes is a fact #6 must be told, not a tie for #1 to
+break. The same applies to a convention with **no instance at all**: set
+`title_pattern_status: unattested`, list the groups that do exist, and let #6 proceed on a
+declared-but-unattested value rather than an invented one. The difference matters — an
+unattested value is a decision recorded in one place, an invented one is a decision made
+again on every run.
+
+**Measured in this repository, 2026-09-02**, as the worked example of the above:
+
+```yaml
+storybook_conventions:
+  storybook_conventions_version: 1
+  storybook_version: "8.6"                       # package.json → storybook ^8.6.18
+  framework: "@storybook/react-vite"             # .storybook/main.ts
+  addons: ["@storybook/addon-essentials", "@storybook/addon-a11y"]
+  story_globs:
+    - "../src/**/*.stories.@(ts|tsx)"
+    - "../component-prototypes/**/*.stories.@(ts|tsx)"
+    - "../prototypes/**/*.stories.@(ts|tsx)"
+  csf_version: 3                                 # 7 of 7 story files: `satisfies Meta` + `StoryObj`
+  title_pattern: "Components/<ComponentName>"
+  title_pattern_status: unattested               # no component story exists yet — see below
+  title_groups_attested: [Foundations, Prototypes]
+  autodocs: false                                # "autodocs" appears in no config or story file
+  tags: []                                       # .storybook/preview.ts declares none
+  default_decorators: []                         # .storybook/preview.ts declares none
+  global_styles_import: "../src/styles.css"      # .storybook/preview.ts
+  inconsistencies:
+    - "No component story exists. All 7 story files are foundations (Foundations/…, 5) or
+       drafts and screen prototypes (Prototypes/…, 2). The Components/ group is therefore
+       declared here and unattested in the repository — the first component story
+       establishes it."
+```
+
+`Components/<ComponentName>` coincides with #6's documented fallback, and that is the
+point: the value stops being a fallback and becomes a declaration, so the next component
+lands in the same place as the last one whether or not #6 remembers its own default.
 
 ---
 

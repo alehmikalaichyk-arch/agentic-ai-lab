@@ -260,7 +260,8 @@ Interactive DS components must define, **at spec time**:
 
 These fields are required before code is written. Detailed audit is
 `a11y-interaction-review` (#7); governance enforces only that the fields
-exist in the spec.
+exist in the spec — and supplies the **severity** #7 looks up for a failing
+requirement, which is §15.2. The WCAG floor is level **AA**.
 
 ---
 
@@ -340,16 +341,21 @@ skill only states the rules exist.
 
 ## 14. Forbidden patterns
 
-Absolute don'ts. Severity classification in §15.
+Absolute don'ts. Severity classification in §15; canonical `rule_id`s in §15.1.
 
-1. **Raw hex in component code.** All colors come from tokens (Tailwind utilities or CSS variables).
-2. **Inline styles for design values** (color, spacing, typography, radius, shadow, layout sizing). Inline `style={...}` is allowed only for **runtime-computed values that originate outside the component itself** — measured popover dimensions, ref-derived coordinates, animation runtime values, Radix-provided CSS variables. Wrapping a hex in a CSS variable inside the component does not count as runtime-computed.
-3. **Semantic-token → semantic-token references.** Semantic must reference primitive directly.
-4. **Component-token → primitive references.** Component must go through semantic.
-5. **Bypassing the `cn()` helper.** All class composition goes through `cn()` from `src/lib/utils.ts`.
-6. **Tailwind arbitrary values for design-system values** (`w-[247px]`, `bg-[#fff]`, `text-[14px]`, `border-[#e0e0e0]`). If a value needs a class, it needs a token.
-7. **CSS-in-JS, styled-components, `<style>` blocks** inside the DS package. Tailwind 4 via `cn()` is the only styling channel.
-8. **Hardcoded breakpoints in component code.** No raw `@media` queries; no arbitrary breakpoint values. Use Tailwind 4 responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`, `2xl:`).
+1. **Raw hex in component code.** All colors come from tokens (Tailwind utilities or CSS variables). — `forbidden.raw-hex`
+2. **Inline styles for design values** (color, spacing, typography, radius, shadow, layout sizing). Inline `style={...}` is allowed only for **runtime-computed values that originate outside the component itself** — measured popover dimensions, ref-derived coordinates, animation runtime values, Radix-provided CSS variables. Wrapping a hex in a CSS variable inside the component does not count as runtime-computed. — `forbidden.inline-style-design-value`
+3. **Semantic-token → semantic-token references.** Semantic must reference primitive directly. — `arch.semantic-to-semantic-ref`
+4. **Component-token → primitive references.** Component must go through semantic. — `arch.component-to-primitive-ref`
+5. **Bypassing the `cn()` helper.** All class composition goes through `cn()` from `src/lib/utils.ts`. — `forbidden.cn-bypass`
+6. **Tailwind arbitrary values for design-system values** (`w-[247px]`, `bg-[#fff]`, `text-[14px]`, `border-[#e0e0e0]`). If a value needs a class, it needs a token. — `forbidden.tailwind-arbitrary-design-value`
+7. **CSS-in-JS, styled-components, `<style>` blocks** inside the DS package. Tailwind 4 via `cn()` is the only styling channel. — `forbidden.css-in-js`
+8. **Hardcoded breakpoints in component code.** No raw `@media` queries; no arbitrary breakpoint values. Use Tailwind 4 responsive prefixes (`sm:`, `md:`, `lg:`, `xl:`, `2xl:`). — `forbidden.hardcoded-breakpoint`
+
+Items 3 and 4 are the token-architecture chain of §3 seen from the forbidden-pattern
+side, which is why their ids carry the `arch.` prefix rather than `forbidden.`. Their
+code-side twin — a component reading a primitive through `var(--ds-…)` — is
+`code.layer-bypass-via-css-var` (§15.1), a rule of §3 rather than an item in this list.
 
 ---
 
@@ -380,6 +386,108 @@ needs escalation.
 Note: severity tiers here apply to **rule violations**. Severity tiers in
 `ds-context` (#1) §9 apply to **repository health**. Different axes;
 do not conflate.
+
+---
+
+## 15.1 Canonical rule identifiers
+
+Every rule Governance defines carries a stable `rule_id`. Governance owns the id;
+`token-guardian` (#3) references it and never declares one (#3 §2, §13).
+
+**Why this section exists.** Guardian §3 reconciles its Detection Registry against the
+Rule Set *by id*: a detection whose `rule_id` has no match in the Rule Set is **skipped**
+and listed in `unchecked_rules` with `reason: missing-rule-id`. Before this section, the
+Rule Set carried no ids at all, so every detection was strictly skippable while the report
+still read as a clean pass — a green with less checked than it appeared. The ids below are
+the ones already in use in #3 §7 and in issued Violation Reports; none is new, and nothing
+is renamed.
+
+**Severity travels with the id.** A rule listed without a severity is a data error in this
+skill: #3 §10 suppresses the finding and records `reason: missing-severity-in-rule-set`.
+Never publish an id without one.
+
+| `rule_id` | Category | Defined in | Severity |
+|---|---|---|---|
+| `arch.semantic-to-semantic-ref` | tokens | §3 chain rule, §14.3 | blocker |
+| `arch.component-to-primitive-ref` | tokens | §3 chain rule, §14.4 | blocker |
+| `arch.invalid-ref-syntax` | tokens | §4 Reference syntax | blocker |
+| `arch.ref-target-missing` | tokens | §4 Reference syntax — the target must exist | blocker |
+| `naming.casing-violation` | tokens | §4 "lowercase throughout" | warning |
+| `naming.separator-violation` | tokens | §4 dash separator | warning |
+| `naming.unknown-color-family` | tokens | §4 color families | requires-review |
+| `naming.invalid-step-scale` | tokens | §4 primitive step scale | warning |
+| `naming.suffix-out-of-vocabulary` | tokens | §4 suffix vocabulary | warning |
+| `naming.composition-order-violation` | tokens | §4 composition order | warning |
+| `dtcg.missing-type` | tokens | §4 Format — every token has `$value` and `$type` | blocker |
+| `dtcg.missing-description-semantic` | tokens | §4 Format — semantic tokens require `$description` | warning |
+| `forbidden.raw-hex` | code | §14.1 | blocker |
+| `forbidden.inline-style-design-value` | code | §14.2 | blocker |
+| `forbidden.cn-bypass` | code | §14.5 | blocker |
+| `forbidden.tailwind-arbitrary-design-value` | code | §14.6 | blocker |
+| `forbidden.css-in-js` | code | §14.7 | blocker |
+| `forbidden.hardcoded-breakpoint` | code | §14.8 | blocker |
+| `code.layer-bypass-via-css-var` | code | §3 chain rule, code side | blocker |
+
+**Where a severity is not simply "§15 blocker because §14 lists it", the grounding is:**
+
+- `arch.invalid-ref-syntax`, `arch.ref-target-missing` — **blocker**: a reference that does
+  not parse or does not resolve fails `npm run build:tokens`, so nothing downstream of the
+  token build is trustworthy. It is a red build, not a matter of taste.
+- `dtcg.missing-type` — **blocker**: §4 states the format unconditionally, and Style
+  Dictionary selects its transform from `$type`. A token without one silently changes the
+  generated output rather than failing.
+- `dtcg.missing-description-semantic` — **warning**: it costs documentation, not generated
+  output. §15's warning tier already covers missing docs.
+- `naming.*` — **warning**, per §15's "minor naming drift from the conventions in §4–§5",
+  except `naming.unknown-color-family`, which is **requires-review** because §4 states in
+  terms that adding a colour family is a Requires-Review decision.
+- `code.layer-bypass-via-css-var` — **blocker**: it is §3's chain rule violated from
+  component source instead of from a token file, and §14.2 already refuses the
+  CSS-variable wrapper as a way around the same rule. Same offence, same tier.
+
+Guardian's own registry (#3 §7) carries `category`, `method` and `capability` for these
+ids. Those columns are Guardian's; the id and the severity are this skill's.
+
+---
+
+## 15.2 Accessibility finding severity
+
+`a11y-interaction-review` (#7) looks up severity per requirement and never assigns one
+(#7 §7); with nothing to look up it suppresses the finding into
+`uncheckable_requirements` with `reason: missing-severity-in-floor`. §15's three tiers are
+scoped to **rule** violations, so they did not answer for an a11y finding. This section
+does, and it does so with a derivation rule rather than a per-requirement opinion:
+
+| Requirement's source | Severity | Grounding |
+|---|---|---|
+| A WCAG 2.2 success criterion at level **A or AA** | blocker | §10 makes WCAG AA the floor. Below the floor is not shippable. |
+| Spec accessibility contract only — including APG pattern behaviour with no A/AA criterion behind it | requires-review | It contradicts the component's own contract, which the Governance Owner (§17) adjudicates against the spec rather than against an external standard. |
+| A WCAG criterion at level **AAA** | warning | Above the declared floor; desirable, not owed. |
+
+Applied to #7's audit registry as it stands, that yields:
+
+- **blocker** — `aria.role-correct` and `aria.accessible-name-present` (4.1.2),
+  `keyboard.tab-order` (2.1.1), `focus.visible-ring` (2.4.7), `contrast.text-aa` (1.4.3),
+  `motion.reduced-motion-respected` (2.3.3), `target.size-44` (2.5.8).
+- **requires-review** — `aria.name-includes-counter`, `aria.state-reflects-ui`,
+  `keyboard.arrow-roving`, `keyboard.activation-keys`, `keyboard.escape-dismiss`,
+  `focus.trap-in-overlay`, `focus.return-on-close`, `live.busy-announced`,
+  `live.status-role-by-severity`, `rtl.direction-correct`, `sr.flow-coherent`.
+
+The list is the current instance; **the derivation rule is the rule**. #7 owns its
+registry and may add a requirement without a governance change — a requirement not named
+above takes the severity its source implies, and `requires-review` is the default where no
+A/AA criterion backs it. No finding is ever suppressed for want of a severity again.
+
+**A `manual-required` check is not exempt.** Its capability governs *who* verifies it, not
+what a failure costs; a confirmed failure carries the severity above.
+
+**Deliberately NOT settled here: the WCAG applicability matrix keyed by archetype**
+(#7 §3, #7 §15). That is a policy decision per archetype — six archetypes across the
+registry — and #7 already fails safe without it: a missing applicability entry is treated
+as `required` with the gap noted, so the cost is false findings a human dismisses, not
+findings that vanish. The severity gap had the opposite shape, which is why it is closed
+here and the matrix is not. Route the matrix through §18 with the Governance Owner.
 
 ---
 
@@ -465,6 +573,33 @@ deprecation_rule: 5-step (see §9)
 accessibility_floor:
   required_fields_at_spec_time: [keyboard, focus, disabled, aria, target_size]
   detailed_audit_owner: a11y-interaction-review (#7)
+  wcag_level: AA                                   # §10
+  finding_severity:                                # §15.2 — #7 looks these up, never assigns
+    derivation:
+      wcag_a_or_aa: blocker
+      spec_contract_only: requires-review          # includes APG behaviour with no A/AA criterion
+      wcag_aaa: warning
+    default_when_unlisted: requires-review         # no requirement is ever suppressed for want of a severity
+    by_requirement:                                # current instance of the derivation; #7 owns the registry
+      aria.role-correct: blocker
+      aria.accessible-name-present: blocker
+      keyboard.tab-order: blocker
+      focus.visible-ring: blocker
+      contrast.text-aa: blocker
+      motion.reduced-motion-respected: blocker
+      target.size-44: blocker
+      aria.name-includes-counter: requires-review
+      aria.state-reflects-ui: requires-review
+      keyboard.arrow-roving: requires-review
+      keyboard.activation-keys: requires-review
+      keyboard.escape-dismiss: requires-review
+      focus.trap-in-overlay: requires-review
+      focus.return-on-close: requires-review
+      live.busy-announced: requires-review
+      live.status-role-by-severity: requires-review
+      rtl.direction-correct: requires-review
+      sr.flow-coherent: requires-review
+  wcag_applicability_matrix: not_defined           # §15.2 — open governance decision, NOT an omission to fill in silently
 
 contribution_flow:
   tokens:
@@ -498,15 +633,41 @@ figma_sync_rules:
   primitive_change: depends_on_downstream_semantic_resolution
   enforcement_owner: none  # no skill in this kit enforces this rule
 
-forbidden_patterns:
-  - raw_hex_in_components
-  - inline_style_for_design_values
-  - semantic_to_semantic_reference
-  - component_to_primitive_reference
-  - bypassing_cn_helper
-  - tailwind_arbitrary_design_values
-  - css_in_js_inside_ds
-  - hardcoded_breakpoints
+forbidden_patterns:                      # §14, in order; rule_id in rules[] below
+  - raw_hex_in_components                # forbidden.raw-hex
+  - inline_style_for_design_values       # forbidden.inline-style-design-value
+  - semantic_to_semantic_reference       # arch.semantic-to-semantic-ref
+  - component_to_primitive_reference     # arch.component-to-primitive-ref
+  - bypassing_cn_helper                  # forbidden.cn-bypass
+  - tailwind_arbitrary_design_values     # forbidden.tailwind-arbitrary-design-value
+  - css_in_js_inside_ds                  # forbidden.css-in-js
+  - hardcoded_breakpoints                # forbidden.hardcoded-breakpoint
+
+# The canonical rule index (§15.1). This is the block token-guardian (#3 §3) reconciles
+# its Detection Registry against, by rule_id, and the block #3 §10 reads severity from.
+# A rule absent here is skipped by #3 with reason: missing-rule-id; a rule present with
+# no severity is suppressed with reason: missing-severity-in-rule-set. Both are silent
+# under-checking that still reports as a pass, so neither is ever acceptable.
+rules:
+  - { rule_id: arch.semantic-to-semantic-ref,           category: tokens, severity: blocker,          defined_in: "§3, §14.3" }
+  - { rule_id: arch.component-to-primitive-ref,         category: tokens, severity: blocker,          defined_in: "§3, §14.4" }
+  - { rule_id: arch.invalid-ref-syntax,                 category: tokens, severity: blocker,          defined_in: "§4" }
+  - { rule_id: arch.ref-target-missing,                 category: tokens, severity: blocker,          defined_in: "§4" }
+  - { rule_id: naming.casing-violation,                 category: tokens, severity: warning,          defined_in: "§4" }
+  - { rule_id: naming.separator-violation,              category: tokens, severity: warning,          defined_in: "§4" }
+  - { rule_id: naming.unknown-color-family,             category: tokens, severity: requires-review,  defined_in: "§4, §15" }
+  - { rule_id: naming.invalid-step-scale,               category: tokens, severity: warning,          defined_in: "§4" }
+  - { rule_id: naming.suffix-out-of-vocabulary,         category: tokens, severity: warning,          defined_in: "§4" }
+  - { rule_id: naming.composition-order-violation,      category: tokens, severity: warning,          defined_in: "§4" }
+  - { rule_id: dtcg.missing-type,                       category: tokens, severity: blocker,          defined_in: "§4" }
+  - { rule_id: dtcg.missing-description-semantic,       category: tokens, severity: warning,          defined_in: "§4" }
+  - { rule_id: forbidden.raw-hex,                       category: code,   severity: blocker,          defined_in: "§14.1" }
+  - { rule_id: forbidden.inline-style-design-value,     category: code,   severity: blocker,          defined_in: "§14.2" }
+  - { rule_id: forbidden.cn-bypass,                     category: code,   severity: blocker,          defined_in: "§14.5" }
+  - { rule_id: forbidden.tailwind-arbitrary-design-value, category: code, severity: blocker,          defined_in: "§14.6" }
+  - { rule_id: forbidden.css-in-js,                     category: code,   severity: blocker,          defined_in: "§14.7" }
+  - { rule_id: forbidden.hardcoded-breakpoint,          category: code,   severity: blocker,          defined_in: "§14.8" }
+  - { rule_id: code.layer-bypass-via-css-var,           category: code,   severity: blocker,          defined_in: "§3" }
 
 violation_severity:
   blocker:
