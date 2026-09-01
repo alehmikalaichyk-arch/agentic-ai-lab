@@ -28,6 +28,7 @@
     "src",
     "generated",
     ".storybook",
+    "prototypes",
     "vitest.config.ts"
   ]
 }

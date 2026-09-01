@@ -37,6 +37,12 @@ jobs:
       - name: every agent the config names exists
         run: bash tools/check-agents-exist.sh
 
+      # prototypes/ is documented as ungated. That is a claim about configuration,
+      # and configuration drifts — the first symptom would be a prototype PR
+      # demanding a frozen spec.
+      - name: the prototype zone is still outside the gates
+        run: bash tools/check-prototypes-are-ungated.sh
+
       - run: npm run build:tokens
       - run: npm run typecheck
       - run: npm run lint
