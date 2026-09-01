@@ -1,0 +1,16 @@
+{
+  "description": "DS component pipeline: write-time guard for the PR-1 / PR-2 boundary. Fail-open by design — CI is the primary gate.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/ds-pipeline-guard.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

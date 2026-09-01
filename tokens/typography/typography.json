@@ -1,0 +1,75 @@
+{
+  "font-family": {
+    "base": {
+      "$value": "'Lexend Deca', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif",
+      "$type": "fontFamily",
+      "$description": "Primary typeface. Lexend Deca is SIL OFL; the fallbacks carry the layout if it fails to load."
+    },
+    "mono": {
+      "$value": "ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, monospace",
+      "$type": "fontFamily"
+    }
+  },
+  "font-size": {
+    "xs": {
+      "$value": "12px",
+      "$type": "dimension"
+    },
+    "sm": {
+      "$value": "14px",
+      "$type": "dimension"
+    },
+    "md": {
+      "$value": "16px",
+      "$type": "dimension"
+    },
+    "lg": {
+      "$value": "20px",
+      "$type": "dimension"
+    },
+    "xl": {
+      "$value": "24px",
+      "$type": "dimension"
+    }
+  },
+  "font-weight": {
+    "light": {
+      "$value": "300",
+      "$type": "fontWeight"
+    },
+    "regular": {
+      "$value": "400",
+      "$type": "fontWeight"
+    },
+    "medium": {
+      "$value": "500",
+      "$type": "fontWeight"
+    },
+    "bold": {
+      "$value": "600",
+      "$type": "fontWeight"
+    }
+  },
+  "line-height": {
+    "xs": {
+      "$value": "16px",
+      "$type": "dimension"
+    },
+    "sm": {
+      "$value": "20px",
+      "$type": "dimension"
+    },
+    "md": {
+      "$value": "24px",
+      "$type": "dimension"
+    },
+    "lg": {
+      "$value": "28px",
+      "$type": "dimension"
+    },
+    "xl": {
+      "$value": "32px",
+      "$type": "dimension"
+    }
+  }
+}

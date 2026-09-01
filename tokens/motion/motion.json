@@ -1,0 +1,41 @@
+{
+  "motion": {
+    "$description": "The motion budget. A component that needs a duration picks one of these; a bespoke number in a component is a violation, because inconsistent timing is felt before it is noticed.",
+    "duration": {
+      "instant": {
+        "$value": "0ms",
+        "$type": "duration"
+      },
+      "fast": {
+        "$value": "100ms",
+        "$type": "duration"
+      },
+      "normal": {
+        "$value": "150ms",
+        "$type": "duration"
+      },
+      "medium": {
+        "$value": "200ms",
+        "$type": "duration"
+      },
+      "slow": {
+        "$value": "400ms",
+        "$type": "duration"
+      }
+    },
+    "easing": {
+      "ease-in": {
+        "$value": "cubic-bezier(0.4, 0, 1, 1)",
+        "$type": "cubicBezier"
+      },
+      "ease-out": {
+        "$value": "cubic-bezier(0, 0, 0.2, 1)",
+        "$type": "cubicBezier"
+      },
+      "ease-in-out": {
+        "$value": "cubic-bezier(0.4, 0, 0.2, 1)",
+        "$type": "cubicBezier"
+      }
+    }
+  }
+}

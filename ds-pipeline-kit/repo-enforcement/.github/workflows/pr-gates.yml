@@ -1,0 +1,126 @@
+# =============================================================================
+# DS PR Gates — the structural gates
+# =============================================================================
+# The three `name:` values below become the REQUIRED STATUS CHECK NAMES in branch
+# protection. They must match `status_checks` in ds-kit.config.yml exactly. A typo
+# produces a gate that is configured, appears in the checks UI, and never blocks
+# anything — the worst of the three possible states.
+#
+# All three jobs share one input: tools/classify-pr-diff.sh, which describes the
+# diff and never blocks. Enforcement decisions belong to the jobs.
+# =============================================================================
+name: DS PR Gates
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited]
+
+# Least privilege: these jobs read the diff and report a status. They never write.
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Gate 1 — a decision document and component source never travel together.
+  #
+  # This is the gate that makes the human checkpoint real. Without it an author can
+  # open one pull request containing both the spec and its implementation, and the
+  # "review the spec before any code exists" property is gone — the code exists,
+  # three files down.
+  # ---------------------------------------------------------------------------
+  enforce-spec-pr-separation:
+    name: enforce-spec-pr-separation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # REQUIRED. The classifier uses a three-dot diff, which needs the merge
+          # base to be reachable. With a shallow clone it is not, and the diff
+          # silently absorbs everything main accumulated since the branch was cut.
+          fetch-depth: 0
+
+      - name: Classify the diff
+        id: classify
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          # Also REQUIRED. On a pull_request event actions/checkout resolves the
+          # MERGE ref, not the pull request head. Omitting HEAD_SHA compares the
+          # base against that merge ref and misclassifies routinely.
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash tools/classify-pr-diff.sh
+
+      - name: Fail on a mixed pull request
+        if: steps.classify.outputs.classification == 'MIXED'
+        run: |
+          echo "::error::This pull request contains BOTH a decision document (spec or retrofit addendum) AND component source."
+          echo "::error::Split it: the document goes in its own pull request (PR-1), is reviewed and merged by a human, and only then does the implementation pull request (PR-2) open."
+          exit 1
+
+  # ---------------------------------------------------------------------------
+  # Gate 2 — one component per pull request.
+  #
+  # No exemption ships in this kit. A change touching several components at once is
+  # several pull requests. See the pipeline rule, "Cross-cutting changes", for what
+  # that costs and when it is worth building an exemption.
+  # ---------------------------------------------------------------------------
+  enforce-one-component-per-pr:
+    name: enforce-one-component-per-pr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify the diff
+        id: classify
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash tools/classify-pr-diff.sh
+
+      - name: Count components
+        env:
+          # `components`, not `real_components`: a pull request touching two
+          # components' TESTS is still two components' worth of review surface.
+          COMPONENTS: ${{ steps.classify.outputs.components }}
+        run: |
+          COUNT=$(printf '%s' "$COMPONENTS" | tr ',' '\n' | grep -cv '^$' || true)
+          echo "Components touched: ${COUNT:-0} (${COMPONENTS:-none})"
+          if [ "${COUNT:-0}" -gt 1 ]; then
+            echo "::error::This pull request modifies ${COUNT} components (${COMPONENTS}). Open one pull request per component."
+            echo "::error::This kit ships no multi-component exemption — see the pipeline rule, 'Cross-cutting changes'."
+            exit 1
+          fi
+
+  # ---------------------------------------------------------------------------
+  # Gate 3 — the decision document is already on the base branch.
+  #
+  # "Already" is the whole gate. A document added in this same pull request does not
+  # count, which is what forces PR-1 to be a separate, human-merged pull request.
+  # ---------------------------------------------------------------------------
+  require-document-on-base:
+    name: require-document-on-base
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Classify the diff
+        id: classify
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash tools/classify-pr-diff.sh
+
+      - name: Check the base branch
+        # Only pull requests that actually carry component source need a document.
+        # SPEC_ONLY, MIXED and NONE are handled by gate 1 or are no-ops here.
+        if: steps.classify.outputs.classification == 'COMPONENT_SOURCE'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          REAL_COMPONENTS: ${{ steps.classify.outputs.real_components }}
+          REAL_COMPONENT_LAYOUTS: ${{ steps.classify.outputs.real_component_layouts }}
+        run: bash tools/check-document-on-base.sh

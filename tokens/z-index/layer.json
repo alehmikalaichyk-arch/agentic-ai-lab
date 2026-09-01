@@ -1,0 +1,21 @@
+{
+  "z-index": {
+    "$description": "Stacking order, named by what stacks rather than by number. A component that invents its own z-index is how an overlay ends up behind the thing it overlays.",
+    "overlay": {
+      "$value": "300",
+      "$type": "number"
+    },
+    "modal": {
+      "$value": "500",
+      "$type": "number"
+    },
+    "popover": {
+      "$value": "600",
+      "$type": "number"
+    },
+    "toast": {
+      "$value": "700",
+      "$type": "number"
+    }
+  }
+}

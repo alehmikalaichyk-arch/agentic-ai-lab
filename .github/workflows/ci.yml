@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# The quality stages the kit's stage #8 aggregates. Names here are the ones
+# ds-kit.config.yml lists under npm_scripts — the gate runs them BY NAME, so a
+# rename in package.json without a rename there produces a stage that silently
+# never runs.
+jobs:
+  quality:
+    name: quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      # build:tokens comes first and is not optional. generated/ is not committed,
+      # so typecheck, test and the Storybook build all read artifacts that do not
+      # exist until this runs. A green run without it means the later stages
+      # measured an empty directory.
+      - run: npm run build:tokens
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm test

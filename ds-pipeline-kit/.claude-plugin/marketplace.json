@@ -1,0 +1,19 @@
+{
+  "name": "ds-pipeline-kit",
+  "description": "A portable design-system component pipeline: requirements, spec, human freeze checkpoint, implementation, stories, accessibility, quality gate.",
+  "owner": {
+    "name": "DS Pipeline Kit"
+  },
+  "plugins": [
+    {
+      "name": "ds-component-pipeline",
+      "description": "A design-system component pipeline: numbered requirements, a spec frozen by human merge before any code is written, implementation, stories, an accessibility pass, and an independent quality gate. Ships the process and a local write-time guard; CI enforcement is a separate manual step.",
+      "version": "1.0.0",
+      "author": {
+        "name": "DS Pipeline Kit"
+      },
+      "source": "./plugin",
+      "category": "development"
+    }
+  ]
+}

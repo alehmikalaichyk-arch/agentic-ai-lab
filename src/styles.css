@@ -1,0 +1,10 @@
+/*
+ * The stylesheet Storybook and any consumer load.
+ *
+ * Order is load-bearing: the token :root block has to exist before the @theme
+ * block references it, and Tailwind's own layers come last so utilities win over
+ * the base reset.
+ */
+@import '../generated/tokens.css';
+@import '../generated/tailwind-theme.css';
+@import 'tailwindcss';

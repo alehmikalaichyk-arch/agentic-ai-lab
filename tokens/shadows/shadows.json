@@ -1,0 +1,21 @@
+{
+  "shadow": {
+    "$description": "Elevation. Surfaces are separated by shadow rather than by hue, which is why surface.raised and surface.default are the same colour.",
+    "sm": {
+      "$value": "0 1px 4px 0 rgba(22, 26, 35, 0.04)",
+      "$type": "shadow"
+    },
+    "default": {
+      "$value": "0 2px 8px 0 rgba(22, 26, 35, 0.06)",
+      "$type": "shadow"
+    },
+    "md": {
+      "$value": "0 4px 16px 0 rgba(22, 26, 35, 0.10)",
+      "$type": "shadow"
+    },
+    "lg": {
+      "$value": "0 8px 32px 0 rgba(22, 26, 35, 0.14)",
+      "$type": "shadow"
+    }
+  }
+}

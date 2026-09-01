@@ -1,0 +1,5 @@
+{
+  "spacing": {
+    "base": { "$value": "4px", "$type": "dimension", "$description": "Tailwind multiplies this to derive the whole numeric scale: p-4 resolves to calc(var(--spacing) * 4)." }
+  }
+}

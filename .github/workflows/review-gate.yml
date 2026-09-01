@@ -1,0 +1,144 @@
+name: review-approved gate
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, dismissed, edited]
+
+permissions:
+  statuses: write
+  pull-requests: read
+  contents: read
+
+# Serialize runs per PR so the newest event's evaluation is the last writer of the
+# review-approved status. Otherwise a slow `synchronize` run could overwrite a
+# legitimate same-head `success` (set by a review run) with `pending`, stranding an
+# approved PR. cancel-in-progress:false lets the in-progress run finish and the
+# newest queued run write last.
+concurrency:
+  group: review-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  # NOTE: the job name must NOT be `review-approved` — that string is the
+  # required commit-status *context* this workflow sets. A job named the same
+  # publishes an always-green check run of the same name, which the ruleset could
+  # match instead of the approval-driven status, bypassing the gate.
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate review approval and set commit status
+        # Pinned to a full commit SHA (not the mutable @v7 tag) because this
+        # workflow is the merge-enforcement boundary: it holds `statuses: write`
+        # and its status unblocks Merge. A compromised/re-pointed tag could set
+        # review-approved=success on any SHA. Other repo workflows use major
+        # tags; this one is intentionally stricter. Bump deliberately.
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const CONTEXT = 'review-approved';
+            // Policy: any approving review unblocks merge — no hardcoded
+            // allow-list. A single APPROVED review from any reviewer (a human, or
+            // an automated reviewer with read access) sets the gate green.
+            //
+            // THIS REPOSITORY IS PUBLIC, so repository visibility is NOT the trust
+            // anchor. Anyone with a GitHub account can submit an approving review
+            // here. The permission check below is what replaces it: a reviewer must
+            // hold write or admin permission on the repository for their approval to
+            // count. The kit ships this workflow with the private-repo assumption and
+            // says so in the file it ships; this is the public-repo variant it tells
+            // you to write.
+            //
+            // author_association is deliberately NOT used as the filter: inside CI
+            // the GITHUB_TOKEN does not see an org member's private membership, so
+            // it reports MEMBER as NONE and would strand a legitimate approval.
+            // getCollaboratorPermissionLevel asks the question directly instead.
+
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setFailed('No pull_request in payload; nothing to evaluate.');
+              return;
+            }
+            const { owner, repo } = context.repo;
+            const sha = pr.head.sha;
+
+            const setStatus = (state, description) =>
+              github.rest.repos.createCommitStatus({
+                owner, repo, sha, context: CONTEXT, state, description,
+              });
+
+            // Evaluate the CURRENT head on every event (including synchronize).
+            // Reset-on-push falls out naturally: a freshly pushed commit has no
+            // review cast against it yet, so it evaluates to pending. We never
+            // blind-write pending on synchronize — that would race a same-head
+            // approval and could overwrite a legitimate `success` (the commit-status
+            // API is last-writer-wins), stranding an approved PR. The per-PR
+            // concurrency group above serializes runs so the newest event wins.
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner, repo, pull_number: pr.number, per_page: 100,
+            });
+
+            const latestByReviewer = new Map();
+            for (const review of reviews) {
+              const login = review.user && review.user.login;
+              if (!login) continue;
+              // Defense-in-depth: a PR author's own review never satisfies the
+              // gate (GitHub blocks self-approve, but keep it explicit here). No
+              // identity/membership filter beyond this — see the header note:
+              // this is a PRIVATE repo, so review access is already restricted
+              // to repo collaborators/members, and author_association is
+              // unreliable under GITHUB_TOKEN.
+              if (login === pr.user.login) continue;
+              // Only count reviews cast against the CURRENT head SHA. Reviews are
+              // not auto-dismissed on push (dismiss_stale_reviews_on_push=false),
+              // so a stale APPROVED on an earlier commit must NOT green a newer
+              // head — otherwise a later pull_request_review event (edited/
+              // dismissed/submitted) would re-green the pushed commit from the old
+              // approval, defeating the strict reset-on-push guarantee.
+              if (review.commit_id !== sha) continue;
+              // COMMENTED reviews do not change a reviewer's decision; ignore them.
+              if (review.state === 'COMMENTED') continue;
+              latestByReviewer.set(login, review.state);
+            }
+
+            // Public-repo permission filter. Anyone can review; only a reviewer who
+            // could push the branch themselves is allowed to unblock the merge.
+            // Failure to resolve a permission is treated as NOT permitted — a lookup
+            // that errors must never be the thing that greens the gate.
+            for (const login of [...latestByReviewer.keys()]) {
+              let level = 'none';
+              try {
+                const res = await github.rest.repos.getCollaboratorPermissionLevel({
+                  owner, repo, username: login,
+                });
+                level = res.data.permission;
+              } catch (e) {
+                core.info(`permission lookup failed for ${login}: ${e.message} — not counting it`);
+              }
+              if (level !== 'admin' && level !== 'write' && level !== 'maintain') {
+                core.info(`ignoring review from ${login} (permission: ${level})`);
+                latestByReviewer.delete(login);
+              }
+            }
+
+            let approved = false;
+            let changesRequested = false;
+            for (const state of latestByReviewer.values()) {
+              if (state === 'APPROVED') approved = true;
+              if (state === 'CHANGES_REQUESTED') changesRequested = true;
+            }
+
+            // Any approving review from a permitted reviewer unblocks merge. An
+            // APPROVED review takes precedence over a CHANGES_REQUESTED from another
+            // reviewer: a single approval is sufficient, regardless of who else
+            // requested changes. This is what lets a human approval override an
+            // advisory reviewer bot's CR.
+            if (approved) {
+              await setStatus('success', 'At least one approving review present');
+            } else if (changesRequested) {
+              await setStatus('failure', 'Changes requested and no approving review yet');
+            } else {
+              await setStatus('pending', 'Awaiting an approving review');
+            }
+            core.info(`${CONTEXT} evaluated on ${sha}: approved=${approved} changesRequested=${changesRequested}`);

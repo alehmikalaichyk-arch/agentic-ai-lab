@@ -1,0 +1,22 @@
+{
+  "name": "ds-component-pipeline",
+  "version": "1.0.0",
+  "description": "A design-system component pipeline: numbered requirements, a spec frozen by human merge before any code is written, implementation, stories, an accessibility pass, and an independent quality gate. Ships the process and a local write-time guard; CI enforcement is a separate manual step.",
+  "author": {
+    "name": "DS Pipeline Kit"
+  },
+  "license": "MIT",
+  "keywords": [
+    "design-system",
+    "component",
+    "specification",
+    "accessibility",
+    "design-tokens",
+    "storybook",
+    "quality-gate",
+    "code-review"
+  ],
+  "skills": "./skills/",
+  "agents": "./agents/",
+  "hooks": "./hooks/hooks.json"
+}

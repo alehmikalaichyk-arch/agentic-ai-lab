@@ -1,0 +1,13 @@
+# Organisation-specific de-identification patterns for verify.sh.
+#
+# Copy to `.de-identification` and edit. That file is gitignored on purpose: a
+# public copy of this kit must not carry the name it was de-identified FROM.
+#
+# One per line:  <label shown in the report>|<extended regex>
+#
+# no organisation name|[Aa][Cc][Mm][Ee]
+# no internal ticket keys|\bACME-[0-9]+\b
+# no branded token prefix|\-\-acme\-|@acme/
+# no reviewer bot identity|DEV-Acme
+# no source repository paths|packages/internal-design-system
+# no legacy skill names|acme-ds-[a-z]+

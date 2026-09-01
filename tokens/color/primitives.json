@@ -1,0 +1,153 @@
+{
+  "palette": {
+    "$description": "Primitive palette. Raw values, no meaning attached. Nothing outside tokens/color/semantic.json may reference these — the strict primitive -> semantic -> component chain is what lets a palette change reach every component at once.",
+    "neutral": {
+      "0": {
+        "$value": "#ffffff",
+        "$type": "color"
+      },
+      "50": {
+        "$value": "#f7f8fa",
+        "$type": "color"
+      },
+      "100": {
+        "$value": "#eef0f4",
+        "$type": "color"
+      },
+      "200": {
+        "$value": "#dee2e9",
+        "$type": "color"
+      },
+      "300": {
+        "$value": "#c3cad5",
+        "$type": "color"
+      },
+      "400": {
+        "$value": "#98a2b3",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#6b7688",
+        "$type": "color"
+      },
+      "600": {
+        "$value": "#4e5769",
+        "$type": "color"
+      },
+      "700": {
+        "$value": "#3a4152",
+        "$type": "color"
+      },
+      "800": {
+        "$value": "#272d3a",
+        "$type": "color"
+      },
+      "900": {
+        "$value": "#161a23",
+        "$type": "color"
+      }
+    },
+    "brand": {
+      "50": {
+        "$value": "#eef1fd",
+        "$type": "color"
+      },
+      "100": {
+        "$value": "#dde3fb",
+        "$type": "color"
+      },
+      "200": {
+        "$value": "#bcc8f7",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#4a5bd4",
+        "$type": "color"
+      },
+      "600": {
+        "$value": "#3b49ae",
+        "$type": "color"
+      },
+      "700": {
+        "$value": "#2e398a",
+        "$type": "color"
+      },
+      "800": {
+        "$value": "#232c6b",
+        "$type": "color"
+      }
+    },
+    "red": {
+      "50": {
+        "$value": "#fdecec",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#d84343",
+        "$type": "color"
+      },
+      "700": {
+        "$value": "#9c2020",
+        "$type": "color"
+      },
+      "900": {
+        "$value": "#5e1313",
+        "$type": "color"
+      }
+    },
+    "amber": {
+      "50": {
+        "$value": "#fdf4e4",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#c78a13",
+        "$type": "color"
+      },
+      "700": {
+        "$value": "#7d560c",
+        "$type": "color"
+      },
+      "900": {
+        "$value": "#4a3307",
+        "$type": "color"
+      }
+    },
+    "green": {
+      "50": {
+        "$value": "#e9f7ef",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#2a8f56",
+        "$type": "color"
+      },
+      "700": {
+        "$value": "#186a3b",
+        "$type": "color"
+      },
+      "900": {
+        "$value": "#0e4023",
+        "$type": "color"
+      }
+    },
+    "blue": {
+      "50": {
+        "$value": "#e8f2fb",
+        "$type": "color"
+      },
+      "500": {
+        "$value": "#2b7cc4",
+        "$type": "color"
+      },
+      "700": {
+        "$value": "#1a5a92",
+        "$type": "color"
+      },
+      "900": {
+        "$value": "#103759",
+        "$type": "color"
+      }
+    }
+  }
+}

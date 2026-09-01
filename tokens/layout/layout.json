@@ -1,0 +1,5 @@
+{
+  "layout": {
+    "content-max-width": { "$value": "1240px", "$type": "dimension" }
+  }
+}

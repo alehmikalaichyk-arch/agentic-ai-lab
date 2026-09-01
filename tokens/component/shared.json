@@ -1,0 +1,37 @@
+{
+  "shared": {
+    "$description": "Component-layer tokens shared across components. These reference semantic tokens, never primitives. A control height living here is what keeps a Button, an Input and a Select the same height without any of them knowing about the others.",
+    "height": {
+      "xs": {
+        "$value": "24px",
+        "$type": "dimension"
+      },
+      "sm": {
+        "$value": "32px",
+        "$type": "dimension"
+      },
+      "md": {
+        "$value": "40px",
+        "$type": "dimension"
+      },
+      "lg": {
+        "$value": "48px",
+        "$type": "dimension"
+      }
+    },
+    "focus-ring": {
+      "width": {
+        "$value": "2px",
+        "$type": "dimension"
+      },
+      "offset": {
+        "$value": "2px",
+        "$type": "dimension"
+      },
+      "color": {
+        "$value": "{border.focused}",
+        "$type": "color"
+      }
+    }
+  }
+}

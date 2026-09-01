@@ -1,0 +1,124 @@
+name: review-approved gate
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  pull_request_review:
+    types: [submitted, dismissed, edited]
+
+permissions:
+  statuses: write
+  pull-requests: read
+  contents: read
+
+# Serialize runs per PR so the newest event's evaluation is the last writer of the
+# review-approved status. Otherwise a slow `synchronize` run could overwrite a
+# legitimate same-head `success` (set by a review run) with `pending`, stranding an
+# approved PR. cancel-in-progress:false lets the in-progress run finish and the
+# newest queued run write last.
+concurrency:
+  group: review-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  # NOTE: the job name must NOT be `review-approved` — that string is the
+  # required commit-status *context* this workflow sets. A job named the same
+  # publishes an always-green check run of the same name, which the ruleset could
+  # match instead of the approval-driven status, bypassing the gate.
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Evaluate review approval and set commit status
+        # Pinned to a full commit SHA (not the mutable @v7 tag) because this
+        # workflow is the merge-enforcement boundary: it holds `statuses: write`
+        # and its status unblocks Merge. A compromised/re-pointed tag could set
+        # review-approved=success on any SHA. Other repo workflows use major
+        # tags; this one is intentionally stricter. Bump deliberately.
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          script: |
+            const CONTEXT = 'review-approved';
+            // Policy: any approving review unblocks merge — no hardcoded
+            // allow-list. A single APPROVED review from any reviewer (a human, or
+            // an automated reviewer with read access) sets the gate green.
+            //
+            // THE TRUST ANCHOR IS REPOSITORY VISIBILITY. This is safe because the
+            // repository is PRIVATE, so the ability to submit a review is already
+            // restricted to accounts with repo access — "any approve" cannot come
+            // from an outside account. ON A PUBLIC REPOSITORY THIS IS NOT TRUE and
+            // any account can submit a review: add an identity or permission check
+            // before using this workflow on a public repository.
+            //
+            // author_association is deliberately NOT used as a trust filter:
+            // inside CI the GITHUB_TOKEN (github-actions[bot]) does not see a
+            // private org member's membership, so it reports MEMBER as NONE and
+            // would strand a legitimately-approved PR (observed on PR #100). The
+            // private-repo access boundary is the trust anchor instead.
+
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setFailed('No pull_request in payload; nothing to evaluate.');
+              return;
+            }
+            const { owner, repo } = context.repo;
+            const sha = pr.head.sha;
+
+            const setStatus = (state, description) =>
+              github.rest.repos.createCommitStatus({
+                owner, repo, sha, context: CONTEXT, state, description,
+              });
+
+            // Evaluate the CURRENT head on every event (including synchronize).
+            // Reset-on-push falls out naturally: a freshly pushed commit has no
+            // review cast against it yet, so it evaluates to pending. We never
+            // blind-write pending on synchronize — that would race a same-head
+            // approval and could overwrite a legitimate `success` (the commit-status
+            // API is last-writer-wins), stranding an approved PR. The per-PR
+            // concurrency group above serializes runs so the newest event wins.
+            const reviews = await github.paginate(github.rest.pulls.listReviews, {
+              owner, repo, pull_number: pr.number, per_page: 100,
+            });
+
+            const latestByReviewer = new Map();
+            for (const review of reviews) {
+              const login = review.user && review.user.login;
+              if (!login) continue;
+              // Defense-in-depth: a PR author's own review never satisfies the
+              // gate (GitHub blocks self-approve, but keep it explicit here). No
+              // identity/membership filter beyond this — see the header note:
+              // this is a PRIVATE repo, so review access is already restricted
+              // to repo collaborators/members, and author_association is
+              // unreliable under GITHUB_TOKEN.
+              if (login === pr.user.login) continue;
+              // Only count reviews cast against the CURRENT head SHA. Reviews are
+              // not auto-dismissed on push (dismiss_stale_reviews_on_push=false),
+              // so a stale APPROVED on an earlier commit must NOT green a newer
+              // head — otherwise a later pull_request_review event (edited/
+              // dismissed/submitted) would re-green the pushed commit from the old
+              // approval, defeating the strict reset-on-push guarantee.
+              if (review.commit_id !== sha) continue;
+              // COMMENTED reviews do not change a reviewer's decision; ignore them.
+              if (review.state === 'COMMENTED') continue;
+              latestByReviewer.set(login, review.state);
+            }
+
+            let approved = false;
+            let changesRequested = false;
+            for (const state of latestByReviewer.values()) {
+              if (state === 'APPROVED') approved = true;
+              if (state === 'CHANGES_REQUESTED') changesRequested = true;
+            }
+
+            // Any approving review unblocks merge (owner policy, 2026-07-08).
+            // An APPROVED review takes precedence over a CHANGES_REQUESTED from
+            // another reviewer: a single approval — from any reviewer — is
+            // sufficient, regardless of who else requested changes. This is what
+            // lets a human approval override the advisory reviewer bot's CR.
+            if (approved) {
+              await setStatus('success', 'At least one approving review present');
+            } else if (changesRequested) {
+              await setStatus('failure', 'Changes requested and no approving review yet');
+            } else {
+              await setStatus('pending', 'Awaiting an approving review');
+            }
+            core.info(`${CONTEXT} evaluated on ${sha}: approved=${approved} changesRequested=${changesRequested}`);

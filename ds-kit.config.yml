@@ -1,0 +1,132 @@
+# ============================================================================
+# DS Pipeline Kit — configuration surface
+# ============================================================================
+#
+# This is the ONLY file you edit to bind the kit to a repository.
+#
+# Everything project-specific lives here: paths, branch name, npm script names,
+# required status-check names, token namespace, agent roster. No skill, agent,
+# rule, workflow or tool in this kit hardcodes any of it — they read these keys.
+#
+# If you find a project-specific value anywhere else in the kit, that is a bug
+# in the kit, not something for you to work around. Report it.
+#
+# Defaults below assume a SINGLE-REPOSITORY design system: the DS package is the
+# repository root. See `ds_package_root` if yours is nested.
+# ============================================================================
+
+kit:
+  schema_version: 1
+
+# ----------------------------------------------------------------------------
+# 1. Where the design system lives
+# ----------------------------------------------------------------------------
+# Path from the repository root to the DS package. "." means the DS package IS
+# the repository root, which is what this kit is built for. A nested package
+# (e.g. "packages/design-system/") works, but every path in `paths` below is
+# then relative to it, and the CI workflows need their `working-directory` set.
+ds_package_root: "."
+
+# The long-lived branch that pull requests target. The kit uses this for the
+# base-branch document check and for branch protection.
+main_branch: "main"
+
+# ----------------------------------------------------------------------------
+# 2. Paths inside the DS package
+# ----------------------------------------------------------------------------
+# Trailing slashes required on directories. The diff classifier and the
+# base-branch document check are driven entirely by these three groups:
+#   - component source     -> decides whether a PR contains implementation
+#   - decision documents   -> decides whether a PR contains a spec/addendum
+#   - visual drafts        -> deliberately outside both, so a draft never
+#                             reclassifies a spec PR as implementation
+paths:
+  # --- component source (the classifier reads these) ---
+  components_ui: "src/components/ui/"
+  components_composite: "src/components/"
+
+  # --- decision documents (PR-1 content) ---
+  specs: "docs/component-specs/"
+  retrofits: "docs/component-retrofits/"
+  requirements: "docs/component-requirements/"
+
+  # --- visual drafts (stage #4.5; outside every classified path) ---
+  drafts: "component-prototypes/"
+
+  # --- supporting ---
+  tokens: "tokens/"
+  generated: "generated/"
+  stories_config: ".storybook/"
+  e2e: "e2e/"            # reserved; no suite here yet
+  utils: "src/lib/utils.ts"
+
+# ----------------------------------------------------------------------------
+# 3. Token namespace
+# ----------------------------------------------------------------------------
+# The CSS custom-property prefix your token build emits, and the package
+# specifier consumers import from. Used by the governance rules and by the
+# token detection skill.
+tokens_namespace:
+  css_prefix: "--ds"
+  package: "@agentic-ai-lab/design-system"
+
+# ----------------------------------------------------------------------------
+# 4. Commands
+# ----------------------------------------------------------------------------
+# Script names as they appear in package.json. The quality gate runs these by
+# name — it never assumes a command string. A value of `null` means "this
+# project has no such stage"; the gate reports it as not-run rather than failing.
+npm_scripts:
+  typecheck: "typecheck"
+  lint: "lint"
+  test: "test"
+  build: "build"
+  build_tokens: "build:tokens"
+  build_storybook: "build-storybook"
+  e2e: null              # this repository has no end-to-end stage yet
+
+# ----------------------------------------------------------------------------
+# 5. Required status checks
+# ----------------------------------------------------------------------------
+# Names as they appear in the platform's checks UI. Branch protection requires
+# exactly these strings; a typo here is a gate that silently never blocks.
+status_checks:
+  # Structural gates (Level 3 workflows)
+  spec_pr_separation: "enforce-spec-pr-separation"
+  one_component_per_pr: "enforce-one-component-per-pr"
+  document_on_base: "require-document-on-base"
+  # The review gate that opens the merge button
+  review_approved: "review-approved"
+
+# ----------------------------------------------------------------------------
+# 6. Agent roster
+# ----------------------------------------------------------------------------
+# Names of the agents in your harness that the orchestrator delegates to.
+# `implementer` runs stages #1-#7. `gate` runs stage #8 and MUST resolve to a
+# fresh agent context — not a continuation of the implementer's session. The
+# names are incidental; the fresh context is the gate.
+agents:
+  implementer: "frontend-engineer"
+  gate: "quality-reviewer"
+
+# ----------------------------------------------------------------------------
+# 7. Review policy
+# ----------------------------------------------------------------------------
+review:
+  # Rounds 1..N fix everything worth fixing. From round N+1, a finding that is
+  # not a blocker becomes a linked follow-up issue instead of an in-PR fix.
+  round_budget: 2
+  # Whether a non-author approving review overrides another reviewer's
+  # "changes requested". Set false if your policy requires all reviewers to
+  # clear before merge.
+  any_approval_overrides_changes_requested: true
+
+# ----------------------------------------------------------------------------
+# 8. Accessibility floor
+# ----------------------------------------------------------------------------
+a11y:
+  wcag_level: "AA"
+  wcag_version: "2.2"
+  # Contrast findings are measured RELATIVE to already-shipped components, not
+  # in a vacuum. A palette-wide debt is not chargeable to the newest component.
+  measure_contrast_relative_to_shipped: true

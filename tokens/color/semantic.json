@@ -1,0 +1,241 @@
+{
+  "fg": {
+    "default": {
+      "$value": "{palette.neutral.900}",
+      "$type": "color",
+      "$description": "Body text and any content that carries meaning."
+    },
+    "subtle": {
+      "$value": "{palette.neutral.600}",
+      "$type": "color",
+      "$description": "Secondary text: captions, helper text, metadata."
+    },
+    "subtlest": {
+      "$value": "{palette.neutral.500}",
+      "$type": "color",
+      "$description": "Placeholder text and de-emphasised labels. The lightest foreground that still meets AA on surface.default."
+    },
+    "disabled": {
+      "$value": "{palette.neutral.400}",
+      "$type": "color",
+      "$description": "Deliberately below AA. A disabled control is exempt from contrast, and using this anywhere else is a violation."
+    },
+    "inverse": {
+      "$value": "{palette.neutral.0}",
+      "$type": "color",
+      "$description": "Content on a bold or boldest surface."
+    },
+    "brand": {
+      "$value": "{palette.brand.600}",
+      "$type": "color"
+    },
+    "brand-bold": {
+      "$value": "{palette.brand.700}",
+      "$type": "color",
+      "$description": "On a FOREGROUND role, -bold means darker. On a surface role it means the opposite — see surface.brand-bold."
+    },
+    "link": {
+      "$value": "{palette.brand.600}",
+      "$type": "color"
+    },
+    "link-hovered": {
+      "$value": "{palette.brand.700}",
+      "$type": "color"
+    },
+    "status-danger": {
+      "$value": "{palette.red.700}",
+      "$type": "color"
+    },
+    "status-danger-bold": {
+      "$value": "{palette.red.900}",
+      "$type": "color"
+    },
+    "status-warning": {
+      "$value": "{palette.amber.700}",
+      "$type": "color"
+    },
+    "status-success": {
+      "$value": "{palette.green.700}",
+      "$type": "color"
+    },
+    "status-info": {
+      "$value": "{palette.blue.700}",
+      "$type": "color"
+    },
+    "accent-red": {
+      "$value": "{palette.red.700}",
+      "$type": "color"
+    },
+    "accent-amber": {
+      "$value": "{palette.amber.700}",
+      "$type": "color"
+    },
+    "accent-green": {
+      "$value": "{palette.green.700}",
+      "$type": "color"
+    },
+    "accent-blue": {
+      "$value": "{palette.blue.700}",
+      "$type": "color"
+    },
+    "accent-red-boldest": {
+      "$value": "{palette.red.900}",
+      "$type": "color",
+      "$description": "The foreground to use ON the matching soft accent surface. Pairing accent-red with surface.accent-red-subtlest does NOT reach AA; the boldest step is what does."
+    },
+    "accent-amber-boldest": {
+      "$value": "{palette.amber.900}",
+      "$type": "color"
+    },
+    "accent-green-boldest": {
+      "$value": "{palette.green.900}",
+      "$type": "color"
+    },
+    "accent-blue-boldest": {
+      "$value": "{palette.blue.900}",
+      "$type": "color"
+    }
+  },
+  "surface": {
+    "page": {
+      "$value": "{palette.neutral.50}",
+      "$type": "color",
+      "$description": "The application background behind every card."
+    },
+    "default": {
+      "$value": "{palette.neutral.0}",
+      "$type": "color",
+      "$description": "Cards, panels, anything sitting on the page."
+    },
+    "raised": {
+      "$value": "{palette.neutral.0}",
+      "$type": "color",
+      "$description": "Same colour as default; separation comes from shadow.md, not from hue."
+    },
+    "sunken": {
+      "$value": "{palette.neutral.100}",
+      "$type": "color"
+    },
+    "overlay": {
+      "$value": "{palette.neutral.900}",
+      "$type": "color",
+      "$description": "The scrim behind a modal. Consumers apply their own alpha."
+    },
+    "inverse": {
+      "$value": "{palette.neutral.900}",
+      "$type": "color"
+    },
+    "neutral-subtlest": {
+      "$value": "{palette.neutral.50}",
+      "$type": "color"
+    },
+    "neutral-subtlest-hovered": {
+      "$value": "{palette.neutral.100}",
+      "$type": "color"
+    },
+    "neutral-subtle": {
+      "$value": "{palette.neutral.100}",
+      "$type": "color"
+    },
+    "neutral-subtle-hovered": {
+      "$value": "{palette.neutral.200}",
+      "$type": "color"
+    },
+    "neutral-subtle-pressed": {
+      "$value": "{palette.neutral.300}",
+      "$type": "color"
+    },
+    "neutral-bold": {
+      "$value": "{palette.neutral.600}",
+      "$type": "color",
+      "$description": "On a SURFACE role, -bold means a strong fill that carries inverse text. The same suffix means darker-text on fg.* roles; the two are not symmetrical, and reading one as the other is the most common token mistake."
+    },
+    "neutral-bold-hovered": {
+      "$value": "{palette.neutral.700}",
+      "$type": "color"
+    },
+    "neutral-boldest": {
+      "$value": "{palette.neutral.900}",
+      "$type": "color"
+    },
+    "brand-subtlest": {
+      "$value": "{palette.brand.50}",
+      "$type": "color"
+    },
+    "brand-subtle": {
+      "$value": "{palette.brand.100}",
+      "$type": "color"
+    },
+    "brand-subtle-hovered": {
+      "$value": "{palette.brand.200}",
+      "$type": "color"
+    },
+    "brand-bold": {
+      "$value": "{palette.brand.600}",
+      "$type": "color"
+    },
+    "brand-bold-hovered": {
+      "$value": "{palette.brand.700}",
+      "$type": "color"
+    },
+    "status-danger-subtlest": {
+      "$value": "{palette.red.50}",
+      "$type": "color"
+    },
+    "status-warning-subtlest": {
+      "$value": "{palette.amber.50}",
+      "$type": "color"
+    },
+    "status-success-subtlest": {
+      "$value": "{palette.green.50}",
+      "$type": "color"
+    },
+    "status-info-subtlest": {
+      "$value": "{palette.blue.50}",
+      "$type": "color"
+    },
+    "accent-red-subtlest": {
+      "$value": "{palette.red.50}",
+      "$type": "color"
+    },
+    "accent-amber-subtlest": {
+      "$value": "{palette.amber.50}",
+      "$type": "color"
+    },
+    "accent-green-subtlest": {
+      "$value": "{palette.green.50}",
+      "$type": "color"
+    },
+    "accent-blue-subtlest": {
+      "$value": "{palette.blue.50}",
+      "$type": "color"
+    }
+  },
+  "border": {
+    "default": {
+      "$value": "{palette.neutral.200}",
+      "$type": "color"
+    },
+    "subtle": {
+      "$value": "{palette.neutral.100}",
+      "$type": "color"
+    },
+    "strong": {
+      "$value": "{palette.neutral.400}",
+      "$type": "color"
+    },
+    "brand": {
+      "$value": "{palette.brand.600}",
+      "$type": "color"
+    },
+    "focused": {
+      "$value": "{palette.brand.500}",
+      "$type": "color",
+      "$description": "The focus ring. One role for every component, so focus looks the same everywhere."
+    },
+    "danger": {
+      "$value": "{palette.red.500}",
+      "$type": "color"
+    }
+  }
+}
