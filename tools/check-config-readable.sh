@@ -33,9 +33,9 @@ read_key() {
 }
 
 # Every key some tool in this repository resolves by name.
-KEYS="components_ui components_composite specs retrofits requirements drafts tokens generated
-      main_branch implementer gate spec_pr_separation one_component_per_pr document_on_base
-      review_approved require_review_to_merge"
+KEYS="components_ui components_composite specs retrofits requirements drafts pipeline_reports
+      tokens generated main_branch implementer gate spec_pr_separation one_component_per_pr
+      document_on_base review_approved require_review_to_merge"
 
 for key in $KEYS; do
   # Present in the file at all?
