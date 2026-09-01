@@ -15,7 +15,8 @@ read them in pairs.
 
 | Path | What it is |
 |---|---|
-| `ds-pipeline-kit/` | The pipeline itself, vendored. Skills, the orchestrator, the write-time guard, the CI gates. Portable to any repository — see its [INSTALL.md](ds-pipeline-kit/INSTALL.md). |
+| `.claude/` | The pipeline **in effect here**: 10 skills, the orchestrator, the write-time guard, and the directory-triggered rule. Present on clone; no install step. |
+| `ds-pipeline-kit/` | The same pipeline as a **portable kit**, as it would be handed to another repository. Skills, orchestrator, guard, CI gates, and its own [INSTALL.md](ds-pipeline-kit/INSTALL.md) / [QUICKSTART.md](ds-pipeline-kit/QUICKSTART.md). |
 | `ds-kit.config.yml` | The only file that binds the kit to *this* repository. Paths, branch, script names, check names. |
 | `tokens/` | DTCG token sources. Primitive → semantic → component, in that order, with no shortcuts. |
 | `generated/` | Built from `tokens/`. **Not committed** — every script that needs it runs `build:tokens` first. |
@@ -23,6 +24,27 @@ read them in pairs.
 | `docs/component-specs/` | The frozen specs. One per component, merged before its implementation. |
 | `component-prototypes/` | Visual drafts — throwaway renderings the owner looks at *before* a spec is frozen. |
 | `.github/workflows/` | CI, the three structural gates, the review gate, and Storybook publishing. |
+
+### Why the pipeline is here twice
+
+`.claude/` and `ds-pipeline-kit/plugin/` hold the same ten skills and the same
+orchestrator, and `tools/check-claude-dir-in-sync.sh` fails CI if they ever differ.
+
+The kit is designed to install as a plugin, and a plugin has to be *installed* —
+`claude plugin marketplace add` then `install`, once per machine, per person. Pointing
+a `.claude/settings.json` at the vendored copy does not resolve; all three path forms
+were tried. So a fresh clone would have the whole pipeline on disk and none of it in
+effect, which is the worst of both states: it reads as deployed and behaves as absent.
+
+Two copies and a drift check is the boring option, and the boring option is the right
+one for something that has to work on someone else's laptop on the first try.
+
+**Edit the kit, then re-copy** — never the other way round:
+
+```bash
+cp -r ds-pipeline-kit/plugin/skills/. .claude/skills/
+cp ds-pipeline-kit/plugin/agents/ds-pipeline-orchestrator.md .claude/agents/
+```
 
 ## The shape of the process
 
