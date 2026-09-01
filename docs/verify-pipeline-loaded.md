@@ -69,6 +69,8 @@ Answer with evidence, in this order.
 3. ORCHESTRATOR. Is there an agent named ds-pipeline-orchestrator available to you?
    If yes: which tools does it have, and — the point of the question — which two
    are deliberately ABSENT and why?
+   Ask the agent to ENUMERATE ITS OWN TOOL SCHEMA. Do not read its definition
+   file: the two disagree, and only the running roster is real.
 
 4. HOOK. The write-time guard is harness-level, so answering from the skill files
    does not test it. Actually exercise it:
@@ -104,6 +106,7 @@ Answer with evidence, in this order.
 | Step 4 prints `exit=0` | The guard resolved no component path — `ds-kit.config.yml` does not match this repository's layout |
 | Step 5 refused by the harness before the file appears | The hook is wired into settings, not merely present on disk |
 | Step 5 succeeds and the file exists | The hook file works but `.claude/settings.json` is not being read |
+| An agent's enumerated tools are FEWER than its definition declares | The declared roster is not a guarantee. Observed 2026-09-02: `frontend-engineer` declares `Read, Glob, Grep, Write, Edit, Bash, Skill` and enumerated itself without `Glob` or `Grep`. Harness-level, so no edit to the definition reaches it — and invisible to anyone who checks by reading the file |
 
 **Step 4 passing and step 5 failing is the interesting case**, and the one worth understanding:
 the guard script is correct and nothing is calling it. That is the state this repository was in
