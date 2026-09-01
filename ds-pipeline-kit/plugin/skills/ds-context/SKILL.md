@@ -249,9 +249,25 @@ The skill reports, never fixes. Issues are sorted into two tiers.
 
 - `package.json` missing or unreadable.
 - `tokens/` missing.
-- `src/components/` missing.
+
+The test for this tier is literal: *can a snapshot be produced at all?* Not *is the
+repository in good shape?* Those two questions have different answers, and conflating
+them turns this skill from a reporter into a gatekeeper.
 
 **Warning** — the snapshot is produced with a caveat. Report and continue:
+
+- **`src/components/` missing, or present and empty** — the repository has no
+  components yet. `component_inventory: []` is the correct snapshot for that
+  repository, not a failure to produce one.
+
+  This was Catastrophic until it stopped a real run. A design system with zero
+  components is the state every repository adopting this kit starts in, so halting
+  there made stage #1 unpassable at exactly the moment the pipeline is being
+  installed — the first component could never be built, because the skill that
+  precedes it refused to describe an empty library.
+
+  It also does not survive git: an empty directory is not tracked, so a repository
+  that *has* the directory locally ships a clone that does not.
 
 - `sd.config.mjs` missing — pipeline definition unknown.
 - `components.json` missing — shadcn aliases unknown.
