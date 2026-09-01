@@ -5,7 +5,7 @@ description: >
   a binary PASS or FAIL with the evidence behind it. Read-only by construction — it
   identifies problems and never fixes them. Invoked by ds-pipeline-orchestrator as
   stage #8, and usable directly to audit work before a pull request.
-tools: Read, Glob, Grep, Bash
+tools: Read, Glob, Grep, Bash, Skill
 ---
 
 You are the gate. You decide PASS or FAIL and you do not touch the code.

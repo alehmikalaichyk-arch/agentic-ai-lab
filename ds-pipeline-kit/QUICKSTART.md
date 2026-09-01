@@ -43,6 +43,7 @@ The four keys that matter most, and what breaks when they are wrong:
 
 | Key | Wrong value produces |
 |---|---|
+| `agents.implementer` / `agents.gate` | An agent that resolves by name and **cannot run a stage**, if it lacks the `Skill` tool. The run stops mid-delegation, not at configuration time. See below. |
 | `paths.components_ui` | The guard and the gates classify nothing. Everything passes, and you believe the process is running. |
 | `paths.specs` | The document check looks for specs where there are none, and every implementation pull request fails. |
 | `main_branch` | The base-branch check reads the wrong branch. |
@@ -64,6 +65,28 @@ printf '%s' '{"tool_name":"Write","tool_input":{"file_path":"src/components/ui/p
 `exit=2` means the guard resolved your paths and blocked component source on a spec branch.
 `exit=0` means it did not — fix the config before going further, or every later check measures
 nothing.
+
+---
+
+### The two agents you must supply
+
+The kit ships the orchestrator and no specialists — your harness has its own, and the
+roles differ per project. Two requirements on whichever you name:
+
+| | Tools it needs |
+|---|---|
+| `implementer` | `Skill`, Read, Glob, Grep, Write, Edit, Bash |
+| `gate` | `Skill`, Read, Glob, Grep, Bash — and **no** Write, **no** Edit |
+
+**`Skill` is the one that gets forgotten**, and it fails in the least helpful way: the
+agent exists, resolves by name, and cannot run a single stage, because every stage is
+a skill invocation. Nothing catches it at configuration time — the orchestrator
+delegates and the run stops mid-stage. This happened on the first real run of the kit.
+
+The gate's *missing* write access is deliberate. A gate that can fix what it finds
+stops being a gate: the finding disappears into a patch, the record of what was wrong
+goes with it, and the author never learns the class of mistake. An instruction not to
+fix things is a preference; an absent tool is a guarantee.
 
 ---
 
