@@ -49,6 +49,13 @@ jobs:
       - name: every configured key actually parses
         run: bash tools/check-config-readable.sh
 
+      # This repository is public and on a personal account. Token descriptions were
+      # copied verbatim from the system these tokens were adapted from, and carried
+      # internal decisions, ticket ids and a person's name — inside prose that reads
+      # like ordinary documentation, which is why nothing noticed.
+      - name: no identifiers from the source organisation
+        run: bash tools/check-no-source-identifiers.sh
+
       - run: npm run build:tokens
       - run: npm run typecheck
       - run: npm run lint

@@ -1,14 +1,2 @@
-{
-  "spacing": {
-    "unit": {
-      "$value": "4px",
-      "$type": "dimension",
-      "$description": "Base spacing unit. Published to Tailwind as --spacing; the numeric scale (p-4, gap-2, …) is derived from it. Equal to Tailwind's own 0.25rem default at a 16px root, so no existing utility changes value."
-    },
-    "fractional-step": {
-      "$value": "6px",
-      "$type": "dimension",
-      "$description": "The one approved scale step that is not a whole multiple of the base unit — 1.5 × 4px. Declared here so the step is sanctioned in token source (code is the design system's source of truth; Figma inherits from it) rather than existing only as an incidental Tailwind fraction. Deliberately NOT on the spacing publish allow-list in sd.config.mjs: authors write gap-1.5 / p-1.5, which the base unit already resolves to 6px, so publishing this token would create a second way to write one value — the duplication that retiring the named xs–xl scale removed. Withheld means withheld from the public Tailwind namespace only: like every source token it still reaches generated/tokens.css and generated/tokens.ts, which is what carries it to the Figma export and is the whole reason it is declared. That is the same shape as radius.card and radius.rounded-sm, the design system's two existing withheld tokens. Named for the property that justifies it, never for its pixel value or Tailwind step: spacing.6 would read as \"the 6 step\", but gap-6 is 24px."
-    }
-  }
+{ "spacing": { "unit": { "$value": "4px", "$type": "dimension", "$description": "Base spacing unit. Published to Tailwind as --spacing; the numeric scale (p-4, gap-2, …) is derived from it. Equal to Tailwind's own 0.25rem default at a 16px root, so no existing utility changes value." }, "fractional-step": { "$value": "6px", "$type": "dimension", "$description": "The one approved scale step that is not a whole multiple of the base unit — 1.5 × 4px. Declared here so the step is sanctioned in token source (code is the design system's source of truth; Figma inherits from it) rather than existing only as an incidental Tailwind fraction. Deliberately NOT on the spacing publish allow-list in sd.config.mjs: authors write gap-1.5 / p-1.5, which the base unit already resolves to 6px, so publishing this token would create a second way to write one value — the duplication that retiring the named xs–xl scale removed. Withheld means withheld from the public Tailwind namespace only: like every source token it still reaches generated/tokens.css and generated/tokens.ts, which is what carries it to the Figma export and is the whole reason it is declared. That is the same shape as radius.card and radius.rounded-sm, the design system's two existing withheld tokens. Named for the property that justifies it, never for its pixel value or Tailwind step: spacing.6 would read as \"the 6 step\", but gap-6 is 24px." } }
 }

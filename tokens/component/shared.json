@@ -1,26 +1,2 @@
-{
-  "shared": {
-    "height": {
-      "xs": {
-        "$value": "30px",
-        "$type": "dimension",
-        "$description": "Shared component height xs — used by Input, Button, Select, Multiselect at xs size"
-      },
-      "sm": {
-        "$value": "34px",
-        "$type": "dimension",
-        "$description": "Shared component height sm — used by Input, Button, Select, Multiselect at sm size"
-      },
-      "md": {
-        "$value": "40px",
-        "$type": "dimension",
-        "$description": "Shared component height md — used by Input, Button, Select, Multiselect at md size (default)"
-      },
-      "lg": {
-        "$value": "48px",
-        "$type": "dimension",
-        "$description": "Shared component height lg — used by Input, Button, Select, Multiselect at lg size"
-      }
-    }
-  }
+{ "shared": { "height": { "xs": { "$value": "30px", "$type": "dimension", "$description": "Shared component height xs — used by Input, Button, Select, Multiselect at xs size" }, "sm": { "$value": "34px", "$type": "dimension", "$description": "Shared component height sm — used by Input, Button, Select, Multiselect at sm size" }, "md": { "$value": "40px", "$type": "dimension", "$description": "Shared component height md — used by Input, Button, Select, Multiselect at md size (default)" }, "lg": { "$value": "48px", "$type": "dimension", "$description": "Shared component height lg — used by Input, Button, Select, Multiselect at lg size" } } }
 }

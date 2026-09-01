@@ -1046,9 +1046,9 @@ rm -f "$DERIVED_PATH" "$PATH_SANDBOX/derived-hardlink-victim"
 #
 # The fake git answers per `-C <dir>` for the worktree question and per $CWD_BRANCH for the bare
 # form, so a regression to the cwd-resolving implementation flips both assertions.
-PEG946_DIR=$(mktemp -d)
-mkdir -p "$PEG946_DIR/wt-feature/src/components/ui" "$PEG946_DIR/wt-spec/src/components/ui"
-cat > "$PEG946_DIR/git" <<'FAKEGIT946'
+BRANCH_FIXTURE_DIR=$(mktemp -d)
+mkdir -p "$BRANCH_FIXTURE_DIR/wt-feature/src/components/ui" "$BRANCH_FIXTURE_DIR/wt-spec/src/components/ui"
+cat > "$BRANCH_FIXTURE_DIR/git" <<'FAKEGIT946'
 #!/bin/bash
 if [ "$1" = "-C" ]; then
   # Behave like real git: -C on a path that does not exist is a hard error, not a silent
@@ -1059,8 +1059,8 @@ if [ "$1" = "-C" ]; then
     exit 128
   fi
   case "$2" in
-    */wt-feature/*) resolved="feature/peg-946-fixture" ;;
-    */wt-spec/*)    resolved="spec/peg-946-fixture" ;;
+    */wt-feature/*) resolved="feature/ticket-fixture" ;;
+    */wt-spec/*)    resolved="spec/an upstream change-fixture" ;;
     *)              resolved="main" ;;
   esac
   shift 2
@@ -1076,12 +1076,12 @@ if [ "$1" = "rev-parse" ] && [ "$2" = "--abbrev-ref" ] && [ "$3" = "HEAD" ]; the
 fi
 exec /usr/bin/git "$@"
 FAKEGIT946
-chmod +x "$PEG946_DIR/git"
+chmod +x "$BRANCH_FIXTURE_DIR/git"
 
 # Direction 1 — file in a feature/ worktree, cwd on spec/ → ALLOW (the reproduced false positive)
 reset_session
-actual=$(printf '{"tool": "Write", "file_path": "%s/wt-feature/src/components/ui/card.tsx"}' "$PEG946_DIR" \
-  | PATH="$PEG946_DIR:$PATH" CWD_BRANCH="spec/peg-640-attachment" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+actual=$(printf '{"tool": "Write", "file_path": "%s/wt-feature/src/components/ui/card.tsx"}' "$BRANCH_FIXTURE_DIR" \
+  | PATH="$BRANCH_FIXTURE_DIR:$PATH" CWD_BRANCH="spec/ticket-attachment" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
 actual="${actual##*$'\n'}"
 if [ "$actual" -eq 0 ]; then
   echo "PASS: file in feature/ worktree while cwd is on spec/ → allow (exit 0)"
@@ -1093,8 +1093,8 @@ fi
 
 # Direction 2 — file in a spec/ worktree, cwd on feature/ → BLOCK (the silent false negative)
 reset_session
-actual=$(printf '{"tool": "Write", "file_path": "%s/wt-spec/src/components/ui/card.tsx"}' "$PEG946_DIR" \
-  | PATH="$PEG946_DIR:$PATH" CWD_BRANCH="feature/peg-943-checkbox" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+actual=$(printf '{"tool": "Write", "file_path": "%s/wt-spec/src/components/ui/card.tsx"}' "$BRANCH_FIXTURE_DIR" \
+  | PATH="$BRANCH_FIXTURE_DIR:$PATH" CWD_BRANCH="feature/ticket-checkbox" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
 actual="${actual##*$'\n'}"
 if [ "$actual" -eq 2 ]; then
   echo "PASS: file in spec/ worktree while cwd is on feature/ → block (exit 2)"
@@ -1110,8 +1110,8 @@ fi
 # silent direction. The stub above returns 128 for a missing directory precisely so that a
 # regression to bare `dirname` fails here instead of passing by accident.
 reset_session
-actual=$(printf '{"tool": "Write", "file_path": "%s/wt-spec/src/components/brand-new/brand-new.tsx"}' "$PEG946_DIR" \
-  | PATH="$PEG946_DIR:$PATH" CWD_BRANCH="feature/peg-943-checkbox" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
+actual=$(printf '{"tool": "Write", "file_path": "%s/wt-spec/src/components/brand-new/brand-new.tsx"}' "$BRANCH_FIXTURE_DIR" \
+  | PATH="$BRANCH_FIXTURE_DIR:$PATH" CWD_BRANCH="feature/ticket-checkbox" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
 actual="${actual##*$'\n'}"
 if [ "$actual" -eq 2 ]; then
   echo "PASS: first file in a not-yet-existing directory inside a spec/ worktree → block (exit 2)"
@@ -1129,7 +1129,7 @@ cat > "$NOGIT_DIR/git" <<'FAKEGITFAIL'
 exit 128
 FAKEGITFAIL
 chmod +x "$NOGIT_DIR/git"
-actual=$(printf '{"tool": "Write", "file_path": "%s/wt-spec/src/components/ui/card.tsx"}' "$PEG946_DIR" \
+actual=$(printf '{"tool": "Write", "file_path": "%s/wt-spec/src/components/ui/card.tsx"}' "$BRANCH_FIXTURE_DIR" \
   | PATH="$NOGIT_DIR:$PATH" DS_SESSION_FILE="$SESSION_FILE" bash "$GUARD" 2>/dev/null; echo $?)
 actual="${actual##*$'\n'}"
 if [ "$actual" -eq 0 ]; then
@@ -1139,7 +1139,7 @@ else
   echo "FAIL: unresolvable git state (expected 0, got $actual)"
   FAIL_COUNT=$((FAIL_COUNT + 1))
 fi
-rm -rf "$NOGIT_DIR" "$PEG946_DIR"
+rm -rf "$NOGIT_DIR" "$BRANCH_FIXTURE_DIR"
 
 # ── Configuration surface: ds-kit.config.yml overrides the built-in defaults ──
 # This behaviour is NEW in the kit (the source guard hardcoded its paths), so it
