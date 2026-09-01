@@ -5,11 +5,25 @@
 # This is the ONLY file you edit to bind the kit to a repository.
 #
 # Everything project-specific lives here: paths, branch name, npm script names,
-# required status-check names, token namespace, agent roster. No skill, agent,
-# rule, workflow or tool in this kit hardcodes any of it — they read these keys.
+# required status-check names, token namespace, agent roster.
 #
-# If you find a project-specific value anywhere else in the kit, that is a bug
-# in the kit, not something for you to work around. Report it.
+# HOW THE KEYS ACTUALLY REACH EACH CONSUMER — three different ways, and the claim
+# "everything reads this file" was false until it was measured:
+#
+#   Shell tools and CI gates   read this file directly, every run.
+#   ds-context (#1)            reads it, and carries the resolved paths into the
+#                              Context Snapshot.
+#   Every other skill          takes its paths from that snapshot. The paths written
+#                              in their text are documented DEFAULTS, illustrative
+#                              rather than authoritative.
+#
+# One reader, one place to be wrong. The alternative — ten skills each re-reading and
+# re-interpreting the file — is ten chances to disagree about what `components_ui`
+# means, with no way to tell which one is right.
+#
+# The consequence for you: if your layout differs from the defaults, the binding
+# happens at #1. Skip stage #1 and downstream skills will describe the defaults with
+# confidence and be wrong about your repository.
 #
 # Defaults below assume a SINGLE-REPOSITORY design system: the DS package is the
 # repository root. See `ds_package_root` if yours is nested.

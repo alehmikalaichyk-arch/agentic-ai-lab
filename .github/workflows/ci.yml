@@ -47,3 +47,21 @@ jobs:
       - run: npm run typecheck
       - run: npm run lint
       - run: npm test
+
+      # Stage #4.5 asks the owner to LOOK at a draft before the spec is frozen, and
+      # that only happens if looking is cheap. The published Storybook deploys from
+      # main, so it cannot show a draft that lives on a spec branch — it would appear
+      # only after the merge it was supposed to inform.
+      #
+      # Building it here does two things: it catches a draft that does not compile
+      # (a green story build proves compilation, not rendering, but a red one is
+      # decisive), and it produces an artifact a reviewer can download and open.
+      # That is worse than a link and much better than "run it locally so I can look",
+      # which is the sentence that kills the checkpoint.
+      - run: npm run build-storybook
+      - name: publish the Storybook as a downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: storybook-${{ github.event.pull_request.number || github.sha }}
+          path: storybook-static
+          retention-days: 14
