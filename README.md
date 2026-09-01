@@ -140,11 +140,17 @@ repository. The consequence is real: a repository administrator's `git push` str
 one-person repository the process is therefore voluntary for that one person. It has already
 happened once here, and the commit was kept rather than rewritten — see the history.
 
-And `review-approved` needs an approving review from someone who is not the author. With a single
-contributor there is nobody to give it, so pull requests here are merged with an administrator
-override. That is a scaffolding-phase exception, not the intended flow: the moment a second
-reviewer exists — a person or an automated one with repository access — the override stops being
-needed.
+And `review-approved` needs an approving review from someone who is not the author — GitHub
+forbids approving your own pull request, so with one contributor the check can never go green.
+
+It is therefore **reported but not required** here (`require_review_to_merge: false`). It still
+evaluates, still shows pending or green, and starts blocking the day a second reviewer exists. The
+three structural gates plus CI remain required and genuinely block.
+
+The alternative was leaving it required and merging every pull request with an administrator
+override — which is worse than it sounds: an override used routinely stops being an exception, and
+a team that reaches for `--admin` by habit has no gates at all, only the appearance of them.
+Making the unreachable check non-blocking keeps the reachable ones meaningful.
 
 ## The published Storybook
 
