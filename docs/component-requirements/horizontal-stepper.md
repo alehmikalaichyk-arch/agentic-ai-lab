@@ -403,8 +403,9 @@ from an unchecked one.
 > is `src/styles.css` line 13 — a comment about token build *steps*, unrelated. **No call site, no
 > hand-rolled implementation, no product surface.**
 >
-> The ask names three candidate consumers — a `customer-workspace` Create Project modal, a
-> `spend-ui` onboarding modal, and a `client-ui` Mantine stepper. **None of the three exists here**;
+> The ask names three candidate consumers, all of them screens in the source system's own
+> product: two hand-rolled indicators inside modals, and one built on a third-party component
+> library the design-token layer does not reach. **None of the three exists here**;
 > there is no `apps/` directory. Every finding the ask draws from them is therefore unavailable:
 > the 5-px operable segments, the two-versus-three visual states of the reference screen, the
 > `Step {n} of {N}` copy already shipping verbatim, and the precedent that a design-system component
