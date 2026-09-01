@@ -1,26 +1,2 @@
-{
-  "chip": {
-    "max-width": {
-      "xs": {
-        "$value": "80px",
-        "$type": "dimension",
-        "$description": "Max chip width for xs size"
-      },
-      "sm": {
-        "$value": "100px",
-        "$type": "dimension",
-        "$description": "Max chip width for sm size"
-      },
-      "md": {
-        "$value": "120px",
-        "$type": "dimension",
-        "$description": "Max chip width for md size"
-      },
-      "lg": {
-        "$value": "160px",
-        "$type": "dimension",
-        "$description": "Max chip width for lg size"
-      }
-    }
-  }
+{ "chip": { "max-width": { "xs": { "$value": "80px", "$type": "dimension", "$description": "Max chip width for xs size" }, "sm": { "$value": "100px", "$type": "dimension", "$description": "Max chip width for sm size" }, "md": { "$value": "120px", "$type": "dimension", "$description": "Max chip width for md size" }, "lg": { "$value": "160px", "$type": "dimension", "$description": "Max chip width for lg size" } } }
 }

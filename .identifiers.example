@@ -1,0 +1,11 @@
+# Identifiers that must never appear in this public repository.
+# Copy to `.identifiers` (gitignored) and fill in.
+#
+#   <label shown in the report>|<extended regex>
+#
+# organisation name|[Aa][Cc][Mm][Ee]
+# ticket keys|\bACME-[0-9]+\b
+# token prefix of the source system|--acme-
+# people|Firstname Lastname|Othername
+# internal product names|Command Centre|Customer Workspace
+# laptop paths|/Users/[a-z]+/|/home/[a-z]+/
