@@ -2,8 +2,16 @@
 
 An externally-authored specification from another design system arrives as the owner's ask. This
 is the session that turns it into a Component Requirements Brief and a spec for *this* repository
-— stage #0, #1, #2 and #4, plus a visual draft — and stops at PR-1. The implementation is PR-2, in
-a separate session, and the write-time guard enforces the split.
+— stage #0, #1, #2 and #4, plus a visual draft. It produces **two** pull requests: PR-0 carrying
+the brief alone, then PR-1 carrying the spec and the draft. The implementation is PR-2, in a
+separate session, and the write-time guard enforces that split.
+
+**The brief and the spec must not share a pull request**, and nothing mechanical stops them.
+`.claude/rules/ds-component-pipeline.md` §*"Stage #0 is not a PR boundary"* says the brief *"never
+travels with a spec or with source. It ships in its own PR, before PR-1."* But
+`tools/classify-pr-diff.sh` reads only `docs/component-specs/` and `docs/component-retrofits/` — it
+never looks at `docs/component-requirements/`. A PR carrying both classifies `SPEC_ONLY`, every
+gate goes green, and the violation ships silently. Two branches, checked by eye.
 
 The session that produced this document got as far as setup and then stopped, because it could not
 delegate a single stage. That failure is the most useful thing it found, and it is the first
@@ -180,9 +188,23 @@ the disk) proves nothing about the session you are in — ask the agent to enume
 its own tool schema instead. Whether SKILL.md files reload live is NOT established;
 do not assume symmetry.
 
-GOAL: PR-1 for HorizontalStepper — the requirements brief and the component spec,
-authored through the pipeline's own stages. No implementation: that is PR-2, in a
-separate session, and the write-time guard is LIVE and will enforce the split.
+GOAL: take HorizontalStepper through stage #0 and stage #4 — a requirements brief
+and a component spec, authored through the pipeline's own stages. No implementation:
+that is PR-2, in a separate session, and the write-time guard is LIVE and will
+enforce that split.
+
+THREE PRs, NOT TWO — and nothing mechanical enforces this, so read it carefully.
+  PR-0  docs/component-requirements/horizontal-stepper.md      (the brief, alone)
+  PR-1  docs/component-specs/horizontal-stepper.md + the draft (the spec)
+  PR-2  implementation                                          (a later session)
+The rule is explicit at .claude/rules/ds-component-pipeline.md §"Stage #0 is not a
+PR boundary": the brief "never travels with a spec or with source. It ships in its
+own PR, before PR-1."
+The trap: tools/classify-pr-diff.sh reads ONLY docs/component-specs/ and
+docs/component-retrofits/. It never looks at docs/component-requirements/. So a PR
+carrying the brief AND the spec classifies SPEC_ONLY, every gate goes green, and the
+violation ships silently. This boundary is yours to hold; no check will catch you.
+Use two branches. Do not put the brief on the spec branch.
 
 INPUT — an externally-authored specification from another design system. Treat it
 as the owner's ask, not as the deliverable. Both paths are readable directly with
@@ -247,13 +269,25 @@ session found four drift items, all since fixed; re-confirm rather than inherit,
 and expect to find different ones.
 
 STEP 3 — stage #0, component-requirements-builder, same agent.
+Do this on its OWN branch off main, not on spec/horizontal-stepper:
+  git checkout main && git checkout -b spec/horizontal-stepper-requirements
+Keep the spec/ prefix: it is what makes the write-time guard active on the branch.
 Feed it the two input documents as the owner's ask. Both outputs matter:
   - docs/component-requirements/horizontal-stepper.md — the brief (the directory
     does not exist yet)
   - the repository feasibility audit — binding facts and named conflicts
 Report the audit IN FULL. A conflict it names is worth more than a brief it writes.
 
+Then open PR-0 with that ONE file and nothing else. Verify before opening:
+  git diff --name-only main...HEAD
+  # must print exactly: docs/component-requirements/horizontal-stepper.md
+Report its URL and head SHA. A human merges it; you do not. You do NOT have to wait
+for that merge to continue — no gate blocks PR-1 on PR-0 — but the brief must not
+appear in PR-1's diff, which is why it lives on a different branch.
+
 STEP 4 — stage #4, component-spec-writer, same agent.
+Switch back first: git checkout spec/horizontal-stepper
+The brief is in your session context; the spec does not need PR-0 merged.
 Output: docs/component-specs/horizontal-stepper.md
   - The source spec is precedent and evidence, not a file to copy. Where this
     repository differs, state what is true HERE.
@@ -278,10 +312,13 @@ It IS typechecked and linted now, so run both and report the results:
   npm run typecheck > /tmp/tc.log 2>&1; echo $?; tail -20 /tmp/tc.log
   npm run lint      > /tmp/lint.log 2>&1; echo $?; tail -20 /tmp/lint.log
 
-STEP 6 — open PR-1. A human merges it; you do not.
+STEP 6 — open PR-1, the SPEC pr. A human merges it; you do not.
 Before opening, run: git diff --name-only main...HEAD
-Every path must be under docs/ or component-prototypes/. Anything under src/ means
-the boundary was crossed.
+Two things must hold, and only the first has a gate behind it:
+  - nothing under src/ — the boundary between PR-1 and PR-2
+  - nothing under docs/component-requirements/ — the brief belongs to PR-0, and no
+    check will tell you if it leaked in. Confirm by eye.
+Everything left must be docs/component-specs/ or component-prototypes/.
 Report the PR URL AND the head SHA. The review gate counts an approving review only
 when its commit_id equals the current head SHA. After reporting it, push nothing
 further: a new commit resets the gate to pending and silently invalidates an
@@ -320,18 +357,26 @@ EVIDENCE wanted in the final report:
     tail's exit code, which is 0 almost always. Redirect, echo $?, then read.
   - the spec's token-bindings table, each binding shown resolving to a real utility
     in generated/tailwind-theme.css
-  - the PR URL and the head SHA
+  - BOTH pr URLs and head SHAs — PR-0 (brief) and PR-1 (spec + draft) — and the
+    `git diff --name-only main...HEAD` output for each, showing they do not overlap
 ```
 
 ---
 
 ## What a good outcome looks like
 
-A brief at `docs/component-requirements/horizontal-stepper.md`, a spec at
-`docs/component-specs/horizontal-stepper.md` reading `lifecycle: freeze_candidate`, a draft under
-`component-prototypes/`, and PR-1 open and unmerged with a `## Visual` section a human can act on.
+**Two** pull requests open and unmerged, with disjoint diffs:
+
+- **PR-0** — `docs/component-requirements/horizontal-stepper.md` and nothing else.
+- **PR-1** — `docs/component-specs/horizontal-stepper.md` reading `lifecycle: freeze_candidate`,
+  plus a draft under `component-prototypes/`, plus a `## Visual` section a human can act on.
+
 Every token binding in the spec shown resolving to a real utility in `generated/tailwind-theme.css`
 — not asserted from the source system's table.
+
+**If one PR carries both documents, the run failed even though every check was green.** That is the
+whole point of the unenforced boundary above, and it is the cheapest thing on this page to get
+wrong.
 
 ## What is worth noticing regardless of outcome
 
