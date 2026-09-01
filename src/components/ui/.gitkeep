@@ -1,0 +1,10 @@
+This directory is empty and tracked on purpose.
+
+git does not version directories, only files — so a repository that has
+src/components/ui/ locally ships a clone that does not. Stage #1 of the pipeline
+reads this path to build its component inventory, and an absent directory is not
+the same fact as an empty one: the first says "this repository is not a design
+system", the second says "no components yet", which is where every design system
+starts.
+
+Delete this file once the first component lands.
