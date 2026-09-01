@@ -24,6 +24,23 @@ never fixes issues it reports.
 
 ---
 
+## 0. Resolve the paths before reading anything
+
+**First action: read `ds-kit.config.yml` at the repository root.** Every path written
+in this skill is the documented DEFAULT, not a fact about the repository in front of
+you. Where the config sets a different value, the config wins and this skill's text
+is illustrative.
+
+Carry the resolved values into the Context Snapshot under `paths`, because this is
+the only skill that reads the config. Every downstream skill takes its paths from the
+snapshot rather than re-reading the file — one reader, one place to be wrong.
+
+If the config is absent, say so in `health` as a Warning and continue on the
+defaults. A missing config is a repository that has not been bound to the kit yet,
+which is worth reporting and is not a reason to refuse a snapshot.
+
+---
+
 ## 1. Pipeline shape
 
 The DS pipeline has seven stages, in order:

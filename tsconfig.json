@@ -29,6 +29,7 @@
     "generated",
     ".storybook",
     "prototypes",
+    "component-prototypes",
     "vitest.config.ts"
   ]
 }

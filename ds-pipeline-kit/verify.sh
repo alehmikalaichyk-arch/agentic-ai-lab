@@ -82,7 +82,7 @@ check_absent "no personal identifiers" '[a-z]{4,}-arch\b|sbarinov|mikalaichyk|@[
 # A rule that names an enforcer this kit does not ship reads as governed and is not. These
 # are the two the extraction inherited; the fix is to say "not shipped", not to delete the
 # convention.
-check_absent "no reference to unshipped enforcers" 'spec-contract-drift\.test\.ts|docs/spec-contract-schema\.md'
+check_absent "no reference to unshipped enforcers" 'spec-contract-drift\.test\.ts|docs/spec-contract-schema\.md|visual-draft-boundaries\.test\.ts|pr1-document-boundary\.test\.ts|check-frozen-spec-on-base\.test\.ts'
 
 # -----------------------------------------------------------------------------
 section "2. Scope — content that must not have survived"

@@ -1,0 +1,9 @@
+Tracked so the directory survives a clone, and so the typecheck has something to
+resolve. Stage #4.5 drafts live here — one directory per component, deleted when
+PR-2 lands.
+
+They are type-checked and linted like everything else. The kit's own measurements
+record why: a blatant type error in a draft once passed the type check, the linter
+AND the story build, because the story tool transpiles without checking types and
+the other two were scoped to source only. The draft is the artifact the human freeze
+gate looks at, so it had no quality floor at the exact moment it mattered most.
