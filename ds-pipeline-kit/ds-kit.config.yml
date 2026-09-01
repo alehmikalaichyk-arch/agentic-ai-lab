@@ -112,6 +112,19 @@ status_checks:
   # The review gate that opens the merge button
   review_approved: "review-approved"
 
+# Whether review_approved is REQUIRED to merge, or merely reported.
+#
+# Set false for a repository with one contributor. GitHub forbids approving your own
+# pull request, so with a single human the check can never go green and every merge
+# needs an administrator override — which trains everyone to reach for the override,
+# and an override used routinely is not a gate.
+#
+# false does NOT disable the check: it still evaluates and still shows pending or
+# green, so the mechanism stays visible and starts blocking the day a second reviewer
+# exists. The three structural gates remain required either way, and they are the ones
+# that enforce the PR-1 / PR-2 boundary.
+require_review_to_merge: true
+
 # ----------------------------------------------------------------------------
 # 6. Agent roster
 # ----------------------------------------------------------------------------
