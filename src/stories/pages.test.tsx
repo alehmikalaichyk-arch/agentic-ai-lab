@@ -48,6 +48,33 @@ describe.each(PAGES)('$title', ({ meta, mustMention }) => {
   });
 });
 
+describe('swatch labels sit outside the swatch', () => {
+  // The label used to be rendered INSIDE the coloured tile, with its colour picked
+  // by a luminance test. That fails at the dark end of every ramp — the darkest
+  // steps were barely legible and the very darkest showed nothing at all. Asserted
+  // structurally rather than visually, because a contrast calculation on the label
+  // would just be the same broken idea a second time.
+  it.each([
+    ['Primitives', primitives],
+    ['Accent colours', accent],
+    ['Charts', charts],
+  ])('%s renders no text inside a colour tile', (_title, meta) => {
+    const { container } = render(React.createElement(meta.component as React.ComponentType));
+    const tiles = [...container.querySelectorAll('[title]')];
+    expect(tiles.length).toBeGreaterThan(10);
+    const withText = tiles.filter((el) => (el.textContent ?? '').trim().length > 0);
+    expect(withText.map((el) => el.getAttribute('title'))).toEqual([]);
+  });
+
+  it('and the label is still present, as a sibling below', () => {
+    const { container } = render(React.createElement(primitives.component as React.ComponentType));
+    const tile = container.querySelector('[title^="brand-500"]');
+    expect(tile).not.toBeNull();
+    const label = tile!.nextElementSibling;
+    expect(label?.textContent).toContain('500');
+  });
+});
+
 describe('the pages are driven by the built tokens, not by hand-written lists', () => {
   it('a token renamed in tokens/ would empty a page rather than go unnoticed', () => {
     const { container } = render(React.createElement(primitives.component as React.ComponentType));

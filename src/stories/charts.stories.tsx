@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { chartSlots, contrast, primitiveFamilies, valueOf } from './token-data';
-import { Page, Ramp, Section, Table } from './token-ui';
+import { Chip, Page, Ramp, Section, Table } from './token-ui';
 
 /**
  * Chart colours.
@@ -36,24 +36,11 @@ function Charts() {
       >
         <div className="space-y-3">
           {chartSlots.map(({ slot, steps }) => (
-            <div key={slot} className="flex items-center gap-3">
-              <div className="w-20 shrink-0 text-sm text-fg-subtle">{slot}</div>
-              <div className="flex gap-1">
+            <div key={slot} className="flex items-start gap-3">
+              <div className="w-20 shrink-0 pt-6 text-sm text-fg-subtle">{slot}</div>
+              <div className="flex gap-2">
                 {steps.map((s) => (
-                  <div
-                    key={s.name}
-                    className="h-12 w-28 rounded-sm border border-outline-subtle p-1 text-xs"
-                    style={{ background: s.value }}
-                    title={`${s.name} — ${s.value}`}
-                  >
-                    <span
-                      style={{
-                        color: (contrast(s.value, '#ffffff') ?? 1) >= 3 ? '#ffffff' : '#0d1119',
-                      }}
-                    >
-                      {s.name.replace(`${slot}-`, '')}
-                    </span>
-                  </div>
+                  <Chip key={s.name} token={s} width="w-28" label={s.name.replace(`${slot}-`, '')} />
                 ))}
               </div>
             </div>

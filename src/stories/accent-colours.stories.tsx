@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { accentFamilies, valueOf } from './token-data';
-import { Page, PairPreview, Ratio, Section, Table } from './token-ui';
+import { accentFamilies } from './token-data';
+import { Chip, Page, PairPreview, Ratio, Section, Table } from './token-ui';
 
 /**
  * The accent families — nine of them, each with a foreground pair and a surface ramp.
@@ -36,18 +36,14 @@ function AccentColours() {
 
         return (
           <Section key={family} title={family}>
-            <div className="mb-4 flex flex-wrap gap-1">
+            <div className="mb-6 flex flex-wrap gap-2">
               {surface.map((s) => (
-                <div
+                <Chip
                   key={s.name}
-                  className="h-14 w-28 rounded-sm border border-outline-subtle p-1 text-xs"
-                  style={{ background: s.value }}
-                  title={`${s.name} — ${s.value}`}
-                >
-                  <span style={{ color: valueOf(`fg-accent-${family}-boldest`) }}>
-                    {s.name.replace(`surface-accent-${family}`, '') || 'base'}
-                  </span>
-                </div>
+                  token={s}
+                  width="w-28"
+                  label={s.name.replace(`surface-accent-${family}`, '').replace(/^-/, '') || 'base'}
+                />
               ))}
             </div>
 
