@@ -71,6 +71,16 @@ jobs:
       - run: npm run build:tokens
       - run: npm run typecheck
       - run: npm run lint
+
+      # `npm test` runs two vitest projects: `unit` in jsdom, and `browser` in
+      # real Chromium. `npm ci` installs the Playwright npm package but never the
+      # browser binary, so without this step the browser project fails with
+      # "Executable doesn't exist" — and it fails LOUDLY, exit 1 with no tests
+      # reported as passed, which is the reason `npm test` is allowed to include
+      # it at all.
+      - name: install the browser the vitest `browser` project runs in
+        run: npx playwright install --with-deps chromium
+
       - run: npm test
 
       # Stage #4.5 asks the owner to LOOK at a draft before the spec is frozen, and
