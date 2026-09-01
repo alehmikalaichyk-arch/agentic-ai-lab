@@ -32,6 +32,7 @@ manifest names keys, never values — a value written here is a bug.
 | `<retrofits>` | `paths.retrofits` |
 | `<requirements>` | `paths.requirements` |
 | `<drafts>` | `paths.drafts` |
+| `<reports>` | `paths.pipeline_reports` |
 | `<components_ui>` | `paths.components_ui` |
 | `<main>` | `main_branch` |
 | `<implementer>` | `agents.implementer` |
@@ -53,6 +54,27 @@ manifest names keys, never values — a value written here is a bug.
 ## Stage Sequence
 
 Stages execute in this exact order. Never reorder. Never skip.
+
+**Every delegation carries the stage's report obligation.** Stage #8 runs in a fresh context and
+cannot see anything that lived only in another agent's session, so a report that is not a file does
+not exist. Each delegation for #3, #5, #6 and #7 MUST end with:
+
+> Write your stage report to `<reports><component>/<NN>-<stage>.md` as the last action of this
+> stage. If the stage did not run, still write the file with `status: not-run` and the reason. An
+> absent file fails the quality gate as `missing-upstream-report`.
+
+The four files, named exactly:
+
+```text
+<reports><component>/03-guardian-selfcheck.md   # #3's self-check, as run inside #5
+<reports><component>/05-implementation.md
+<reports><component>/06-stories.md
+<reports><component>/07-a11y.md
+```
+
+I never write one myself — I have no `Write` tool. I verify they exist and I pass the directory
+path onward. Rationale, and the alternatives that were rejected: the pipeline rule → "Stage
+Reports — how they reach a gate that runs in a fresh context".
 
 ### Stage #1 — DS Context (parallel with #2)
 
@@ -221,6 +243,16 @@ After stages #5, #6, and #7 complete on the same branch:
 Delegate to `Agent(<gate-agent>)` running the `production-quality-gate` skill.
 Input: all evidence from stages #1–#7. Output: binary PASS or FAIL.
 
+**Before delegating, read `<reports><component>/` and confirm all four report files are
+present.** If any is absent, do not delegate: name the missing files and return to the agent
+that owns that stage, which either runs the stage or writes the file with `status: not-run` and
+a reason. A gate run that FAILs on `missing-upstream-report` is a full build, lint, test and
+Storybook cycle spent on bookkeeping.
+
+The delegation states the directory path and lists the four files. It does **not** restate their
+contents: #8 reads the files. A report retold in a prompt is my paraphrase, and a paraphrase is
+indistinguishable from an invention — which is the failure the fresh context exists to catch.
+
 **Independence is a property of the context, not of the roster.** Stages #1–#7 run in the
 implementing context. Stage #8 MUST run in **a different agent context from the one that wrote
 the code** — a fresh `Agent()` invocation, not a continuation of the stage #5 session. State it
@@ -288,5 +320,6 @@ agent name as #5, so one session can do both" is the failure it exists to preven
 | PR-1 rejected by reviewer | Surface rejection to user. Halt. User decides to revise or cancel. |
 | Stage #8 returns FAIL | Report failures to user + owning stage agent. Do not merge or proceed. |
 | Delegated agent returns an error | Surface error to user. Wait for direction. Do not retry autonomously. |
+| A stage report file is missing at stage #8 | Do not delegate #8. Name the absent files; return to the owning stage agent to run the stage or record it `status: not-run`. |
 | User asks me to skip the HARD STOP | Refuse. State: "The human spec-merge checkpoint is mandatory per the pipeline rule." |
 | Component name not provided | Ask the user for the exact component name before reading any context. |

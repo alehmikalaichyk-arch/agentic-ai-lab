@@ -574,6 +574,63 @@ Agents MUST NOT approve their own PRs or manufacture the `review-approved` signa
 - On stage #8 FAIL: the orchestrator returns the failure details to the user and to the owning stage agent. The orchestrator does NOT merge, does NOT mark the task completed, and does NOT retry implementation autonomously.
 
 
+## Stage Reports — how they reach a gate that runs in a fresh context
+
+**The gap this closes, measured on a real run.** #8 is an aggregator: it FAILs on a missing
+upstream report (`production-quality-gate` §2, §11) and "never returns a clean decision for a stage
+whose report is missing" (§15). It must also run in a **fresh context** — the rule directly above.
+A fresh context cannot see a report that only ever existed in another agent's session, and until
+this section nothing said where a report lives. The run that produced it failed with four reports
+"missing" while three of the stages had in fact run, and none of the four was marked not-yet-run.
+The commit message is not a report.
+
+**The mechanism: every stage writes its report to a file; the gate reads the files.**
+
+```text
+<pipeline_reports><component>/03-guardian-selfcheck.md
+<pipeline_reports><component>/05-implementation.md
+<pipeline_reports><component>/06-stories.md
+<pipeline_reports><component>/07-a11y.md
+```
+
+`<pipeline_reports>` is `paths.pipeline_reports` in `ds-kit.config.yml` (`.pipeline-reports/` by
+default). Four rules, and they are the whole contract:
+
+1. **The stage agent writes its own report, as the last action of the stage.** The orchestrator has
+   no `Write` tool and authors nothing — it verifies and delegates.
+2. **A stage that did not run still owes its file**, stating `status: not-run` and why. An absent
+   file is `missing-upstream-report` → FAIL. "Did not run" and "ran and was never recorded" must
+   not look alike; on the failing run they did.
+3. **The orchestrator verifies all four files exist before delegating #8**, and passes the
+   directory path in the delegation. If any is absent it says which and stops — spending a full
+   gate run to discover a bookkeeping gap is the expensive way to learn it.
+4. **#8 reads the files itself.** A report retold inside a delegation prompt is not a report.
+
+**Why a file, and what was rejected.** The orchestrator carrying each report's text into #8's
+delegation was the obvious candidate — it already delegates every stage and receives every return
+message. Rejected: what it would carry is a *retelling*, so #8 would be judging the orchestrator's
+paraphrase rather than the artifact, and a fabricated report becomes indistinguishable from a real
+one — fabrication is exactly what #8 caught on the run that exposed this gap. A file also survives
+a compaction, a session restart, and a re-run of #8 alone. Also rejected: session or transcript
+memory (a fresh context cannot read it — that is the point of the fresh context), and the commit
+message (unstructured, and written by whoever committed).
+
+**Why the path is outside `docs/` and outside `src/`.** `tools/classify-pr-diff.sh` reads exactly
+`src/components/**`, `docs/component-specs/**` and `docs/component-retrofits/**`. A report written
+under either PR-1 document directory would travel with PR-2's source and classify that PR `MIXED`,
+failing `enforce-spec-pr-separation`. Verified locally on synthetic commits:
+
+| Files in the diff | Classification |
+|---|---|
+| `docs/component-specs/probe.md` + `src/components/ui/probe.tsx` + a report | `MIXED` |
+| `src/components/ui/probe.tsx` + a report | `COMPONENT_SOURCE` |
+| a report alone | `NONE` |
+
+The report contributes nothing to the classification and nothing to the one-component-per-PR count.
+The default directory is also gitignored: these are run artifacts, evidence for one gate run, not
+documents to review or maintain on `main`.
+
+
 ## Review-Round Budget and What Counts as a Blocker
 
 **Rounds 1–2: fix everything worth fixing. From round 3: a finding that is not a blocker becomes a
@@ -916,6 +973,7 @@ conditions; everything else is enforced by CI and branch protection.
 | Ambiguous file classification (e.g. PR adds both `docs/component-specs/foo.md` AND `src/components/ui/foo.tsx`) | This is a PR-1 boundary violation regardless of intent. Split the PR. |
 | PR-1 is merged but the agent's context doesn't reflect it yet | Agent MUST verify via `gh pr view --json state` before proceeding to stage #5. Do not rely on in-memory assumptions. |
 | Stage #8 (production-quality-gate) returns FAIL | Orchestrator reports failure details to user and returns control to the owning agent for the failing stage. Never self-proceeds past a FAIL. |
+| A stage report file is absent when #8 is due | Orchestrator does NOT delegate #8. It names the absent files and returns to the owning stage agent, which either runs the stage or writes the report with `status: not-run` and a reason. See "Stage Reports" above. |
 | PR-1 closed without merging | Orchestrator halts. User decides to revise or cancel. Agent does not auto-retry. |
 | A reviewer requested changes on PR-1, and `review-approved` has **not** since gone green | Orchestrator halts, as above. A new push returns the check to pending; the automated reviewer must be re-run. |
 | A reviewer requested changes, then an approval turned `review-approved` green | **Not a halt** — the CR was overridden. Keep waiting for the human merge. This is the path the round budget produces (non-blockers deferred to follow-ups, then an approval); halting here would strip the budget of effect exactly where it applies. |

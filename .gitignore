@@ -22,3 +22,10 @@ storybook-static/
 # untracked binaries inside a tracked source directory.
 .vitest-screenshots/
 .vitest-attachments/
+
+# Stage reports (`paths.pipeline_reports`): how stages #3, #5, #6 and #7 hand their
+# reports to a stage-#8 gate that runs in a fresh context and cannot see another
+# agent's session. Evidence for one gate run, with a lifetime of that run — not a
+# document to review or maintain on main. Ignoring them also guarantees a report
+# can never appear in a diff and so can never change a PR's classification.
+.pipeline-reports/

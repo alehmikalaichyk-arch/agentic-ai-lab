@@ -67,6 +67,15 @@ paths:
   # --- visual drafts (stage #4.5; outside every classified path) ---
   drafts: "component-prototypes/"
 
+  # --- stage reports (the fresh-context handoff into stage #8) ---
+  # Stage #8 runs in a fresh agent context by design, so it cannot see a report
+  # that only existed in the implementing agent's session. Each stage writes its
+  # report here as a file and the gate reads the files. Run artifacts: gitignore
+  # this directory. Keep it outside every path the classifier reads — a report
+  # must never change a PR's classification. Contract: the pipeline rule ->
+  # "Stage Reports".
+  pipeline_reports: ".pipeline-reports/"
+
   # --- supporting ---
   tokens: "tokens/"
   generated: "generated/"
@@ -144,6 +153,12 @@ require_review_to_merge: true
 #
 #   implementer  Skill, Read, Glob, Grep, Write, Edit, Bash
 #   gate         Skill, Read, Glob, Grep, Bash   -- and NO Write, NO Edit
+#
+# A DECLARED ROSTER IS NOT THE RUNNING ROSTER. Both lines above describe what each
+# agent must have at RUN TIME, and the harness decides that -- not the `tools:` line
+# in the agent's definition file. Observed: an implementer declaring Glob and Grep
+# enumerated its running schema without them. Verify by asking the agent to
+# enumerate its own tool schema, never by reading its definition file.
 #
 # The gate's missing write access is the mechanism, not a preference: a gate that
 # can fix what it finds stops being a gate, because the finding disappears into a
