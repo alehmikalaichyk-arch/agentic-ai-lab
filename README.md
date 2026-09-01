@@ -15,7 +15,7 @@ read them in pairs.
 
 | Path | What it is |
 |---|---|
-| `.claude/` | The pipeline **in effect here**: 10 skills, the orchestrator, the write-time guard, and the directory-triggered rule. Present on clone; no install step. |
+| `.claude/` | The pipeline **in effect here**: 10 skills, 3 agents, the write-time guard, and the directory-triggered rule. Present on clone; no install step. |
 | `ds-pipeline-kit/` | The same pipeline as a **portable kit**, as it would be handed to another repository. Skills, orchestrator, guard, CI gates, and its own [INSTALL.md](ds-pipeline-kit/INSTALL.md) / [QUICKSTART.md](ds-pipeline-kit/QUICKSTART.md). |
 | `ds-kit.config.yml` | The only file that binds the kit to *this* repository. Paths, branch, script names, check names. |
 | `tokens/` | DTCG token sources. Primitive → semantic → component, in that order, with no shortcuts. |
@@ -29,6 +29,33 @@ read them in pairs.
 session: [docs/verify-pipeline-loaded.md](docs/verify-pipeline-loaded.md). A session with no
 skills loaded behaves exactly like one that did not need them, until the moment the process
 depends on one.
+
+### Who actually does the work
+
+Three agents, and the split between them is the mechanism rather than a division of
+labour.
+
+| Agent | Runs | Notably cannot |
+|---|---|---|
+| `ds-pipeline-orchestrator` | Sequences the stages, holds the HARD STOP at the spec merge | **Write, Edit** — so it cannot collapse two stages by authoring both itself |
+| `frontend-engineer` | Stages #1–#7: context, governance, token scan, spec, draft, implementation, stories, a11y | Decide a spec is frozen; open or merge a pull request |
+| `quality-reviewer` | Stage #8, the merge gate | **Write, Edit** — a gate that can fix what it finds stops being a gate |
+
+The absent tools are the point. An instruction not to fix things is a preference; a
+missing tool is a guarantee. The same reasoning gives the orchestrator no write
+access: it is the mechanical reason it cannot write a spec and its implementation in
+one session, which is the boundary the whole pipeline is built around.
+
+`quality-reviewer` must also run in a **fresh context**, not a continuation of the
+session that wrote the code — in the author's session it inherits the author's
+reading of the spec, and a spec-versus-code mismatch is exactly what it exists to
+catch. Delegating to it as a subagent gives that for free; running stage #8 by hand
+in the implementing session does not.
+
+`ds-kit.config.yml` names the two delegates, and `tools/check-agents-exist.sh` fails
+CI if a name there has no agent behind it. A rule that names an enforcer which does
+not exist is enforced by nothing — and this repository shipped exactly that until the
+agents were written.
 
 ### Why the pipeline is here twice
 
