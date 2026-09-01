@@ -1,82 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import * as React from 'react';
+import { ALL, colours, primitiveFamilies, rolesIn, valueOf } from './token-data';
+import { Page, Ratio, Section, Swatch, Table } from './token-ui';
 
 /**
- * The token layer, rendered.
+ * The semantic layer: the roles a component is actually allowed to use.
  *
- * This is not a component story — there is no component yet. It exists so the
- * published Storybook shows what a reviewer needs at stage #4.5: the palette a
- * spec references, and whether a proposed pairing is legible. A spec that names
- * `surface-brand-subtlest` is much easier to review next to the actual colour.
+ * Everything here is published to Tailwind. Everything on the Primitives page is
+ * not — that asymmetry is the mechanism the whole token architecture rests on.
  */
 
-function readVar(name: string): string {
-  if (typeof window === 'undefined') return '';
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-
-/** Relative luminance per WCAG 2.x. Accepts the #rrggbb the token build emits. */
-function luminance(hex: string): number {
-  const h = hex.replace('#', '');
-  if (h.length < 6) return 0;
-  const channel = (i: number) => {
-    const c = parseInt(h.slice(i, i + 2), 16) / 255;
-    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-  };
-  return 0.2126 * channel(0) + 0.7152 * channel(2) + 0.0722 * channel(4);
-}
-
-function contrast(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi + 0.05) / (lo + 0.05);
-}
-
-function Swatch({ token }: { token: string }) {
-  const value = readVar(`--ds-${token}`);
-  return (
-    <div className="flex items-center gap-3">
-      <div
-        className="size-10 shrink-0 rounded-md border border-outline-default"
-        style={{ background: value }}
-      />
-      <div className="min-w-0">
-        <div className="truncate text-sm text-fg-default">{token}</div>
-        <div className="truncate text-xs text-fg-subtle">{value || '—'}</div>
-      </div>
-    </div>
-  );
-}
-
-function Section({ title, note, children }: { title: string; note?: string; children: React.ReactNode }) {
-  return (
-    <section className="mb-10">
-      <h2 className="mb-1 text-lg text-fg-default">{title}</h2>
-      {note ? <p className="mb-4 max-w-2xl text-sm text-fg-subtle">{note}</p> : null}
-      {children}
-    </section>
-  );
-}
-
-const SEMANTIC_FG = [
-  'fg-default', 'fg-subtle', 'fg-subtlest', 'fg-disabled', 'fg-inverse',
-  'fg-brand', 'fg-brand-bold', 'fg-link',
-  'fg-status-danger', 'fg-status-warning', 'fg-status-success', 'fg-status-info',
-  'fg-accent-grey-boldest', 'fg-accent-blue-boldest', 'fg-accent-green-boldest',
-  'fg-accent-amber-boldest', 'fg-accent-red-boldest',
-];
-
-const SEMANTIC_SURFACE = [
-  'surface-page', 'surface-default', 'surface-raised', 'surface-sunken', 'surface-inverse',
-  'surface-neutral-subtlest', 'surface-neutral-subtle', 'surface-neutral-bold', 'surface-neutral-boldest',
-  'surface-brand-subtlest', 'surface-brand-subtle', 'surface-brand-bold',
-  'surface-status-danger', 'surface-status-warning', 'surface-status-success', 'surface-status-info',
-  'surface-accent-grey-subtlest', 'surface-accent-blue-subtlest', 'surface-accent-green-subtlest',
-  'surface-accent-amber-subtlest', 'surface-accent-red-subtlest',
-];
-
-const OUTLINES = ['outline-subtle', 'outline-default', 'outline-strong', 'outline-brand', 'outline-focus', 'outline-input'];
-
-/** The pairings a component is allowed to use, checked live against the built tokens. */
+/** Pairs a component may use, with the measurement rather than the promise. */
 const PAIRS: Array<[string, string]> = [
   ['fg-accent-grey-boldest', 'surface-accent-grey-subtlest'],
   ['fg-accent-blue-boldest', 'surface-accent-blue-subtlest'],
@@ -85,140 +18,147 @@ const PAIRS: Array<[string, string]> = [
   ['fg-accent-red-boldest', 'surface-accent-red-subtlest'],
   ['fg-default', 'surface-default'],
   ['fg-subtle', 'surface-default'],
+  ['fg-subtlest', 'surface-default'],
   ['fg-inverse', 'surface-inverse'],
 ];
 
-/** Pairings that read as obviously correct and do not clear AA. Shown deliberately. */
-const TRAPS: Array<[string, string]> = [
-  ['fg-accent-red', 'surface-accent-red-subtlest'],
-  ['fg-accent-blue', 'surface-accent-blue-subtlest'],
-  ['fg-brand-bold', 'surface-brand-subtlest'],
-  ['fg-inverse', 'surface-brand-bold'],
-  ['fg-disabled', 'surface-default'],
+/** Pairings that read as obviously correct and are not. Shown, not hidden. */
+const TRAPS: Array<[string, string, string | undefined]> = [
+  ['fg-accent-red', 'surface-accent-red-subtlest', undefined],
+  ['fg-accent-blue', 'surface-accent-blue-subtlest', undefined],
+  ['fg-brand-bold', 'surface-brand-subtlest', undefined],
+  ['fg-inverse', 'surface-brand-bold', undefined],
+  ['fg-disabled', 'surface-default', 'exempt — disabled controls'],
 ];
 
-function Tokens() {
+const entry = (name: string) => ({ name, value: valueOf(name) });
+
+function SemanticTokens() {
+  const fg = rolesIn('fg').filter((t) => !t.name.startsWith('fg-accent-'));
+  const surface = rolesIn('surface').filter((t) => !t.name.startsWith('surface-accent-'));
+  const outline = rolesIn('outline');
+
   return (
-    <div className="bg-surface-page p-8 font-sans">
-      <h1 className="mb-2 text-xl text-fg-default">Design tokens</h1>
-      <p className="mb-8 max-w-2xl text-sm text-fg-subtle">
-        Three layers: primitives hold raw values, semantic roles reference primitives, component
-        tokens reference semantic roles. Only the semantic layer is published to Tailwind — a
-        component reaching for a primitive finds no class at all.
-      </p>
-
+    <Page
+      title="Semantic colours"
+      lede={
+        <>
+          <p className="mb-2">
+            {colours.length} colour tokens in total; {fg.length + surface.length + outline.length}{' '}
+            semantic roles here, {primitiveFamilies.length} primitive families on the{' '}
+            <strong>Primitives</strong> page, and nine accent families on{' '}
+            <strong>Accent colours</strong>.
+          </p>
+          <p>
+            Roles are named by the job, not the colour, so a palette change is a rename in one file
+            rather than a sweep through every component. Only this layer is published to Tailwind.
+          </p>
+        </>
+      }
+    >
       <Section
-        title="Foreground roles"
-        note="Named by the job, not the colour. A role can be re-pointed at a different primitive without touching a single component. -boldest orders steps within a family; it does not promise a dark or light value."
+        title="Foreground"
+        note={
+          <>
+            <code>-bold</code> on a foreground role means <em>darker text</em>. On a surface role
+            the same suffix means a strong fill. The two are not symmetrical, and reading one as
+            the other is the most common mistake here.
+          </>
+        }
       >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {SEMANTIC_FG.map((t) => <Swatch key={t} token={t} />)}
+          {fg.map((t) => (
+            <Swatch key={t.name} token={t} />
+          ))}
         </div>
       </Section>
 
       <Section
-        title="Surface roles"
-        note="-bold on a surface means a strong fill carrying inverse text. On a foreground role the same suffix means darker text. The two are not symmetrical, and reading one as the other is the most common mistake here."
+        title="Surface"
+        note={
+          <>
+            <code>-boldest</code> orders steps within a family. It does <strong>not</strong> promise
+            a dark value — <code>surface-neutral-boldest</code> is a light grey. Inverse text
+            belongs on <code>surface-inverse</code>.
+          </>
+        }
       >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {SEMANTIC_SURFACE.map((t) => <Swatch key={t} token={t} />)}
+          {surface.map((t) => (
+            <Swatch key={t.name} token={t} />
+          ))}
         </div>
       </Section>
 
       <Section
-        title="Outlines"
-        note="Borders are an outline-* role here, not border-*. One role for focus across every component, so focus looks the same everywhere."
+        title="Outline"
+        note="Borders are an outline-* role, not border-*. One focus role for every component, so focus looks identical everywhere."
       >
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-          {OUTLINES.map((t) => <Swatch key={t} token={t} />)}
+          {outline.map((t) => (
+            <Swatch key={t.name} token={t} />
+          ))}
         </div>
       </Section>
 
       <Section
         title="Contrast, measured"
-        note="Computed from the built tokens on render, not copied from a spec. The same pairs are asserted in src/tokens.test.ts, so a palette change that drops one below AA is a red build rather than something noticed later."
+        note="Computed from the built tokens on render, not copied from a document. src/tokens.test.ts asserts the same pairs, so a palette change that drops one below AA is a red build rather than something noticed later."
       >
-        <table className="w-full max-w-3xl text-left text-sm">
-          <thead>
-            <tr className="border-b border-outline-default text-fg-subtle">
-              <th className="py-2 font-weight-medium">Foreground</th>
-              <th className="py-2 font-weight-medium">Surface</th>
-              <th className="py-2 font-weight-medium">Ratio</th>
-              <th className="py-2 font-weight-medium">AA</th>
+        <Table head={['Foreground', 'Surface', 'Ratio']}>
+          {PAIRS.map(([f, b]) => (
+            <tr key={`${f}-${b}`} className="border-b border-outline-subtle">
+              <td className="py-2 pr-4">{f}</td>
+              <td className="py-2 pr-4 text-fg-subtle">{b}</td>
+              <td className="py-2">
+                <Ratio fg={entry(f)} bg={entry(b)} />
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {PAIRS.map(([fg, bg]) => {
-              const ratio = contrast(readVar(`--ds-${fg}`), readVar(`--ds-${bg}`));
-              const passes = ratio >= 4.5;
-              // fg-disabled is deliberately below AA — a disabled control is exempt.
-              // Shown rather than hidden, so the exception is visible as an exception.
-              const intentional = fg === 'fg-disabled';
-              return (
-                <tr key={`${fg}-${bg}`} className="border-b border-outline-subtle">
-                  <td className="py-2 text-fg-default">{fg}</td>
-                  <td className="py-2 text-fg-subtle">{bg}</td>
-                  <td className="py-2 text-fg-default">{ratio.toFixed(2)}:1</td>
-                  <td className="py-2">
-                    {passes ? (
-                      <span className="text-fg-status-success">pass</span>
-                    ) : intentional ? (
-                      <span className="text-fg-subtle">exempt — disabled</span>
-                    ) : (
-                      <span className="text-fg-status-danger">FAIL</span>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-        <h3 className="mt-8 mb-1 text-md text-fg-default">Pairings that look right and are not</h3>
-        <p className="mb-3 max-w-2xl text-sm text-fg-subtle">
-          The matching foreground on a soft accent surface does not clear AA — only the -boldest
-          step does. These are shown rather than hidden, because a rule nobody can see the
-          evidence for decays into folklore within a few components.
+          ))}
+        </Table>
+
+        <h3 className="mt-8 mb-1 text-md">Pairings that look right and are not</h3>
+        <p className="mb-3 max-w-3xl text-sm text-fg-subtle">
+          Shown rather than hidden. A rule whose evidence nobody can see decays into folklore
+          within a few components — and these are asserted as <em>failing</em> in the test suite,
+          so a palette change that fixes one is a deliberate decision.
         </p>
-        <table className="w-full max-w-3xl text-left text-sm">
-          <tbody>
-            {TRAPS.map(([fg, bg]) => {
-              const ratio = contrast(readVar(`--ds-${fg}`), readVar(`--ds-${bg}`));
-              return (
-                <tr key={`trap-${fg}-${bg}`} className="border-b border-outline-subtle">
-                  <td className="py-2 text-fg-default">{fg}</td>
-                  <td className="py-2 text-fg-subtle">{bg}</td>
-                  <td className="py-2 text-fg-default">{ratio.toFixed(2)}:1</td>
-                  <td className="py-2 text-fg-status-danger">below AA</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <Table head={['Foreground', 'Surface', 'Ratio']}>
+          {TRAPS.map(([f, b, exempt]) => (
+            <tr key={`trap-${f}-${b}`} className="border-b border-outline-subtle">
+              <td className="py-2 pr-4">{f}</td>
+              <td className="py-2 pr-4 text-fg-subtle">{b}</td>
+              <td className="py-2">
+                <Ratio fg={entry(f)} bg={entry(b)} exempt={exempt} />
+              </td>
+            </tr>
+          ))}
+        </Table>
       </Section>
 
-      <Section title="Type scale">
-        <div className="space-y-2">
-          {(['font-body-xs-moderate', 'font-body-sm-moderate', 'font-body-md-moderate',
-             'font-heading-sm-strong', 'font-heading-md-strong'] as const).map((utility) => (
-            <div key={utility} className="flex items-baseline gap-4">
-              <span className="w-56 shrink-0 text-xs text-fg-subtlest">{utility}</span>
-              <span className={`${utility} text-fg-default`}>
-                The quick brown fox jumps over the lazy dog
-              </span>
+      <Section
+        title="Type scale"
+        note="Composite: one utility sets family, size, weight and line-height together. A call site able to set the size without the line-height is a call site where the two drift apart."
+      >
+        <div className="space-y-3">
+          {ALL.filter((t) => t.name.startsWith('font-') && t.value.includes('/')).map((t) => (
+            <div key={t.name} className="flex items-baseline gap-4">
+              <span className="w-64 shrink-0 text-xs text-fg-subtle">{t.name}</span>
+              <span style={{ font: t.value }}>The quick brown fox jumps over the lazy dog</span>
             </div>
           ))}
         </div>
       </Section>
-    </div>
+    </Page>
   );
 }
 
 const meta = {
-  title: 'Foundations/Tokens',
-  component: Tokens,
+  title: 'Foundations/Semantic colours',
+  component: SemanticTokens,
   parameters: { layout: 'fullscreen' },
-} satisfies Meta<typeof Tokens>;
+} satisfies Meta<typeof SemanticTokens>;
 
 export default meta;
 
-export const AllTokens: StoryObj<typeof meta> = {};
+export const AllSemanticTokens: StoryObj<typeof meta> = {};
