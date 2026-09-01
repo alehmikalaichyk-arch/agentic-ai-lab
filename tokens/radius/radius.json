@@ -1,8 +1,39 @@
 {
   "radius": {
-    "sm":   { "$value": "4px",    "$type": "dimension" },
-    "md":   { "$value": "8px",    "$type": "dimension" },
-    "lg":   { "$value": "12px",   "$type": "dimension" },
-    "full": { "$value": "9999px", "$type": "dimension" }
+    "xs": {
+      "$value": "2px",
+      "$type": "dimension",
+      "$description": "Extra-small radius — Mantine 5/8 default xs"
+    },
+    "sm": {
+      "$value": "4px",
+      "$type": "dimension",
+      "$description": "Small radius — Mantine 5/8 default sm"
+    },
+    "md": {
+      "$value": "8px",
+      "$type": "dimension",
+      "$description": "Medium radius — Mantine 5/8 default md"
+    },
+    "lg": {
+      "$value": "16px",
+      "$type": "dimension",
+      "$description": "Large radius — Mantine 5/8 default lg"
+    },
+    "xl": {
+      "$value": "32px",
+      "$type": "dimension",
+      "$description": "Extra-large radius — Mantine 5/8 default xl"
+    },
+    "card": {
+      "$value": "10px",
+      "$type": "dimension",
+      "$description": "Card border radius (Command Center --cc-card-radius)"
+    },
+    "rounded-sm": {
+      "$value": "0.25rem",
+      "$type": "dimension",
+      "$description": "Tailwind rounded-sm override (spend-ui / command-center globals.css)"
+    }
   }
 }

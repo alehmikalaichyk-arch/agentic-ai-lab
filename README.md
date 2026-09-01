@@ -81,25 +81,36 @@ npm run storybook        # http://localhost:6006
 Three layers, and the boundary between them is enforced by what class exists rather than by
 review:
 
-- **`tokens/color/primitives.json`** — raw palette. `palette.neutral.900` and friends.
-- **`tokens/color/semantic.json`** — roles. `fg.default`, `surface.brand-subtlest`,
-  `border.focused`. Every value references a primitive and nothing else.
-- **`tokens/component/`** — component-layer values that reference semantic tokens.
+- **`tokens/color/primitives.json`** — the raw palette. Colour steps named by family
+  (`brand-500`, `neutral-100`).
+- **`tokens/color/semantic.json`** — roles. `fg.default`, `surface.accent-red-subtlest`,
+  `outline.focus`. Every value references a primitive and nothing else.
+- **`tokens/component/`** — component-layer values referencing semantic roles.
 
-`sd.config.mjs` publishes the semantic layer to Tailwind and **withholds the primitives**, so
-`bg-surface-brand-subtlest` is a real class and `bg-palette-brand-500` is not. A component
-reaching past the semantic layer does not get a warning; it gets no class at all.
+427 tokens, built by Style Dictionary into `generated/`.
 
-Two traps worth knowing before you add a token:
+**Two things have to be withheld, not one.** `sd.config.mjs` publishes the semantic layer to
+Tailwind and withholds our primitives, so `bg-brand-500` is not a class. That alone is not
+enough: Tailwind ships a full palette of its own, so `bg-red-500`, `text-neutral-900` and
+`bg-slate-100` were all real, working classes reaching straight past the semantic layer.
+`src/styles.css` deletes them with `--color-*: initial`. `src/tailwind-surface.test.ts` compiles
+Tailwind for real and asserts both halves — reading the theme file was exactly what said
+everything was fine.
+
+Three traps worth knowing before you add a token:
 
 - **`-bold` means different things on different roles.** On a foreground role it means *darker
-  text*; on a surface role it means *a strong fill that carries inverse text*. They are not
-  symmetrical, and reading one as the other is the most common mistake here.
-- **A soft accent surface needs the `-boldest` foreground.** Pairing `fg-accent-blue` with
-  `surface-accent-blue-subtlest` does not reach AA; the `-boldest` step is what does.
+  text*; on a surface role it means *a strong fill*. They are not symmetrical.
+- **`-boldest` does not mean "dark".** `surface-neutral-boldest` is a light grey (`#c5c8d1`).
+  The suffix orders steps within a family and promises nothing about lightness — reading it as a
+  promise is how white text ends up on a light background.
+- **On a soft accent surface, the matching foreground fails AA.** `fg-accent-red` on
+  `surface-accent-red-subtlest` is **3.12:1**; only the `-boldest` step passes. The pairing that
+  reads as obviously correct is the wrong one, so both directions are asserted in
+  `src/tokens.test.ts` — the passing pairs *and* the tempting ones that fail.
 
-The build fails rather than guesses: an unclassified token group, or two tokens publishing the
-same Tailwind variable, both stop the build with a message naming the two.
+The build refuses to guess: an unclassified token group, or two tokens publishing the same
+Tailwind variable, each stop the build with a message naming them.
 
 ## Reading the demonstration
 

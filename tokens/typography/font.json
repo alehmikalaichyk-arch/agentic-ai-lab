@@ -1,0 +1,277 @@
+{
+  "font": {
+    "body": {
+      "xs": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.xs}",
+            "fontWeight": "{font-weight.light}",
+            "lineHeight": "{line-height.xs}"
+          },
+          "$description": "Input xs (text + placeholder); Drawer breadcrumb"
+        },
+        "moderate": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.xs}",
+            "fontWeight": "{font-weight.regular}",
+            "lineHeight": "{line-height.xs}"
+          },
+          "$description": "Button xs — weight 400, lighter alternative to emphasis (weight 500)"
+        },
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.xs}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.xs}"
+          },
+          "$description": "Button xs; Label xs; Avatar xs initial; Tooltip; Sidebar collapsed label; StatusBar legend xs/sm"
+        }
+      },
+      "sm": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.sm}",
+            "fontWeight": "{font-weight.light}",
+            "lineHeight": "{line-height.sm}"
+          },
+          "$description": "System default body. Input sm; Table cell default/static/supporting; Sidebar nav default; PageShell & Drawer subtitle; AccordionCard counter; StatusBar legend md/lg; GlobalHeader menu items; Table empty-state description; Accordion content"
+        },
+        "moderate": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.sm}",
+            "fontWeight": "{font-weight.regular}",
+            "lineHeight": "{line-height.sm}"
+          },
+          "$description": "Button sm — weight 400, lighter alternative to emphasis (weight 500)"
+        },
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.sm}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.sm}"
+          },
+          "$description": "Button sm; Label sm; Avatar sm initial; DotIndicator; Sidebar section subtitle; GlobalHeader username; Table empty-state title"
+        },
+        "high": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.sm}",
+            "fontWeight": "{font-weight.semibold}",
+            "lineHeight": "{line-height.sm}"
+          },
+          "$description": "Active/strongest UI text: Sidebar nav active; Accordion (list) trigger"
+        }
+      },
+      "md": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.md}",
+            "fontWeight": "{font-weight.light}",
+            "lineHeight": "{line-height.md}"
+          },
+          "$description": "Input md (text + placeholder)"
+        },
+        "moderate": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.md}",
+            "fontWeight": "{font-weight.regular}",
+            "lineHeight": "{line-height.md}"
+          },
+          "$description": "Button md — weight 400, lighter alternative to emphasis (weight 500)"
+        },
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.md}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.md}"
+          },
+          "$description": "Button md; Label md & lg; Avatar md initial"
+        }
+      },
+      "lg": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.lg}",
+            "fontWeight": "{font-weight.light}",
+            "lineHeight": "{line-height.lg}"
+          },
+          "$description": "Input lg (text + placeholder)"
+        },
+        "moderate": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.lg}",
+            "fontWeight": "{font-weight.regular}",
+            "lineHeight": "{line-height.lg}"
+          },
+          "$description": "Button lg; Accordion trigger heading; AccordionCard title — weight 400, lighter alternative to emphasis/heading.lg.default (weight 500)"
+        },
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.lg}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.lg}"
+          },
+          "$description": "Button lg; Avatar lg initial (canonical; heading.lg.default aliases this)"
+        }
+      },
+      "xl": {
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.xl}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.xl}"
+          },
+          "$description": "Avatar xl initial (no .default at 20px; canonical; heading.xl.default aliases this)"
+        }
+      }
+    },
+    "heading": {
+      "lg": {
+        "default": {
+          "$type": "typography",
+          "$value": "{font.body.lg.emphasis}",
+          "$description": "Drawer title (alias → font.body.lg.emphasis)"
+        }
+      },
+      "xl": {
+        "default": {
+          "$type": "typography",
+          "$value": "{font.body.xl.emphasis}",
+          "$description": "alias → font.body.xl.emphasis",
+          "$extensions": { "com.pegbo.status": "proposed" }
+        },
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.xl}",
+            "fontWeight": "{font-weight.semibold}",
+            "lineHeight": "{line-height.xl}"
+          },
+          "$description": "PageShell title"
+        }
+      },
+      "2xl": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.2xl}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.2xl}"
+          },
+          "$description": "Proposed — no current code usage",
+          "$extensions": { "com.pegbo.status": "proposed" }
+        },
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.2xl}",
+            "fontWeight": "{font-weight.semibold}",
+            "lineHeight": "{line-height.2xl}"
+          },
+          "$description": "Proposed — no current code usage",
+          "$extensions": { "com.pegbo.status": "proposed" }
+        }
+      }
+    },
+    "display": {
+      "md": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.3xl}",
+            "fontWeight": "{font-weight.semibold}",
+            "lineHeight": "{line-height.3xl}"
+          },
+          "$description": "Hero display heading — proposed",
+          "$extensions": { "com.pegbo.status": "proposed" }
+        }
+      },
+      "lg": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.4xl}",
+            "fontWeight": "{font-weight.semibold}",
+            "lineHeight": "{line-height.4xl}"
+          },
+          "$description": "Large display heading — proposed",
+          "$extensions": { "com.pegbo.status": "proposed" }
+        }
+      }
+    },
+    "overline": {
+      "xs": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.xs}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.xs}",
+            "letterSpacing": "{letter-spacing.wide}",
+            "textTransform": "uppercase"
+          },
+          "$description": "Status chip sm; Sidebar section title"
+        },
+        "emphasis": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.xs}",
+            "fontWeight": "{font-weight.semibold}",
+            "lineHeight": "{line-height.xs}",
+            "letterSpacing": "{letter-spacing.wide}",
+            "textTransform": "uppercase"
+          },
+          "$description": "Table column header (th)"
+        }
+      },
+      "sm": {
+        "default": {
+          "$type": "typography",
+          "$value": {
+            "fontFamily": "{font-family.base}",
+            "fontSize": "{font-size.sm}",
+            "fontWeight": "{font-weight.medium}",
+            "lineHeight": "{line-height.sm}",
+            "letterSpacing": "{letter-spacing.wide}",
+            "textTransform": "uppercase"
+          },
+          "$description": "Status chip md"
+        }
+      }
+    }
+  }
+}

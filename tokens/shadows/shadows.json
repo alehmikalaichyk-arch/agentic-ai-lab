@@ -1,21 +1,48 @@
 {
   "shadow": {
-    "$description": "Elevation. Surfaces are separated by shadow rather than by hue, which is why surface.raised and surface.default are the same colour.",
-    "sm": {
-      "$value": "0 1px 4px 0 rgba(22, 26, 35, 0.04)",
-      "$type": "shadow"
-    },
     "default": {
-      "$value": "0 2px 8px 0 rgba(22, 26, 35, 0.06)",
-      "$type": "shadow"
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "2px",
+        "blur": "8px",
+        "spread": "0",
+        "color": "rgba(45, 50, 66, 0.06)"
+      },
+      "$type": "shadow",
+      "$description": "Default card / panel shadow (client-ui --shadow)"
+    },
+    "sm": {
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "1px",
+        "blur": "4px",
+        "spread": "0",
+        "color": "rgba(45, 50, 66, 0.04)"
+      },
+      "$type": "shadow",
+      "$description": "Small shadow for subtle elevation"
     },
     "md": {
-      "$value": "0 4px 16px 0 rgba(22, 26, 35, 0.10)",
-      "$type": "shadow"
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "4px",
+        "blur": "16px",
+        "spread": "0",
+        "color": "rgba(45, 50, 66, 0.10)"
+      },
+      "$type": "shadow",
+      "$description": "Medium shadow for dropdowns / popovers"
     },
     "lg": {
-      "$value": "0 8px 32px 0 rgba(22, 26, 35, 0.14)",
-      "$type": "shadow"
+      "$value": {
+        "offsetX": "0",
+        "offsetY": "8px",
+        "blur": "32px",
+        "spread": "0",
+        "color": "rgba(45, 50, 66, 0.14)"
+      },
+      "$type": "shadow",
+      "$description": "Large shadow for modals / dialogs"
     }
   }
 }

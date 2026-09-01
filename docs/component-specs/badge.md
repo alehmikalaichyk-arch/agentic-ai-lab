@@ -50,7 +50,7 @@ it does not — governance §6.2 draws that line, and it is narrower than it fir
 | Prop | Type | Default | Required | Notes |
 |---|---|---|---|---|
 | `children` | `ReactNode` | — | yes | The label. Text; see edge cases for what happens when it is long. |
-| `variant` | `'neutral' \| 'brand' \| 'positive' \| 'caution' \| 'critical'` | `'neutral'` | no | Semantic role, not a colour name. |
+| `variant` | `'neutral' \| 'info' \| 'positive' \| 'caution' \| 'critical'` | `'neutral'` | no | Semantic role, not a colour name. |
 | `size` | `'sm' \| 'md'` | `'md'` | no | |
 | `dot` | `boolean` | `false` | no | Renders the decorative dot. |
 | `className` | `string` | — | no | Merged through `cn()`, so a caller's utility wins over the component's own for the same property. |
@@ -66,15 +66,15 @@ section reads as an oversight, and the next author adds a `defaultOpen` to be sa
 | Variant | When to use |
 |---|---|
 | `neutral` | No judgement attached. Counts, categories, "Draft". |
-| `brand` | Draws the eye without claiming anything is good or bad. "New", "Beta". |
+| `info` | Draws the eye without claiming anything is good or bad. "New", "Beta". |
 | `positive` | A state the reader wants. "Active", "Paid", "Passed". |
 | `caution` | A state that needs attention but is not a failure. "Pending", "Expiring". |
 | `critical` | A failure or a block. "Failed", "Overdue", "Rejected". |
 
 | Size | Height | Type | Padding |
 |---|---|---|---|
-| `sm` | 20px | `text-xs` / `font-weight-medium` | `px-2` |
-| `md` | 24px | `text-sm` / `font-weight-medium` | `px-2.5` |
+| `sm` | 20px | `font-body-xs-moderate` | `px-2` |
+| `md` | 24px | `font-body-sm-moderate` | `px-2.5` |
 
 ## States
 
@@ -87,24 +87,31 @@ section reads as an oversight, and the next author adds a `defaultOpen` to be sa
 
 | Element | Token | Role |
 |---|---|---|
-| root surface, `neutral` | `surface-neutral-subtlest` | background |
-| root surface, `brand` | `surface-brand-subtlest` | background |
-| root surface, `positive` | `surface-status-success-subtlest` | background |
-| root surface, `caution` | `surface-status-warning-subtlest` | background |
-| root surface, `critical` | `surface-status-danger-subtlest` | background |
-| label, `neutral` | `fg-subtle` | text |
-| label, `brand` | `fg-brand-bold` | text |
-| label, `positive` | `fg-status-success` | text |
-| label, `caution` | `fg-status-warning` | text |
-| label, `critical` | `fg-status-danger` | text |
-| root border | `border-subtle` | 1px hairline, all variants |
+| root surface, `neutral` | `surface-accent-grey-subtlest` | background |
+| root surface, `info` | `surface-accent-blue-subtlest` | background |
+| root surface, `positive` | `surface-accent-green-subtlest` | background |
+| root surface, `caution` | `surface-accent-amber-subtlest` | background |
+| root surface, `critical` | `surface-accent-red-subtlest` | background |
+| label, `neutral` | `fg-accent-grey-boldest` | text |
+| label, `info` | `fg-accent-blue-boldest` | text |
+| label, `positive` | `fg-accent-green-boldest` | text |
+| label, `caution` | `fg-accent-amber-boldest` | text |
+| label, `critical` | `fg-accent-red-boldest` | text |
+| root border | `outline-subtle` | 1px hairline, all variants |
 | root radius | `radius-full` | pill |
-| label type | `text-xs` / `text-sm` + `font-weight-medium` | per size |
+| label type | `font-body-xs-moderate` / `font-body-sm-moderate` | per size; composite, so size, weight and line-height cannot drift apart |
 | dot | `currentColor` | inherits the label colour, so a variant never needs a second token |
 
-**On `fg-brand-bold` rather than `fg-brand`.** Both clear AA on `surface-brand-subtlest` (9.01:1
-and 6.78:1), so this is a legibility margin choice, not a compliance one — and it is recorded
-because the next author will otherwise "simplify" it to `fg-brand` and quietly spend the margin.
+**Why every variant uses the `-boldest` foreground, and this is the most important line
+in the spec.** On a soft accent surface, the *matching* foreground does not clear AA — measured
+on this palette, `fg-accent-red` on `surface-accent-red-subtlest` is **3.12:1** and
+`fg-accent-blue` on its own subtlest surface is **2.44:1**. The pairing that reads as obviously
+correct is the one that fails. Only the `-boldest` step passes, and `src/tokens.test.ts` asserts
+both directions so the rule cannot decay into folklore.
+
+**`-boldest` does not mean "dark".** On a neutral surface role it is a light grey (`#c5c8d1`).
+The suffix orders steps within a family; it makes no promise about lightness, and reading it as
+one is how white text ends up on a light background.
 
 Reference tokens; never define them. A token that does not exist is a gap to escalate, not one
 to invent.
@@ -126,13 +133,14 @@ to invent.
 
   | Variant | Pair | Ratio | AA (4.5:1) |
   |---|---|---:|---|
-  | `neutral` | `fg-subtle` on `surface-neutral-subtlest` | 6.84:1 | pass |
-  | `brand` | `fg-brand-bold` on `surface-brand-subtlest` | 9.01:1 | pass |
-  | `positive` | `fg-status-success` on `surface-status-success-subtlest` | 6.01:1 | pass |
-  | `caution` | `fg-status-warning` on `surface-status-warning-subtlest` | 6.00:1 | pass |
-  | `critical` | `fg-status-danger` on `surface-status-danger-subtlest` | 6.96:1 | pass |
+  | `neutral` | `fg-accent-grey-boldest` on `surface-accent-grey-subtlest` | 16.87:1 | pass |
+  | `info` | `fg-accent-blue-boldest` on `surface-accent-blue-subtlest` | 11.99:1 | pass |
+  | `positive` | `fg-accent-green-boldest` on `surface-accent-green-subtlest` | 7.48:1 | pass |
+  | `caution` | `fg-accent-amber-boldest` on `surface-accent-amber-subtlest` | 12.54:1 | pass |
+  | `critical` | `fg-accent-red-boldest` on `surface-accent-red-subtlest` | 10.29:1 | pass |
 
-  Worst pair 6.00:1, so a palette change has 1.5:1 of headroom before any variant fails.
+  Worst pair 7.48:1 against a 4.5:1 floor. Measured from the built tokens, not copied from a
+  palette document — `src/tokens.test.ts` recomputes the same pairs on every run.
 
 **What "inert" does not promise** (governance §6.2): the rest type stays the wide
 `React.HTMLAttributes<HTMLSpanElement>`. Badge provides no interactive behaviour and exposes no

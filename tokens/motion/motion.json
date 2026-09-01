@@ -1,40 +1,57 @@
 {
   "motion": {
-    "$description": "The motion budget. A component that needs a duration picks one of these; a bespoke number in a component is a violation, because inconsistent timing is felt before it is noticed.",
     "duration": {
       "instant": {
         "$value": "0ms",
-        "$type": "duration"
+        "$type": "duration",
+        "$description": "No transition — immediate state change"
       },
       "fast": {
         "$value": "100ms",
-        "$type": "duration"
-      },
-      "normal": {
-        "$value": "150ms",
-        "$type": "duration"
+        "$type": "duration",
+        "$description": "Fast micro-interactions (hover, focus)"
       },
       "medium": {
         "$value": "200ms",
-        "$type": "duration"
+        "$type": "duration",
+        "$description": "Medium-speed UI animations — tab indicator slide, shared element transitions"
+      },
+      "normal": {
+        "$value": "150ms",
+        "$type": "duration",
+        "$description": "Standard UI transition — color, opacity, border (between fast 100ms and medium 200ms)"
       },
       "slow": {
         "$value": "400ms",
-        "$type": "duration"
+        "$type": "duration",
+        "$description": "Slow transitions (page-level, modal)"
+      },
+      "row-highlight": {
+        "$value": "1400ms",
+        "$type": "duration",
+        "$description": "Row pulse highlight duration (Command Center rowPulse animation)"
       }
     },
     "easing": {
       "ease-in": {
-        "$value": "cubic-bezier(0.4, 0, 1, 1)",
-        "$type": "cubicBezier"
+        "$value": [0.4, 0, 1, 1],
+        "$type": "cubicBezier",
+        "$description": "Ease-in — accelerating from zero"
       },
       "ease-out": {
-        "$value": "cubic-bezier(0, 0, 0.2, 1)",
-        "$type": "cubicBezier"
+        "$value": [0, 0, 0.2, 1],
+        "$type": "cubicBezier",
+        "$description": "Ease-out — decelerating to zero"
       },
       "ease-in-out": {
-        "$value": "cubic-bezier(0.4, 0, 0.2, 1)",
-        "$type": "cubicBezier"
+        "$value": [0.4, 0, 0.2, 1],
+        "$type": "cubicBezier",
+        "$description": "Standard ease-in-out"
+      },
+      "row-highlight": {
+        "$value": [0, 0, 0.2, 1],
+        "$type": "cubicBezier",
+        "$description": "Row pulse easing (Command Center rowPulse — ease-out)"
       }
     }
   }

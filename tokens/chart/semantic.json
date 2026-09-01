@@ -1,0 +1,44 @@
+{
+  "chart": {
+    "1": {
+      "default":  { "$value": "{chart-blue-500}",   "$type": "color", "$description": "Series 1 — blue, full opacity" },
+      "subtle":   { "$value": "{chart-blue-300}",   "$type": "color", "$description": "Series 1 — blue, mid weight" },
+      "subtlest": { "$value": "{chart-blue-100}",   "$type": "color", "$description": "Series 1 — blue, lightest fill" }
+    },
+    "2": {
+      "default":  { "$value": "{chart-orange-500}", "$type": "color", "$description": "Series 2 — orange, full opacity" },
+      "subtle":   { "$value": "{chart-orange-300}", "$type": "color", "$description": "Series 2 — orange, mid weight" },
+      "subtlest": { "$value": "{chart-orange-100}", "$type": "color", "$description": "Series 2 — orange, lightest fill" }
+    },
+    "3": {
+      "default":  { "$value": "{chart-red-500}",    "$type": "color", "$description": "Series 3 — red, full opacity" },
+      "subtle":   { "$value": "{chart-red-300}",    "$type": "color", "$description": "Series 3 — red, mid weight" },
+      "subtlest": { "$value": "{chart-red-100}",    "$type": "color", "$description": "Series 3 — red, lightest fill" }
+    },
+    "4": {
+      "default":  { "$value": "{chart-teal-500}",   "$type": "color", "$description": "Series 4 — teal, full opacity" },
+      "subtle":   { "$value": "{chart-teal-300}",   "$type": "color", "$description": "Series 4 — teal, mid weight" },
+      "subtlest": { "$value": "{chart-teal-100}",   "$type": "color", "$description": "Series 4 — teal, lightest fill" }
+    },
+    "5": {
+      "default":  { "$value": "{chart-green-500}",  "$type": "color", "$description": "Series 5 — green, full opacity" },
+      "subtle":   { "$value": "{chart-green-300}",  "$type": "color", "$description": "Series 5 — green, mid weight" },
+      "subtlest": { "$value": "{chart-green-100}",  "$type": "color", "$description": "Series 5 — green, lightest fill" }
+    },
+    "6": {
+      "default":  { "$value": "{chart-amber-500}",  "$type": "color", "$description": "Series 6 — amber, full opacity. Use only dark text (#141820) on this fill — white labels fail WCAG AA" },
+      "subtle":   { "$value": "{chart-amber-300}",  "$type": "color", "$description": "Series 6 — amber, mid weight" },
+      "subtlest": { "$value": "{chart-amber-100}",  "$type": "color", "$description": "Series 6 — amber, lightest fill" }
+    },
+    "7": {
+      "default":  { "$value": "{chart-purple-500}", "$type": "color", "$description": "Series 7 — purple, full opacity" },
+      "subtle":   { "$value": "{chart-purple-300}", "$type": "color", "$description": "Series 7 — purple, mid weight" },
+      "subtlest": { "$value": "{chart-purple-100}", "$type": "color", "$description": "Series 7 — purple, lightest fill" }
+    },
+    "8": {
+      "default":  { "$value": "{chart-indigo-500}", "$type": "color", "$description": "Series 8 — indigo, full opacity" },
+      "subtle":   { "$value": "{chart-indigo-300}", "$type": "color", "$description": "Series 8 — indigo, mid weight" },
+      "subtlest": { "$value": "{chart-indigo-100}", "$type": "color", "$description": "Series 8 — indigo, lightest fill" }
+    }
+  }
+}
