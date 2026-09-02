@@ -13,9 +13,12 @@ import { Input, type InputProps } from './input';
  * deliberate rather than an oversight:
  *
  *   facet 1 (rendered-box measurement) and facet 3 (axe) need real layout and real
- *   computed styles, so they live in input.browser.test.tsx — jsdom performs no layout
- *   and reports every box as 0x0, where an assertion like "both sizes differ" passes
- *   on 0 !== 0 being false... or worse, quietly compares nothing.
+ *   computed styles, so they live in src/input.browser.test.tsx — jsdom performs no
+ *   layout and reports every box as 0x0, where an assertion like "both sizes differ"
+ *   passes on 0 !== 0 being false... or worse, quietly compares nothing.
+ *   That file is NOT colocated here, and deliberately so: the classifier cannot parse
+ *   a `.browser.test.tsx` name under src/components/. Its header carries the full
+ *   reason and the follow-up.
  *
  *   facet 4 (contrast pairs) belongs in src/tokens.test.ts, which is outside this
  *   stage's write scope. Raised as an open decision in the stage report rather than

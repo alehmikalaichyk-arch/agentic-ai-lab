@@ -2,11 +2,28 @@ import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, expect, it } from 'vitest';
 
-import { expectNoAxeViolations } from '../../a11y-test-utils';
-import { Input } from './input';
+import { expectNoAxeViolations } from './a11y-test-utils';
+import { Input } from './components/ui/input';
 
 /*
  * The half of Input's test contract that jsdom cannot carry.
+ *
+ * WHY THIS FILE IS NOT COLOCATED WITH THE COMPONENT, against governance §5.
+ * `tools/classify-pr-diff.sh` derives a layout-A component name from the filename and
+ * strips only `.test`, `.spec` and `.stories`. Under `src/components/ui/` this file
+ * resolves to `input.browser` — a name containing a dot, which fails the classifier's
+ * safe-token guard and exits the script non-zero. All three structural gates run the
+ * classifier first, so ALL THREE fail, and they fail on a parse error rather than on
+ * anything about this PR. Measured on PR #30.
+ *
+ * The repository's only other browser test — browser-environment.browser.test.tsx —
+ * sits here for effectively the same reason, so this follows precedent rather than
+ * inventing a location. The real fix is one line in strip_suffix() and is filed
+ * separately: editing a gate inside the PR that gate is blocking is not a thing to do
+ * casually, and it deserves its own review and its own regression test.
+ *
+ * The unit half of this component's tests IS colocated, at
+ * src/components/ui/input.test.tsx.
  *
  * Facet 1 (rendered-box measurement) and facet 3 (axe) both need real layout and real
  * computed styles. In jsdom getBoundingClientRect() returns zeroes and axe's
