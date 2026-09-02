@@ -5,12 +5,43 @@ Read [README.md](README.md) first if you have not chosen a level.
 
 ---
 
+## Before any level — unpack the kit and check it
+
+The kit is distributed as a **folder**, not as a repository you clone. Everything below assumes
+you have unpacked it somewhere and know the full path to it: the directory that contains
+`plugin/`, `docs/` and `verify.sh`.
+
+```bash
+cd /full/path/to/ds-pipeline-kit
+chmod +x verify.sh tools/*.sh plugin/hooks/*.sh repo-enforcement/scripts/*.sh
+bash verify.sh
+```
+
+The `chmod` restores permission to run the scripts. A ZIP archive loses it on Windows, and the
+guard is started **by its path** rather than through an interpreter — without the bit it never
+runs, and nothing tells you so. On macOS and Linux the line changes nothing and is safe to run
+anyway.
+
+`verify.sh` checks the kit itself. Expect `ALL CHECKS PASSED — kit is releasable`. Anything else
+means the copy did not arrive intact; replace it rather than working around it.
+
+---
+
 ## Level 1 — the process
 
 ```bash
-claude plugin marketplace add <this-repository-url>
-claude plugin install ds-component-pipeline
+claude plugin marketplace add /full/path/to/ds-pipeline-kit
+claude plugin install ds-component-pipeline@ds-pipeline-kit
 ```
+
+The marketplace source is the **path to this folder**, because the folder is itself a marketplace
+root — `.claude-plugin/marketplace.json` sits at its top level. The short `owner/repo` form works
+only when the kit is published as a repository of its own, with that manifest in the repository
+root; pointed at a repository that merely *contains* the kit, it fails with `Marketplace file not
+found`.
+
+Always give the `@ds-pipeline-kit` suffix when installing. Without it the command relies on the
+plugin name being unique across every marketplace you have added.
 
 Verify:
 
@@ -18,7 +49,9 @@ Verify:
 claude plugin details ds-component-pipeline
 ```
 
-Expect **10 skills, 1 agent, 1 hook**. The hook is inert until Level 2.
+Expect **10 skills, 1 agent, 1 hook**. In Claude Code that hook is registered by the install
+itself, so Level 2 arrives with Level 1. In a harness that does not read plugin hooks it stays
+inert until you register it by hand — see Level 2.
 
 > There is no `claude plugin validate` command. `claude plugin details` shows the component
 > inventory and projected token cost; `claude plugin tag` validates that `plugin.json` and the
@@ -52,8 +85,10 @@ config. Do not hand-edit it; regenerate it.
 
 ## Level 2 — plus the write-time guard
 
-If your harness reads plugin hooks automatically, Level 1's install already placed the hook and
-there is nothing to do. Otherwise register it:
+**In Claude Code there is nothing to do here.** The plugin declares its own hook, the Level 1
+install registers it, and `claude plugin details` reporting `Hooks (1)` is the confirmation.
+
+In a harness that does not read plugin hooks, register it by hand:
 
 ```json
 {
@@ -62,7 +97,7 @@ there is nothing to do. Otherwise register it:
       {
         "matcher": "Write|Edit",
         "hooks": [
-          { "type": "command", "command": "<path-to-plugin>/hooks/ds-pipeline-guard.sh" }
+          { "type": "command", "command": "/full/path/to/ds-pipeline-kit/plugin/hooks/ds-pipeline-guard.sh" }
         ]
       }
     ]
@@ -77,11 +112,16 @@ A registered-but-silent hook looks exactly like a firing-and-finding-nothing hoo
 ```bash
 cd <your-repo> && git checkout -b spec/probe
 printf '%s' '{"tool_name":"Write","tool_input":{"file_path":"src/components/ui/probe.tsx"}}' \
-  | <path-to-plugin>/hooks/ds-pipeline-guard.sh ; echo "exit=$?"
+  | /full/path/to/ds-pipeline-kit/plugin/hooks/ds-pipeline-guard.sh ; echo "exit=$?"
 ```
 
 Expect `exit=2`. If you get `exit=0`, your paths do not match the config — fix that before going
 further, or every later check measures nothing.
+
+That probe runs the script directly, so it proves the script and your paths. It does not prove
+the harness is calling it, and the two are indistinguishable from outside. Still on `spec/probe`,
+ask your agent to create `src/components/ui/probe.tsx` with any content: it should be refused
+before the file appears. If the file is created, the guard is correct and nothing is running it.
 
 If you modify the guard, run its suite. All 54 must pass:
 

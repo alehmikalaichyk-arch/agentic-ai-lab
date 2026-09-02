@@ -62,11 +62,15 @@ each page says so plainly.
 New here? **[QUICKSTART.md](QUICKSTART.md)** gets Level 1 running in ten minutes, and starts with
 the five-row check of whether your repository fits at all.
 
-**Levels 1 and 2** — a plugin:
+The kit is distributed as a **folder**, not as a repository you clone. Unpack it, run
+`chmod +x verify.sh tools/*.sh plugin/hooks/*.sh repo-enforcement/scripts/*.sh` — a ZIP archive
+drops that on Windows and the guard is started by its path — then `bash verify.sh`.
+
+**Levels 1 and 2** — a plugin, installed from the path to that folder:
 
 ```bash
-claude plugin marketplace add <this-repository-url>
-claude plugin install ds-component-pipeline
+claude plugin marketplace add /full/path/to/ds-pipeline-kit
+claude plugin install ds-component-pipeline@ds-pipeline-kit
 ```
 
 **Level 3** — copy `repo-enforcement/` into the target repository. It cannot ship as a plugin:

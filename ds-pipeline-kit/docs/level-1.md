@@ -52,11 +52,19 @@ cp build/ds-component-pipeline.rule.md <your-repo>/.claude/rules/ds-component-pi
 
 It is generated from the same source as the skill, so the two cannot drift.
 
+**Know what it costs before you copy it.** The generated file is the full rule — roughly 16,000
+tokens — and a file in `.claude/rules/` is loaded into **every** session. The same material as a
+skill costs about 120 tokens standing, and the rest only when it runs. Copy the rule when you
+have seen the skill fail to fire on work it should have covered; not by default.
+
 ## Install
 
+The kit is distributed as a folder. Unpack it, then install the plugin from the path to that
+folder — it is itself a marketplace root:
+
 ```bash
-claude plugin marketplace add <this-repository-url>
-claude plugin install ds-component-pipeline
+claude plugin marketplace add /full/path/to/ds-pipeline-kit
+claude plugin install ds-component-pipeline@ds-pipeline-kit
 ```
 
 Then copy `ds-kit.config.yml` to your repository root and edit it. Until you do, the skills use
@@ -69,8 +77,10 @@ not be your layout.
 claude plugin details ds-component-pipeline
 ```
 
-Expect nine skills, one agent, one hook. (The hook is inert at Level 1 unless your harness runs
-plugin hooks — see [Level 2](level-2.md).)
+Expect **ten skills, one agent, one hook** — nine stages plus the process rule, which ships as a
+skill of its own. In Claude Code the hook is registered by this same install, so Level 2 arrives
+with Level 1; in a harness that does not read plugin hooks it stays inert until you register it
+by hand — see [Level 2](level-2.md).
 
 ## When Level 1 is the right stopping point
 
