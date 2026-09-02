@@ -164,18 +164,42 @@ describe('Input — focus indicator (AC6, A11Y-008)', () => {
 });
 
 describe('Input — fill states (D3)', () => {
-  it('does not change fill on focus, because the focused surface token is dead', async () => {
-    const user = userEvent.setup();
+  it('does not change fill on focus, because the focused surface token is dead', () => {
     render(<Input label="Email" />);
 
     const resting = getComputedStyle(field()).backgroundColor;
-    await user.click(field());
+
+    // Focused PROGRAMMATICALLY, deliberately — no pointer is involved at any point.
+    // `user.click()` leaves the pointer resting on the element, so :hover stays active
+    // and the measured fill is surface-input-hovered; the assertion then compares focus
+    // against hover and fails for a reason unrelated to what it tests. CI caught exactly
+    // that and the local run did not, which is the tell that pointer state here is
+    // environment-dependent and must be kept out of this assertion entirely.
+    field().focus();
+    expect(field()).toHaveFocus();
     const focused = getComputedStyle(field()).backgroundColor;
 
     // surface-input-focused resolves to the same value as surface-input, byte-identical.
     // The spec leaves it unbound rather than binding it and rendering nothing.
     expect(focused).toBe(resting);
     expect(resting).toBe(hexToRgb(tokenValue('--ds-surface-input')));
+  });
+
+  it('pins the dead token at the source: focused fill == base, hovered fill != base', () => {
+    render(<Input label="Email" />);
+
+    // Asserted against the TOKENS rather than by simulating hover. A `user.hover()`
+    // assertion was written first and removed: it did not produce a CSS :hover here,
+    // while `user.click()` did in CI — so a hover-driven test is a flake waiting for a
+    // different machine, and a flaky test about a colour teaches people to re-run CI.
+    //
+    // This is D3's actual claim anyway, and it is the one that matters: the focused
+    // surface token is DEAD (identical to its own base, so binding it would render
+    // nothing), while the hovered one is live. If someone later gives
+    // surface-input-focused a distinct value, this goes red and D3 gets revisited —
+    // which is exactly the prompt the spec's escalation to #2 asks for.
+    expect(tokenValue('--ds-surface-input-focused')).toBe(tokenValue('--ds-surface-input'));
+    expect(tokenValue('--ds-surface-input-hovered')).not.toBe(tokenValue('--ds-surface-input'));
   });
 
   it('uses the disabled surface and border when disabled', () => {
