@@ -66,7 +66,7 @@ plugin's `hooks/hooks.json` is enough and there is nothing to do. Otherwise add 
       {
         "matcher": "Write|Edit",
         "hooks": [
-          { "type": "command", "command": "<path-to-plugin>/hooks/ds-pipeline-guard.sh" }
+          { "type": "command", "command": "/full/path/to/ds-pipeline-kit/plugin/hooks/ds-pipeline-guard.sh" }
         ]
       }
     ]

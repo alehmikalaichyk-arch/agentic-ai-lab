@@ -22,15 +22,31 @@ Missing the last one only? Install anyway and read the skills as process documen
 
 ---
 
-## 1. Install the plugin
+## 1. Unpack it and check it
+
+The kit arrives as a **folder**, not as a repository you clone. Unpack it, then from inside it:
 
 ```bash
-claude plugin marketplace add <this-repository-url>
-claude plugin install ds-component-pipeline
+chmod +x verify.sh tools/*.sh plugin/hooks/*.sh repo-enforcement/scripts/*.sh
+bash verify.sh
+```
+
+The `chmod` matters on Windows, where a ZIP archive drops it: the guard is started by its path,
+so without the bit it never runs and nothing says so. `verify.sh` should end with
+`ALL CHECKS PASSED`.
+
+## 2. Install the plugin
+
+```bash
+claude plugin marketplace add /full/path/to/ds-pipeline-kit
+claude plugin install ds-component-pipeline@ds-pipeline-kit
 claude plugin details ds-component-pipeline     # expect 10 skills, 1 agent, 1 hook
 ```
 
-## 2. Bind it to your repository
+The marketplace source is the path to the folder — the folder is itself a marketplace root. The
+short `owner/repo` form only works for a kit published as its own repository.
+
+## 3. Bind it to your repository
 
 ```bash
 cp ds-kit.config.yml <your-repo>/ds-kit.config.yml
@@ -52,19 +68,24 @@ The four keys that matter most, and what breaks when they are wrong:
 **Nothing warns you when a path is wrong.** The skills simply describe paths that do not exist,
 which reads exactly like a repository that has not been set up yet.
 
-## 3. Prove it is bound
+## 4. Prove it is bound
 
 The cheapest check, and the one that catches a wrong `paths.components_ui`:
 
 ```bash
 cd <your-repo> && git checkout -b spec/probe
 printf '%s' '{"tool_name":"Write","tool_input":{"file_path":"src/components/ui/probe.tsx"}}' \
-  | <path-to-plugin>/hooks/ds-pipeline-guard.sh ; echo "exit=$?"
+  | /full/path/to/ds-pipeline-kit/plugin/hooks/ds-pipeline-guard.sh ; echo "exit=$?"
 ```
 
 `exit=2` means the guard resolved your paths and blocked component source on a spec branch.
 `exit=0` means it did not — fix the config before going further, or every later check measures
 nothing.
+
+That proved the script. It does not prove anything is *calling* it, and the two look identical
+from outside. Still on `spec/probe`, ask your agent to create `src/components/ui/probe.tsx` with
+any content. It should be refused before the file appears. If the file is created, the guard is
+correct and nothing is running it — the boundary is not there.
 
 ---
 
@@ -90,7 +111,7 @@ fix things is a preference; an absent tool is a guarantee.
 
 ---
 
-## 4. Your first component
+## 5. Your first component
 
 ```
 /ds-pipeline-orchestrator   (or invoke the skills in order)
