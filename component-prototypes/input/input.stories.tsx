@@ -8,16 +8,19 @@ import type { ReactNode } from 'react';
  * owner can look at the component before `docs/component-specs/input.md` is frozen by a
  * human merging PR-1, and it is deleted in PR-2.
  *
- * THE ONE DECISION THIS DRAFT EXISTS FOR — spec D3.
+ * THE DECISION THIS DRAFT WAS BUILT FOR — spec D3, now SETTLED (owner review, 2026-09-02).
  *   `surface.input-focused` resolves to #ffffff, byte-identical to `surface.input`. It is a
  *   dead token: a focus treatment expressed through the fill renders nothing. So focus is
- *   carried by two live tokens instead, and they are different hues:
- *       border  ->  outline-input-focused   #04639a  blue    6.45:1
- *       ring    ->  outline-focus           #099468  green   3.85:1
- *   Both are the token named for exactly that role, and using one for both would mean
- *   binding a token whose name says otherwise. But a GREEN RING AROUND A BLUE BORDER is a
- *   pairing prose cannot settle. Look at "Focus — the D3 pairing" first. If it reads wrong,
- *   the fix is a token decision at the governance layer, not a quiet substitution.
+ *   carried by the border and a 2px ring.
+ *
+ *   The ring first bound `outline-focus` (#099468, green) — the design system's dedicated
+ *   focus token — against a blue `outline-input-focused` border. The owner looked at it and
+ *   rejected it. The ring now binds THE SAME TOKEN AS THE BORDER, in whatever state the
+ *   border is: focus is the ring's presence, never a second hue.
+ *       focus        border + ring  ->  outline-input-focused  #04639a   6.45:1
+ *       error+focus  border + ring  ->  outline-input-error    #e31624   4.52:1
+ *   Both the rejected version and the error+focus extension are rendered in the first story,
+ *   because a decision that vanishes into a diff stops being reviewable.
  *
  * WHAT CARRIES OVER TO PR-2, and what does not (ds-component-pipeline, "Draft reuse"):
  *
@@ -54,7 +57,7 @@ type FieldState =
   | 'resting'
   | 'hover'
   | 'focus'
-  | 'focus-single-token'
+  | 'focus-green-ring'
   | 'error'
   | 'error-focus'
   | 'disabled'
@@ -78,15 +81,16 @@ const HEIGHT: Record<FieldSize, string> = {
 const STATE: Record<FieldState, string> = {
   resting: 'bg-surface-input border-outline-input text-fg-default',
   hover: 'bg-surface-input-hovered border-outline-input-hovered text-fg-default',
+  // Spec D3, as revised on the owner's review 2026-09-02: the ring binds the SAME token as
+  // the border. Focus is the ring's presence, never a second hue.
   focus:
-    'bg-surface-input border-outline-input-focused text-fg-default ring-2 ring-outline-focus',
-  // The rejected alternative, rendered only in the D3 story so the trade is visible:
-  // one token doing both jobs. NOT what the spec binds.
-  'focus-single-token':
     'bg-surface-input border-outline-input-focused text-fg-default ring-2 ring-outline-input-focused',
+  // The REJECTED original, kept only in the D3 story so the decision stays visible.
+  'focus-green-ring':
+    'bg-surface-input border-outline-input-focused text-fg-default ring-2 ring-outline-focus',
   error: 'bg-surface-input border-outline-input-error text-fg-default',
   'error-focus':
-    'bg-surface-input border-outline-input-error text-fg-default ring-2 ring-outline-focus',
+    'bg-surface-input border-outline-input-error text-fg-default ring-2 ring-outline-input-error',
   disabled: 'bg-surface-input-disabled border-outline-input-disabled text-fg-disabled',
   'error-disabled':
     'bg-surface-input-disabled border-outline-input-disabled text-fg-disabled',
@@ -201,16 +205,14 @@ export const FocusTheD3Pairing: Story = {
   render: () => (
     <Page>
       <Block
-        title="Green ring, blue border — one focus moment, two token families"
+        title="DECIDED — the ring binds the border's own token"
         note={
           <>
-            The ring binds <code>outline-focus</code> (#099468), the design system&apos;s
-            component-agnostic focus token — every future component will use it, so this one
-            using anything else would make its focus an exception. The border binds{' '}
-            <code>outline-input-focused</code> (#04639a), the field&apos;s own named state.
-            Both measure above the 3:1 floor. The question is not whether either is
-            compliant; it is whether the two hues together read as one deliberate signal or
-            as a mistake.
+            Owner review, 2026-09-02. The ring and the border are both{' '}
+            <code>outline-input-focused</code> (#04639a): focus is the ring&apos;s{' '}
+            <strong>presence</strong>, never a second hue. The measurement improved rather
+            than being traded away — the ring went from 3.85:1 to <strong>6.45:1</strong>{' '}
+            against the field and 3.66:1 to <strong>6.11:1</strong> against the page.
           </>
         }
       >
@@ -219,29 +221,49 @@ export const FocusTheD3Pairing: Story = {
       </Block>
 
       <Block
-        title="The alternative, if the pairing is rejected"
+        title="REJECTED — the green ring this replaced"
         note={
           <>
-            One token doing both jobs. Cheaper to look at, and it costs the system-wide focus
-            signal: the next component either repeats this exception or looks different.
-            Shown so the trade is visible, NOT as a proposal — the spec binds the two-token
-            version.
+            The spec originally bound the ring to <code>outline-focus</code> (#099468), the
+            design system&apos;s dedicated component-agnostic focus token, so that this
+            component&apos;s focus would not be an exception. Rendered, it is a green ring
+            around a blue border. Kept here so the decision stays visible rather than
+            vanishing into a diff — this is what stage #4.5 exists to catch, and prose could
+            not have settled it. Consequence, escalated to governance:{' '}
+            <code>outline-focus</code> is now bound by nothing, and the next interactive
+            component will face this same choice.
           </>
         }
       >
         <Field
-          label="Ring and border both blue"
+          label="Green ring, blue border"
           value="you@example.com"
-          state="focus-single-token"
+          state="focus-green-ring"
         />
       </Block>
 
       <Block
-        title="Error plus focus — both signals, neither replacing the other"
-        note="Spec States: the ring is added over a retained error border. A focused invalid field must not stop looking invalid."
+        title="Error plus focus — the rule extended, and worth your eye"
+        note={
+          <>
+            The owner&apos;s instruction removes a second hue from the focus indicator.
+            Applying it only to plain focus would leave THIS state as the one place a second
+            hue survives — a blue ring hugging a red border, which measure{' '}
+            <strong>1.35:1 against each other</strong>, the muddiest edge in the component. So
+            the ring takes the border&apos;s token here too. The error keeps its colour; focus
+            is still the ring. Flagged because it extends an instruction rather than following
+            it literally — say so if the extension is wrong.
+          </>
+        }
       >
         <Field
-          label="Email"
+          label="Error, not focused"
+          value="not-an-email"
+          error="Enter a valid email address."
+          state="error"
+        />
+        <Field
+          label="Error + focused"
           value="not-an-email"
           error="Enter a valid email address."
           state="error-focus"

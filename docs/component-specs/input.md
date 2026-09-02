@@ -104,28 +104,48 @@ all — the state exists in the token layer and is invisible in the browser. Thi
 dead state RA-11 describes: a state token that resolves to the same primitive as its base is not a
 state.
 
-So focus is carried by two things that do change, and the fill is not bound to a focus value at
-all:
+So focus is carried by the border and a 2px ring, and the fill is not bound to a focus value at
+all.
 
-- the border binds `outline-input-focused` (`#04639a`, **6.45:1** against the field);
-- a 2px ring binds `outline-focus` (`#099468`, 3.85:1 against the field, 3.66:1 against the page).
+**The ring binds the same token as the border, in whatever state the border is.** Focus is
+signalled by the ring's *presence*, never by its hue:
 
-**Two tokens, not one, and this is the decision most worth looking at in the visual draft.**
-`outline-focus` is the design system's dedicated, component-agnostic focus token; binding the ring
-to anything else would mean this component's focus looks different from every component that comes
-after it. `outline-input-focused` is the field's own named state. Using one token for both roles
-would mean picking a token whose name says it is for the other role.
+| Situation | Border | Ring |
+|---|---|---|
+| focus | `outline-input-focused` | `outline-input-focused` |
+| error + focus | `outline-input-error` | `outline-input-error` |
 
-The consequence is a **green ring around a blue border**, which is a pairing prose cannot settle.
-It is the first thing the owner should look at in the draft, and if it reads wrong the answer is a
-token decision at the governance layer, not a quiet substitution here.
+**This reverses the draft's first decision, on the owner's review — 2026-09-02.** The spec
+originally bound the ring to `outline-focus` (`#099468`), the design system's dedicated
+component-agnostic focus token, on the reasoning that a component binding anything else makes its
+focus an exception. Rendered, that produced a **green ring around a blue border**, and the owner
+rejected it. Recorded rather than quietly rewritten: this is the decision the stage #4.5 draft
+exists to catch, and it was caught by looking, not by argument. Prose could not have settled it —
+both tokens were, and remain, the token named for exactly the role it was given.
+
+The change **improves** the measurement rather than trading it away: the ring goes from 3.85:1 to
+**6.45:1** against the field, and from 3.66:1 to **6.11:1** against the page.
+
+**Why the rule extends to error + focus, which the owner did not explicitly ask about.** Their
+instruction removes a second hue from the focus indicator. Applying it only to the plain focus
+state would leave error+focus as the one place a second hue survives — a blue ring hugging a red
+border, which measure **1.35:1 against each other**, so the boundary between ring and border would
+be the muddiest edge in the component. Extending the rule is the reading that serves the
+instruction; a narrow reading would preserve exactly what it removed. Flagged in the draft so the
+extension is reviewable rather than assumed.
 
 `surface-input-hovered` (`#f7f9fc`) and `surface-input-disabled` (`#f0f2f7`) both differ from the
 base and are live. Only the focused fill is dead.
 
-**Escalated to `ds-governance` (#2), non-blocking:** `surface.input-focused` should either take a
-distinct value or be removed. Shipping a token that resolves to its own base invites the next
-component to bind it and render nothing.
+**Two escalations to `ds-governance` (#2), both non-blocking:**
+
+1. `surface.input-focused` should take a distinct value or be removed. Shipping a token that
+   resolves to its own base invites the next component to bind it and render nothing.
+2. **`outline-focus` is now bound by nothing.** The design system has a dedicated focus token that
+   its first interactive component does not use, and the next component will face the same choice
+   with the same answer. That is how a system drifts into per-component focus colours. The likely
+   fix is at the token layer — re-point `outline-focus` to the blue — not in each component's
+   spec. Raised now, while there is exactly one component to reconcile.
 
 ### D4 — The resting border ships below AA, knowingly
 
@@ -322,9 +342,9 @@ compact field with smaller text would be a second, unrequested axis.
 |---|---|---|
 | resting | `surface-input`, `outline-input` border | Editable. |
 | hover | border → `outline-input-hovered`, fill → `surface-input-hovered` | Pointer only. Suppressed when disabled. |
-| focus | border → `outline-input-focused`, 2px ring `outline-focus` | Reached by pointer or keyboard; identical either way (CR-006). |
+| focus | border → `outline-input-focused`, 2px ring in the **same** token | Reached by pointer or keyboard; identical either way (CR-006). |
 | error | border → `outline-input-error`; description shows the error | Still editable. |
-| error + focus | the focus ring is added **over** the error border, which is retained | Both signals are present; neither replaces the other. |
+| error + focus | border stays `outline-input-error`; the 2px ring is added in the **same** token | Both signals present: the error keeps its colour, focus is the ring's presence (D3). |
 | disabled | fill → `surface-input-disabled`, border → `outline-input-disabled`, text → `fg-disabled` | Not editable, not focusable, skipped by Tab. No hover. |
 | error + disabled | disabled appearance wins; the error message is **still rendered** | A disabled field can carry an error — a server-rejected value the user cannot currently edit is real. |
 
@@ -354,7 +374,7 @@ transitions". Each is decided here rather than left to #5.
 | field border, focus | `outline-input-focused` | 1px border |
 | field border, error | `outline-input-error` | 1px border |
 | field border, disabled | `outline-input-disabled` | 1px border |
-| focus ring | `outline-focus` | 2px ring, offset 0 |
+| focus ring | `outline-input-focused` / `outline-input-error` | 2px ring, offset 0 — always the border's current token (D3) |
 | field height | `shared-height-md` / `shared-height-sm` | via `var()` — D10 |
 | field radius | `radius-sm` | 4px, the Tailwind-published `radius-*` namespace |
 | field horizontal padding | `spacing` scale (`px-3` / `px-2.5`) | Tailwind's numeric scale, derived from `--ds-spacing-unit` |
@@ -387,9 +407,12 @@ Reference tokens; never define them. No component token is introduced (D10).
 - **A11Y-007 — Disabled.** The native `disabled` attribute, which removes the field from the tab
   order (CR-009). `aria-disabled` is **not** used: it would leave the field focusable, which is the
   opposite of the requirement.
-- **A11Y-008 — Focus visibility.** Two simultaneous signals, a border colour change and a 2px ring,
-  both measured below. Identical for pointer and keyboard entry — no `:focus-visible` narrowing,
-  because CR-006 requires visible focus from *either* route.
+- **A11Y-008 — Focus visibility.** Two simultaneous signals: a border colour change and a 2px ring,
+  the ring in the border's own current token (D3). The ring is what makes focus visible in the
+  error state, where the border colour is already spoken for — so focus is carried by the
+  indicator's **presence and thickness**, never by hue alone, which is also what keeps it legible
+  to a reader who cannot separate blue from red. Identical for pointer and keyboard entry — no
+  `:focus-visible` narrowing, because CR-006 requires visible focus from *either* route.
 - **A11Y-009 — Target size.** 40px and 34px against the AA floor of 24px (WCAG 2.5.8). AAA (2.5.5,
   44px) is **not** claimed — D9.
 - **A11Y-010 — Colour is never the only signal.** The error carries a message in words, not only a
@@ -408,8 +431,9 @@ relative-luminance formula:
 | border, hover | `outline-input-hovered` on `surface-input` | 4.20:1 | 3.0 | pass |
 | border, focus | `outline-input-focused` on `surface-input` | 6.45:1 | 3.0 | pass |
 | border, error | `outline-input-error` on `surface-input` | 4.77:1 | 3.0 | pass |
-| focus ring | `outline-focus` on `surface-input` | 3.85:1 | 3.0 | pass |
-| focus ring | `outline-focus` on `surface-page` | 3.66:1 | 3.0 | pass |
+| focus ring | `outline-input-focused` on `surface-input` | 6.45:1 | 3.0 | pass |
+| focus ring | `outline-input-focused` on `surface-page` | 6.11:1 | 3.0 | pass |
+| focus ring, in error | `outline-input-error` on `surface-page` | 4.52:1 | 3.0 | pass |
 | **border, resting** | `outline-input` on `surface-input` | **1.67:1** | 3.0 | **fail — D4, accepted** |
 | disabled text | `fg-disabled` on `surface-input-disabled` | 2.00:1 | — | exempt (1.4.3 excludes disabled) |
 
@@ -464,7 +488,7 @@ Named here because a class-name assertion would not catch any of them:
 2. **Tab-order assertion** for the disabled field: Tab from a preceding control lands past it.
    `toBeDisabled()` alone does not prove tab-skipping.
 3. **`expectNoAxeViolations`** from `src/a11y-test-utils.ts`, in resting, error and disabled states.
-4. **Contrast pairs added to `src/tokens.test.ts`** — the ten passing pairs into `PAIRS`, and
+4. **Contrast pairs added to `src/tokens.test.ts`** — the eleven passing pairs into `PAIRS`, and
    `outline-input` on `surface-input` into `KNOWN_BELOW_AA` so D4's accepted gap cannot be
    silently "fixed" or silently worsened. The error-message pair at 4.52:1 goes in `PAIRS`, where
    its 0.02 margin becomes a failing test the day the palette moves.
@@ -618,9 +642,12 @@ contradictions:
       CR-006 requires focus to be visually apparent, while surface.input-focused — the token named
       for exactly that role — resolves to #ffffff, byte-identical to surface.input.
     resolution: >
-      Focus is carried by the border (outline-input-focused, 6.45:1) and a 2px ring
-      (outline-focus, 3.85:1). The fill is not bound to a focus value at all. The dead token is
-      escalated to #2 rather than bound and rendered invisible (D3).
+      Focus is carried by the border and a 2px ring in the SAME token, so the indicator adds no
+      second hue: outline-input-focused when focused, outline-input-error when focused in error.
+      The fill is not bound to a focus value at all, and the dead token is escalated to #2 rather
+      than bound and rendered invisible (D3). Revised 2026-09-02 on the owner's review of the
+      stage #4.5 draft, which rejected the original green ring on a blue border; the revision
+      raises the ring from 3.85:1 to 6.45:1 against the field.
     status: resolved
   - id: c2
     description: >
@@ -746,10 +773,25 @@ escalations:
       inherits this gap. A palette-level decision, escalated rather than absorbed into the first
       component (D4).
   - target: ds-governance
+    reason: rule-conflict
+    blocking: false
+    detail: >
+      outline-focus is bound by nothing. It is the design system's dedicated, component-agnostic
+      focus token, and the repository's first interactive component does not use it: the owner
+      reviewed the stage #4.5 draft on 2026-09-02 and rejected its green (#099468) ring against
+      the blue (#04639a) focused border, so the ring now binds the border's own token (D3). The
+      next interactive component faces the same choice and will reach the same answer, which is
+      how a system drifts into per-component focus colours. The fix belongs at the token layer —
+      re-point outline-focus to the blue, or state that field-like components own their focus
+      colour — not in each component's spec. Raised while there is exactly one component to
+      reconcile. Non-blocking: this spec is internally consistent and measures better than the
+      version it replaces (ring 3.85:1 -> 6.45:1 against the field, 3.66:1 -> 6.11:1 against the
+      page).
+  - target: ds-governance
     reason: needs-new-rule
     blocking: false
     detail: >
-      None of this component's twelve measured contrast pairs appears in src/tokens.test.ts,
+      None of this component's measured contrast pairs appears in src/tokens.test.ts,
       neither in PAIRS nor in KNOWN_BELOW_AA — the same gap horizontal-stepper.md D12 recorded for
       fg-subtlest on surface-page. The lists are the repository's only mechanical guard on the
       palette, and a pair absent from both is unguarded in both directions. Adding this
