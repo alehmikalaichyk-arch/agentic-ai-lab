@@ -256,7 +256,7 @@ Interactive DS components must define, **at spec time**:
 - Focus behavior (visible focus ring; focus traps where applicable).
 - Disabled and read-only behavior.
 - ARIA roles and required attributes.
-- Minimum target size: ≥ 44×44 px.
+- Minimum target size: ≥ 24×24 px (WCAG 2.5.8, level AA).
 
 These fields are required before code is written. Detailed audit is
 `a11y-interaction-review` (#7); governance enforces only that the fields
@@ -469,6 +469,23 @@ Applied to #7's audit registry as it stands, that yields:
 - **blocker** — `aria.role-correct` and `aria.accessible-name-present` (4.1.2),
   `keyboard.tab-order` (2.1.1), `focus.visible-ring` (2.4.7), `contrast.text-aa` (1.4.3),
   `motion.reduced-motion-respected` (2.3.3), `target.size-44` (2.5.8).
+
+**`target.size-44` enforces 24×24 px, not 44×44 — the id's suffix is historical.** Corrected
+2026-09-02 under §18. The rule always cited **WCAG 2.5.8**, which is the AA criterion and specifies
+**24×24 px**; the 44×44 figure §10 carried is **WCAG 2.5.5**, level **AAA** — stricter than the AA
+floor §10 declares in the same section. The threshold in §10 is now 24×24 and the citation is
+unchanged, because the citation was never the thing that was wrong.
+
+The `rule_id` is deliberately **not** renamed. It is an opaque key that
+`a11y-interaction-review` (#7) reconciles its registry against by exact string, and a rename is a
+coordinated edit across two skills — a silently skipped check (`reason: missing-rule-id`) is the
+failure it would risk, which is the same class of silent under-reporting §15.1 exists to prevent.
+Read the suffix as a name, not as a number. If you do rename it, change #7's registry in the same
+commit.
+
+Found by the Input brief's feasibility audit: three of the four shared control heights (30, 34,
+40 px) failed the old floor, including the default, which would have made the design system's own
+height scale unusable by the components it was written for.
 - **requires-review** — `aria.name-includes-counter`, `aria.state-reflects-ui`,
   `keyboard.arrow-roving`, `keyboard.activation-keys`, `keyboard.escape-dismiss`,
   `focus.trap-in-overlay`, `focus.return-on-close`, `live.busy-announced`,
