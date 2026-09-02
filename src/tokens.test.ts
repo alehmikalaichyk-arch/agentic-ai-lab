@@ -140,11 +140,40 @@ describe('contrast floor', () => {
     ['fg-default', 'surface-default'],
     ['fg-subtle', 'surface-default'],
     ['fg-subtle', 'surface-neutral-subtlest'],
+    // Input v1 (docs/component-specs/input.md). The TEXT pairs only — the field's
+    // border pairs have a 3:1 floor, not 4.5:1, and live in NON_TEXT_PAIRS below.
+    // `fg-status-danger` on `surface-page` is the one to watch: 4.52:1 against a 4.5
+    // floor, a margin of 0.02. It is in this list precisely so that any darkening of
+    // the page surface or lightening of the danger foreground is a red build rather
+    // than a discovery.
+    ['fg-default', 'surface-input'],
+    ['fg-subtlest', 'surface-input'],       // placeholder, on the field's own white
+    ['fg-subtle', 'surface-page'],          // label and supporting text
+    ['fg-status-danger', 'surface-page'],   // error message — 4.52:1
     // NOT surface-neutral-boldest: in this palette `-boldest` on a neutral surface
     // is a light grey (#c5c8d1), not a dark fill. The suffix orders steps within a
     // family; it does not promise a dark background. `surface-inverse` is the one
     // that carries inverse text.
     ['fg-inverse', 'surface-inverse'],
+  ];
+
+  // NON-TEXT pairs: the visual information identifying a component's boundary. WCAG
+  // 1.4.11 sets this floor at 3:1, not the 4.5:1 of 1.4.3 — a separate list because a
+  // separate criterion, not because these matter less.
+  //
+  // The distinction is load-bearing rather than pedantic. `outline-input-hovered` on
+  // `surface-input` is 4.20:1: correct against its own 3:1 floor, and it would FAIL if
+  // it were dropped into PAIRS. Input's spec says to put "the eleven passing pairs into
+  // PAIRS"; taken literally that is a red build on a compliant token, so the border
+  // pairs are held here instead. Same guard, right floor.
+  const NON_TEXT_PAIRS: Array<[string, string]> = [
+    ['outline-input-hovered', 'surface-input'],
+    ['outline-input-focused', 'surface-input'],
+    ['outline-input-error', 'surface-input'],
+    // The focus ring is measured against the page too: it sits at the field's edge, so
+    // it is seen against both surfaces at once.
+    ['outline-input-focused', 'surface-page'],
+    ['outline-input-error', 'surface-page'],
   ];
 
   // Pairings that look right and are NOT. Asserted as failing, so that a palette
@@ -163,8 +192,28 @@ describe('contrast floor', () => {
     expect(ratio(value(fg), value(bg))).toBeGreaterThanOrEqual(4.5);
   });
 
+  it.each(NON_TEXT_PAIRS)('%s on %s meets WCAG 1.4.11 (3:1)', (fg, bg) => {
+    expect(ratio(value(fg), value(bg))).toBeGreaterThanOrEqual(3);
+  });
+
   it.each(KNOWN_BELOW_AA)('%s on %s is below AA — recorded, not fixed silently', (fg, bg) => {
     expect(ratio(value(fg), value(bg))).toBeLessThan(4.5);
+  });
+
+  it('outline-input on surface-input is below the 3:1 non-text floor — Input D4', () => {
+    // The knowing exception the owner accepted for Input v1 (brief OD-003, spec D4):
+    // 1.67:1 against the 3:1 WCAG 1.4.11 requires. Every neutral outline token in this
+    // palette is below it — outline-default 1.25, outline-strong 1.67, outline-subtle
+    // 1.12 — so there is no compliant neutral to swap in, and the only passing neutral
+    // (outline-accent-grey-strong) is an ACCENT role that would hide a palette problem
+    // inside one component.
+    //
+    // Asserted against 3, NOT against KNOWN_BELOW_AA's 4.5, and that is the whole point
+    // of writing it separately: at a 4.5 threshold a palette change lifting this to
+    // 3.5:1 would still pass while silently crossing the floor that actually applies.
+    // The spec asks that this gap "cannot be silently fixed or silently worsened", and
+    // only the 3:1 assertion delivers both directions.
+    expect(ratio(value('outline-input'), value('surface-input'))).toBeLessThan(3);
   });
 
   it('detects a failing pair rather than passing everything', () => {
