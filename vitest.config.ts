@@ -1,7 +1,12 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig, defaultExclude } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 import { playwright } from '@vitest/browser-playwright';
+
+// Same reason plugins are per-project below: a project is its own Vite config and
+// does NOT inherit the root's resolve.alias either. Declared once, spread twice.
+const alias = { '@': fileURLToPath(new URL('./src', import.meta.url)) };
 
 /*
  * Two projects, one command.
@@ -31,6 +36,7 @@ export default defineConfig({
     projects: [
       {
         plugins: [react()],
+        resolve: { alias },
         test: {
           name: 'unit',
           globals: true,
@@ -45,6 +51,7 @@ export default defineConfig({
         // here: measuring a box is measuring what the utility classes resolved to,
         // so the browser project has to serve the same stylesheet Storybook serves.
         plugins: [react(), tailwindcss()],
+        resolve: { alias },
         test: {
           name: 'browser',
           globals: true,
