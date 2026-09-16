@@ -14,7 +14,7 @@ import * as React from 'react';
  */
 
 export const Grid = ({ children }: { children: React.ReactNode }) => (
-  <div className="bg-surface-page p-6 text-fg-default">{children}</div>
+  <div className="bg-surface-default p-6 text-fg-default">{children}</div>
 );
 
 export const Case = ({
@@ -26,7 +26,9 @@ export const Case = ({
 }) => (
   <section className="mb-8">
     <h3 className="mb-1 font-mono text-xs text-fg-subtlest">{name}</h3>
-    <div className="rounded-md border border-outline-subtle bg-surface-default p-4">
+    {/* outline-default: the page and this panel are both white now, so the border is
+        the only separation and outline-subtle would not carry it. */}
+    <div className="rounded-md border border-outline-default bg-surface-default p-4">
       {children}
     </div>
   </section>

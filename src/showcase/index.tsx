@@ -45,7 +45,7 @@ export const Page = ({
   summary: string;
   children: React.ReactNode;
 }) => (
-  <div className="min-h-full bg-surface-page px-8 py-10 text-fg-default">
+  <div className="min-h-full bg-surface-default px-8 py-10 text-fg-default">
     <header className="mx-auto mb-10 max-w-5xl">
       <div className="mb-3 flex items-center gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">{title}</h1>
@@ -88,7 +88,7 @@ export const Section = ({
   children: React.ReactNode;
 }) => (
   <section className="mb-10">
-    <div className="mb-4 border-b border-outline-subtle pb-2">
+    <div className="mb-4 border-b border-outline-default pb-2">
       <h2 className="text-xs font-semibold uppercase tracking-widest text-fg-subtlest">
         {title}
       </h2>
@@ -118,7 +118,10 @@ export const Specimen = ({
   <figure className={full ? 'w-full' : ''}>
     <div
       className={[
-        'flex min-h-20 items-center justify-center rounded-md border border-outline-subtle bg-surface-default p-5',
+        // outline-default, not outline-subtle. The page and the specimen are now the
+        // same white, so the border is the ONLY thing separating them — and
+        // outline-subtle (#f0f2f7) against #ffffff is close to invisible.
+        'flex min-h-20 items-center justify-center rounded-md border border-outline-default bg-surface-default p-5',
         full ? 'w-full' : '',
       ].join(' ')}
     >
@@ -195,7 +198,7 @@ export const Api = ({
 }: {
   rows: Array<{ prop: string; type: string; def?: string; note?: string }>;
 }) => (
-  <div className="overflow-hidden rounded-md border border-outline-subtle">
+  <div className="overflow-hidden rounded-md border border-outline-default">
     <table className="w-full text-left text-sm">
       <thead className="bg-surface-neutral-subtlest text-xs uppercase tracking-wide text-fg-subtlest">
         <tr>
