@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Waypoint — Shipments</title>
+<style>
+  /* ---------- Tokens ---------- */
+  :root {
+    --color-bg: #f5f6f8;
+    --color-surface: #ffffff;
+    --color-surface-muted: #f0f2f5;
+    --color-border: #e3e6ea;
+    --color-text: #16191d;
+    --color-text-muted: #6b7280;
+    --color-text-subtle: #9aa1ab;
+    --color-primary: #1f2937;
+    --color-primary-hover: #111827;
+    --color-primary-bg: #eef0f3;
+    --color-nav-bg: #ffffff;
+    --color-nav-text: #4b5563;
+    --color-nav-text-active: #111827;
+    --color-nav-active-bg: #f0f2f5;
+    --shadow-card: 0 1px 2px rgba(16, 24, 40, .04), 0 1px 1px rgba(16, 24, 40, .03);
+
+    --color-status-transit-bg: #e8eefc;  --color-status-transit-fg: #2447c2;
+    --color-status-delivered-bg: #e4f5ea; --color-status-delivered-fg: #1c7a3f;
+    --color-status-delayed-bg: #fdecec;  --color-status-delayed-fg: #b42323;
+    --color-status-held-bg: #fff3dd;     --color-status-held-fg: #9a5a00;
+    --color-status-pending-bg: #eef0f3;  --color-status-pending-fg: #545b66;
+
+    --radius-sm: 8px;
+    --radius-md: 14px;
+    --radius-pill: 999px;
+    --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px;
+    --space-5: 24px; --space-6: 32px;
+
+    --font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    --font-size-xs: 12px; --font-size-sm: 13px; --font-size-md: 14px;
+    --font-size-lg: 16px; --font-size-xl: 22px; --font-size-2xl: 28px;
+
+    --sidebar-width: 232px;
+  }
+
+  /* ---------- Base ---------- */
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: var(--font-family);
+    font-size: var(--font-size-md);
+    color: var(--color-text);
+    background: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font: inherit; cursor: pointer; }
+  h1 { font-size: var(--font-size-xl); font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: var(--font-size-lg); font-weight: 600; margin: 0; }
+
+  /* ---------- Layout ---------- */
+  .app { display: grid; grid-template-columns: var(--sidebar-width) 1fr; min-height: 100vh; }
+  .sidebar {
+    background: var(--color-nav-bg); color: var(--color-nav-text);
+    border-right: 1px solid var(--color-border);
+    padding: var(--space-4) var(--space-3);
+    display: flex; flex-direction: column; gap: var(--space-2);
+    position: sticky; top: 0; height: 100vh;
+  }
+  .brand {
+    display: flex; align-items: center; gap: var(--space-2);
+    color: var(--color-nav-text-active); font-weight: 600; font-size: var(--font-size-lg);
+    padding: var(--space-2) var(--space-3); margin-bottom: var(--space-3);
+  }
+  .brand-mark {
+    width: 26px; height: 26px; border-radius: 8px; background: var(--color-primary);
+    display: inline-grid; place-items: center; font-size: 12px; color: #fff; font-weight: 700;
+  }
+  .nav-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--space-2) var(--space-3); border-radius: var(--radius-sm);
+    color: var(--color-nav-text); font-size: var(--font-size-md);
+  }
+  .nav-item:hover { background: var(--color-nav-active-bg); }
+  .nav-item.active { background: var(--color-nav-active-bg); color: var(--color-nav-text-active); font-weight: 500; }
+  .nav-count {
+    font-size: var(--font-size-xs); padding: 1px 8px; border-radius: var(--radius-pill);
+    background: var(--color-status-delayed-bg); color: var(--color-status-delayed-fg); font-weight: 600;
+  }
+  .sidebar-footer { margin-top: auto; font-size: var(--font-size-xs); color: var(--color-text-subtle); padding: 0 var(--space-3); }
+
+  .main { padding: var(--space-6); min-width: 0; }
+  .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-4); margin-bottom: var(--space-5); }
+  .page-header .sub { color: var(--color-text-muted); margin-top: var(--space-1); }
+
+  /* ---------- Components ---------- */
+  .btn {
+    display: inline-flex; align-items: center; gap: var(--space-2);
+    padding: 8px 14px; border-radius: var(--radius-pill); border: 1px solid var(--color-border);
+    background: var(--color-surface); color: var(--color-text); font-size: var(--font-size-sm); font-weight: 500;
+    white-space: nowrap; box-shadow: var(--shadow-card);
+  }
+  .btn:hover { background: var(--color-surface-muted); }
+  .btn-primary { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+  .btn-primary:hover { background: var(--color-primary-hover); }
+  .btn-sm { padding: 5px 12px; font-size: var(--font-size-xs); }
+
+  .card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-card); overflow: hidden; }
+  .card-body { padding: var(--space-4) var(--space-5); }
+  .card-header { padding: var(--space-4) var(--space-5); border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 10px; border-radius: var(--radius-pill); font-size: var(--font-size-xs); font-weight: 500; white-space: nowrap;
+  }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .section-label { font-size: var(--font-size-xs); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--color-text-muted); }
+  .badge-transit   { background: var(--color-status-transit-bg);   color: var(--color-status-transit-fg); }
+  .badge-delivered { background: var(--color-status-delivered-bg); color: var(--color-status-delivered-fg); }
+  .badge-delayed   { background: var(--color-status-delayed-bg);   color: var(--color-status-delayed-fg); }
+  .badge-held      { background: var(--color-status-held-bg);      color: var(--color-status-held-fg); }
+  .badge-pending   { background: var(--color-status-pending-bg);   color: var(--color-status-pending-fg); }
+  .demo-tag {
+    font-size: 10px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600;
+    color: var(--color-text-subtle); border: 1px dashed var(--color-border); padding: 1px 6px; border-radius: 4px;
+  }
+
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+  .stat { padding: var(--space-4) var(--space-5); }
+  .stat .label { font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 600; letter-spacing: .06em; text-transform: uppercase; }
+  .stat .value { font-size: var(--font-size-2xl); font-weight: 600; margin-top: var(--space-1); letter-spacing: -0.02em; }
+  .stat .delta { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: var(--space-1); }
+  .stat.alert .value { color: var(--color-status-delayed-fg); }
+
+  .toolbar { display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--space-4); }
+  .input, .select {
+    padding: 8px 14px; border: 1px solid var(--color-border); border-radius: var(--radius-pill);
+    background: var(--color-surface); font: inherit; font-size: var(--font-size-sm); color: var(--color-text);
+  }
+  .input { min-width: 240px; }
+  .toolbar .spacer { flex: 1; }
+  .toolbar .count { color: var(--color-text-muted); font-size: var(--font-size-sm); }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 10px var(--space-4); border-bottom: 1px solid var(--color-border); vertical-align: middle; }
+  th { font-size: var(--font-size-xs); color: var(--color-text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: .04em; }
+  tbody tr:hover { background: var(--color-surface-muted); cursor: pointer; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td.mono, .mono { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+  td .muted, .muted { color: var(--color-text-muted); }
+  td.eta.late { color: var(--color-status-delayed-fg); font-weight: 500; }
+
+  /* Details */
+  .details { display: grid; grid-template-columns: 1fr 340px; gap: var(--space-4); }
+  .kv { display: grid; grid-template-columns: 140px 1fr; row-gap: var(--space-3); column-gap: var(--space-3); font-size: var(--font-size-sm); }
+  .kv dt { color: var(--color-text-muted); margin: 0; }
+  .kv dd { margin: 0; }
+  .route { display: flex; align-items: center; gap: var(--space-2); flex-wrap: wrap; font-size: var(--font-size-md); }
+  .route .pt { display: inline-flex; align-items: center; gap: 6px; }
+  .route .pt::before { content: ""; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--color-text-subtle); }
+  .route .pt.passed::before { background: var(--color-status-delivered-fg); border-color: var(--color-status-delivered-fg); }
+  .route .pt.current::before { background: var(--color-status-transit-fg); border-color: var(--color-status-transit-fg); }
+  .route .pt.current { font-weight: 600; }
+  .route .arrow { color: var(--color-text-subtle); }
+
+  .timeline { list-style: none; margin: 0; padding: 0; }
+  .timeline li { display: grid; grid-template-columns: 20px 1fr; gap: var(--space-3); padding: var(--space-3) 0; position: relative; }
+  .timeline li + li { border-top: 1px solid var(--color-border); }
+  .timeline .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--color-text-subtle); margin-top: 5px; justify-self: center; }
+  .timeline li.warn .dot { background: var(--color-status-delayed-fg); }
+  .timeline li.ok .dot { background: var(--color-status-delivered-fg); }
+  .timeline .t { font-size: var(--font-size-xs); color: var(--color-text-muted); margin-top: 2px; }
+
+  /* States */
+  .state-empty { text-align: center; padding: 56px var(--space-5); color: var(--color-text-muted); }
+  .state-empty h2 { color: var(--color-text); margin-bottom: var(--space-2); }
+  .state-empty p { margin: 0 0 var(--space-4); }
+  .state-error { border-color: var(--color-status-delayed-fg); }
+  .skeleton { position: relative; overflow: hidden; background: var(--color-surface-muted); border-radius: 4px; color: transparent !important; }
+  .skeleton::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.7), transparent); animation: shimmer 1.2s infinite; }
+  @keyframes shimmer { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+
+  .stub { color: var(--color-text-muted); }
+  .stub code { background: var(--color-surface-muted); padding: 1px 6px; border-radius: 4px; font-size: var(--font-size-sm); }
+
+  .demo-bar {
+    display: flex; gap: var(--space-2); align-items: center; flex-wrap: wrap;
+    font-size: var(--font-size-xs); color: var(--color-text-subtle); margin-top: var(--space-6);
+    padding-top: var(--space-4); border-top: 1px dashed var(--color-border);
+  }
+  .demo-bar a { color: var(--color-text-muted); border-bottom: 1px dotted currentColor; }
+  .demo-bar a.on { color: var(--color-primary); font-weight: 600; }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 900px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .details { grid-template-columns: 1fr; }
+    .col-opt { display: none; }
+  }
+  @media (max-width: 720px) {
+    .app { grid-template-columns: 1fr; }
+    .sidebar { position: sticky; height: auto; flex-direction: row; align-items: center; gap: 2px; padding: var(--space-2) var(--space-3); overflow-x: auto; z-index: 2; }
+    .brand { margin: 0 var(--space-2) 0 0; padding: var(--space-2) 0; }
+    .brand span.txt { display: none; }
+    .sidebar { border-right: 0; border-bottom: 1px solid var(--color-border); }
+    #nav { display: flex; gap: 2px; }
+    .card { overflow-x: auto; }
+    table { min-width: 520px; }
+    td.mono { white-space: nowrap; }
+    .nav-item { padding: 6px 10px; font-size: var(--font-size-sm); white-space: nowrap; }
+    .sidebar-footer { display: none; }
+    .main { padding: var(--space-4); }
+    .page-header { flex-direction: column; }
+    .input { min-width: 0; width: 100%; }
+    th.col-opt, td.col-opt { display: none; }
+    .card-body, .card-header { padding: var(--space-3) var(--space-4); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <a class="brand" href="#/today"><span class="brand-mark">W</span><span class="txt">Waypoint</span></a>
+    <nav id="nav"></nav>
+    <div class="sidebar-footer">Demo data · Prototype, not a product</div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+
+<script>
+/* ---------- Mock data (fixtures) ---------- */
+const CITIES = ["Rotterdam","Duisburg","Prague","Berlin","Hamburg","Vienna","Antwerp","Warsaw","Lyon","Milan"];
+const CUSTOMERS = ["Nordvik Components","Baltic Fresh","Orion Textiles","Helix Labs","Kessler & Sohn","Meridian Foods","Tallgrass Furniture","Aurora Optics"];
+
+const SHIPMENTS = [
+  { id:"WP-24081", customer:"Nordvik Components", from:"Rotterdam", to:"Prague", via:["Duisburg"], status:"delayed",   eta:"Today 14:30",   etaLate:true,  driver:"M. Kowalski", carrier:"TransEuro", weight:"1,240 kg", pallets:6, ref:"PO-88213", notes:"Customs check at Duisburg took 3h longer than planned." },
+  { id:"WP-24079", customer:"Baltic Fresh",        from:"Hamburg",   to:"Berlin", via:[],           status:"transit",   eta:"Today 11:15",   etaLate:false, driver:"J. Berg",     carrier:"Northline", weight:"860 kg",   pallets:4, ref:"PO-88190", notes:"" },
+  { id:"WP-24077", customer:"Orion Textiles",      from:"Antwerp",   to:"Lyon",   via:["Paris"],    status:"held",      eta:"—",             etaLate:false, driver:"—",           carrier:"TransEuro", weight:"2,100 kg", pallets:10, ref:"PO-88171", notes:"Missing CMR document. Awaiting customer." },
+  { id:"WP-24075", customer:"Helix Labs",          from:"Vienna",    to:"Prague", via:[],           status:"delivered", eta:"Today 08:42",   etaLate:false, driver:"P. Novák",    carrier:"CZ Express", weight:"310 kg",  pallets:2, ref:"PO-88160", notes:"" },
+  { id:"WP-24074", customer:"Kessler & Sohn",      from:"Duisburg",  to:"Warsaw", via:["Berlin"],   status:"delayed",   eta:"Today 16:00",   etaLate:true,  driver:"A. Schmidt",  carrier:"Northline", weight:"1,900 kg", pallets:8, ref:"PO-88152", notes:"Vehicle breakdown near Berlin, replacement dispatched." },
+  { id:"WP-24072", customer:"Meridian Foods",      from:"Rotterdam", to:"Hamburg", via:[],          status:"transit",   eta:"Today 12:40",   etaLate:false, driver:"L. de Vries", carrier:"TransEuro", weight:"3,400 kg", pallets:14, ref:"PO-88140", notes:"Temperature-controlled." },
+  { id:"WP-24070", customer:"Tallgrass Furniture", from:"Milan",     to:"Vienna", via:[],           status:"transit",   eta:"Tomorrow 09:00", etaLate:false, driver:"G. Ricci",   carrier:"AlpTrans", weight:"2,750 kg", pallets:9, ref:"PO-88133", notes:"" },
+  { id:"WP-24068", customer:"Aurora Optics",       from:"Prague",    to:"Berlin", via:[],           status:"pending",   eta:"Tomorrow 15:30", etaLate:false, driver:"—",          carrier:"CZ Express", weight:"120 kg",  pallets:1, ref:"PO-88120", notes:"Fragile. Pickup not yet confirmed." },
+  { id:"WP-24066", customer:"Nordvik Components", from:"Rotterdam", to:"Duisburg", via:[],         status:"delivered", eta:"Yesterday 17:05", etaLate:false, driver:"M. Kowalski", carrier:"TransEuro", weight:"980 kg", pallets:5, ref:"PO-88102", notes:"" },
+  { id:"WP-24064", customer:"Baltic Fresh",        from:"Hamburg",   to:"Warsaw", via:["Berlin"],   status:"held",      eta:"—",             etaLate:false, driver:"—",           carrier:"Northline", weight:"1,500 kg", pallets:7, ref:"PO-88097", notes:"Address on the waybill does not match the order." },
+  { id:"WP-24061", customer:"Orion Textiles",      from:"Lyon",      to:"Milan",  via:[],           status:"delivered", eta:"Yesterday 13:20", etaLate:false, driver:"C. Moreau",  carrier:"AlpTrans", weight:"640 kg",  pallets:3, ref:"PO-88080", notes:"" },
+  { id:"WP-24059", customer:"Helix Labs",          from:"Berlin",    to:"Vienna", via:["Prague"],   status:"transit",   eta:"Today 18:10",   etaLate:false, driver:"K. Weber",    carrier:"CZ Express", weight:"430 kg",  pallets:2, ref:"PO-88071", notes:"" },
+];
+
+const EVENTS = {
+  "WP-24081": [
+    { t:"Today 13:05", kind:"warn", text:"ETA revised to 14:30 — delay reported by carrier" },
+    { t:"Today 09:40", kind:"warn", text:"Held at customs, Duisburg. Inspection in progress" },
+    { t:"Today 06:15", kind:"", text:"Arrived at Duisburg hub" },
+    { t:"Yesterday 21:30", kind:"", text:"Departed Rotterdam terminal" },
+    { t:"Yesterday 18:00", kind:"ok", text:"Loaded, 6 pallets. Seal 0043-A" },
+    { t:"Yesterday 10:12", kind:"", text:"Shipment created from PO-88213" },
+  ],
+  "WP-24074": [
+    { t:"Today 12:20", kind:"warn", text:"Replacement vehicle dispatched from Berlin depot" },
+    { t:"Today 11:02", kind:"warn", text:"Driver reported breakdown, A2 near Michendorf" },
+    { t:"Today 05:50", kind:"", text:"Departed Duisburg" },
+    { t:"Yesterday 16:40", kind:"ok", text:"Loaded, 8 pallets" },
+  ],
+};
+function eventsFor(s) {
+  if (EVENTS[s.id]) return EVENTS[s.id];
+  const base = [
+    { t:"Yesterday 09:00", kind:"", text:`Shipment created from ${s.ref}` },
+    { t:"Yesterday 15:30", kind:"ok", text:`Loaded, ${s.pallets} pallet${s.pallets>1?"s":""}` },
+  ];
+  if (s.status === "pending") return base.slice(0,1).reverse();
+  if (s.status === "held") return [{ t:"Today 08:10", kind:"warn", text:"Put on hold: " + s.notes }, ...base.reverse()];
+  base.push({ t:"Yesterday 19:00", kind:"", text:`Departed ${s.from}` });
+  if (s.status === "delivered") base.push({ t:s.eta, kind:"ok", text:`Delivered in ${s.to}. Signed by consignee` });
+  return base.reverse();
+}
+
+const STATUS_LABEL = { transit:"In transit", delivered:"Delivered", delayed:"Delayed", held:"On hold", pending:"Pending pickup" };
+const badge = s => `<span class="badge badge-${s}">${STATUS_LABEL[s]}</span>`;
+
+/* ---------- Router ---------- */
+const NAV = [
+  { path:"/today",     label:"Today" },
+  { path:"/shipments", label:"Shipments" },
+  { path:"/problems",  label:"Problem cases", count: () => SHIPMENTS.filter(s => s.status==="delayed"||s.status==="held").length },
+  { path:"/messages",  label:"Messages" },
+  { path:"/new",       label:"New shipment" },
+];
+
+function parseHash() {
+  const raw = location.hash.replace(/^#/, "") || "/today";
+  const [path, qs] = raw.split("?");
+  return { path, params: new URLSearchParams(qs || "") };
+}
+function go(path, params) {
+  const p = params && [...params.keys()].length ? "?" + params.toString() : "";
+  location.hash = path + p;
+}
+
+function renderNav(current) {
+  document.getElementById("nav").innerHTML = NAV.map(n => {
+    const active = current === n.path || current.startsWith(n.path + "/");
+    const c = n.count ? n.count() : 0;
+    return `<a class="nav-item ${active?"active":""}" href="#${n.path}">${n.label}${c?`<span class="nav-count">${c}</span>`:""}</a>`;
+  }).join("");
+}
+
+/* ---------- Screens ---------- */
+function demoBar(path, params) {
+  const state = params.get("state") || "populated";
+  const states = ["populated","loading","error","empty"];
+  if (path === "/shipments") states.push("empty-filtered");
+  return `<div class="demo-bar"><span class="demo-tag">Demo</span> state:
+    ${states.map(s => `<a href="#${path}?state=${s}" class="${s===state?"on":""}">${s}</a>`).join(" · ")}
+    <span class="spacer" style="flex:1"></span>
+    <a href="#${path}">reset</a></div>`;
+}
+
+function stateBlock(state, path) {
+  if (state === "loading") return `<div class="card"><div class="card-body">
+    ${[1,2,3,4,5].map(()=>`<div style="display:flex;gap:16px;padding:10px 0"><span class="skeleton" style="width:90px">x</span><span class="skeleton" style="flex:1">x</span><span class="skeleton" style="width:120px">x</span><span class="skeleton" style="width:80px">x</span></div>`).join("")}
+  </div></div>`;
+  if (state === "error") return `<div class="card state-error"><div class="state-empty">
+    <h2>Couldn't load shipments</h2><p>The tracking service didn't respond (timeout after 10s).</p>
+    <a class="btn" href="#${path}">Try again</a></div></div>`;
+  if (state === "empty") return `<div class="card"><div class="state-empty">
+    <h2>No shipments yet</h2><p>Shipments appear here once the first order is booked.</p>
+    <a class="btn btn-primary" href="#/new">Create shipment</a></div></div>`;
+  if (state === "empty-filtered") return `<div class="card"><div class="state-empty">
+    <h2>Nothing matches</h2><p>No <strong>held</strong> shipments going to <strong>Berlin</strong>. Try clearing a filter.</p>
+    <a class="btn" href="#${path}">Clear filters</a></div></div>`;
+  return null;
+}
+
+function screenToday(params) {
+  const state = params.get("state") || "populated";
+  const delayed = SHIPMENTS.filter(s => s.status==="delayed");
+  const held = SHIPMENTS.filter(s => s.status==="held");
+  const transit = SHIPMENTS.filter(s => s.status==="transit");
+  const delivered = SHIPMENTS.filter(s => s.status==="delivered");
+  const attention = [...delayed, ...held];
+
+  let body = stateBlock(state, "/today");
+  if (!body) body = `
+    <div class="stats">
+      <div class="card stat alert"><div class="label">Delayed</div><div class="value">${delayed.length}</div><div class="delta">need a new ETA</div></div>
+      <div class="card stat"><div class="label">On hold</div><div class="value">${held.length}</div><div class="delta">waiting on documents</div></div>
+      <div class="card stat"><div class="label">In transit</div><div class="value">${transit.length}</div><div class="delta">on schedule</div></div>
+      <div class="card stat"><div class="label">Delivered today</div><div class="value">${delivered.filter(s=>s.eta.startsWith("Today")).length}</div><div class="delta">of ${delivered.length} this week</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><h2>Needs attention</h2><a class="btn btn-sm" href="#/problems">Open queue</a></div>
+      <table>
+        <thead><tr><th>Shipment</th><th>Customer</th><th class="col-opt">Route</th><th>Status</th><th>ETA</th></tr></thead>
+        <tbody>${attention.map(row).join("")}</tbody>
+      </table>
+    </div>`;
+
+  return `
+    <div class="page-header">
+      <div><h1>Today</h1><div class="sub">Wednesday, 16 September · ${SHIPMENTS.length} active shipments</div></div>
+      <a class="btn btn-primary" href="#/new">+ New shipment</a>
+    </div>
+    ${body}
+    ${demoBar("/today", params)}`;
+}
+
+function row(s) {
+  const route = [s.from, ...s.via, s.to].join(" → ");
+  return `<tr onclick="location.hash='#/shipments/${s.id}'">
+    <td class="mono"><strong>${s.id}</strong></td>
+    <td>${s.customer}</td>
+    <td class="col-opt muted">${route}</td>
+    <td>${badge(s.status)}</td>
+    <td class="mono eta ${s.etaLate?"late":""}">${s.eta}</td>
+  </tr>`;
+}
+
+function screenShipments(params) {
+  const state = params.get("state") || "populated";
+  const q = (params.get("q") || "").toLowerCase();
+  const st = params.get("status") || "";
+  const city = params.get("city") || "";
+
+  let list = SHIPMENTS.filter(s =>
+    (!q || s.id.toLowerCase().includes(q) || s.customer.toLowerCase().includes(q) || s.ref.toLowerCase().includes(q)) &&
+    (!st || s.status === st) &&
+    (!city || s.from === city || s.to === city || s.via.includes(city))
+  );
+
+  const filtersOn = q || st || city;
+  let body = stateBlock(state, "/shipments");
+  if (!body && list.length === 0) body = stateBlock("empty-filtered", "/shipments");
+  if (!body) body = `<div class="card"><table>
+      <thead><tr><th>Shipment</th><th>Customer</th><th class="col-opt">Route</th><th>Status</th><th>ETA</th></tr></thead>
+      <tbody>${list.map(row).join("")}</tbody></table></div>`;
+
+  return `
+    <div class="page-header">
+      <div><h1>Shipments</h1><div class="sub">Everything booked, in motion, or delivered this week</div></div>
+      <a class="btn btn-primary" href="#/new">+ New shipment</a>
+    </div>
+    <div class="toolbar">
+      <input class="input" id="f-q" placeholder="Search by ID, customer or PO…" value="${q}">
+      <select class="select" id="f-status">
+        <option value="">All statuses</option>
+        ${Object.keys(STATUS_LABEL).map(k=>`<option value="${k}" ${st===k?"selected":""}>${STATUS_LABEL[k]}</option>`).join("")}
+      </select>
+      <select class="select" id="f-city">
+        <option value="">Any city</option>
+        ${CITIES.map(c=>`<option ${city===c?"selected":""}>${c}</option>`).join("")}
+      </select>
+      ${filtersOn ? `<a class="btn btn-sm" href="#/shipments">Clear</a>` : ""}
+      <span class="spacer"></span>
+      <span class="count">${list.length} of ${SHIPMENTS.length}</span>
+    </div>
+    ${body}
+    ${demoBar("/shipments", params)}`;
+}
+
+function bindFilters(params) {
+  const apply = () => {
+    const p = new URLSearchParams();
+    const q = document.getElementById("f-q").value.trim();
+    const st = document.getElementById("f-status").value;
+    const city = document.getElementById("f-city").value;
+    if (q) p.set("q", q); if (st) p.set("status", st); if (city) p.set("city", city);
+    if (params.get("state")) p.set("state", params.get("state"));
+    go("/shipments", p);
+  };
+  const qEl = document.getElementById("f-q");
+  if (!qEl) return;
+  let t; qEl.addEventListener("input", () => { clearTimeout(t); t = setTimeout(apply, 250); });
+  document.getElementById("f-status").addEventListener("change", apply);
+  document.getElementById("f-city").addEventListener("change", apply);
+  // keep focus in the search box after re-render
+  if (params.get("q")) { qEl.focus(); qEl.setSelectionRange(qEl.value.length, qEl.value.length); }
+}
+
+function screenDetails(id, params) {
+  const s = SHIPMENTS.find(x => x.id === id);
+  if (!s) return `<div class="page-header"><div><h1>Shipment not found</h1><div class="sub">${id}</div></div></div>
+    <div class="card"><div class="state-empty"><p>No shipment with this ID.</p><a class="btn" href="#/shipments">Back to shipments</a></div></div>`;
+
+  const points = [s.from, ...s.via, s.to];
+  const pos = s.status==="delivered" ? points.length : s.status==="pending" ? 0 : s.status==="held" ? 1 : Math.min(1, points.length-1);
+  const route = points.map((p,i) => {
+    const cls = i < pos ? "passed" : i === pos ? "current" : "";
+    return `<span class="pt ${cls}">${p}</span>` + (i < points.length-1 ? `<span class="arrow">→</span>` : "");
+  }).join("");
+
+  return `
+    <div class="page-header">
+      <div>
+        <div class="muted" style="font-size:13px;margin-bottom:4px"><a href="#/shipments">Shipments</a> / ${s.id}</div>
+        <h1 style="display:flex;align-items:center;gap:12px">${s.id} ${badge(s.status)}</h1>
+        <div class="sub">${s.customer} · ${s.ref}</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="alertStub('Message thread is not built yet')">Message driver</button>
+        <button class="btn" onclick="alertStub('Editing is not built yet')">Edit</button>
+      </div>
+    </div>
+    <div class="details">
+      <div style="display:grid;gap:16px">
+        <div class="card"><div class="card-header"><h2>Route</h2><span class="muted" style="font-size:13px">ETA <strong class="${s.etaLate?"eta late":""}" style="${s.etaLate?"color:var(--color-status-delayed-fg)":""}">${s.eta}</strong></span></div>
+          <div class="card-body"><div class="route">${route}</div>
+          ${s.notes ? `<p class="muted" style="margin:12px 0 0;font-size:13px">${s.notes}</p>` : ""}</div></div>
+        <div class="card"><div class="card-header"><h2>Events</h2></div>
+          <div class="card-body"><ul class="timeline">
+            ${eventsFor(s).map(e=>`<li class="${e.kind}"><span class="dot"></span><div>${e.text}<div class="t">${e.t}</div></div></li>`).join("")}
+          </ul></div></div>
+      </div>
+      <div class="card" style="align-self:start"><div class="card-header"><h2>Details</h2></div>
+        <div class="card-body"><dl class="kv">
+          <dt>Customer</dt><dd>${s.customer}</dd>
+          <dt>Reference</dt><dd class="mono">${s.ref}</dd>
+          <dt>Carrier</dt><dd>${s.carrier}</dd>
+          <dt>Driver</dt><dd>${s.driver}</dd>
+          <dt>Weight</dt><dd class="mono">${s.weight}</dd>
+          <dt>Pallets</dt><dd class="mono">${s.pallets}</dd>
+          <dt>Origin</dt><dd>${s.from}</dd>
+          <dt>Destination</dt><dd>${s.to}</dd>
+        </dl></div></div>
+    </div>`;
+}
+
+function screenStub(title, note) {
+  return `<div class="page-header"><div><h1>${title}</h1><div class="sub">Not built yet</div></div></div>
+    <div class="card"><div class="card-body stub"><p style="margin:0">${note}</p></div></div>`;
+}
+
+function alertStub(msg) {
+  // Deliberately a stub: in the workshop this is the "button that rings nobody".
+  const el = document.createElement("div");
+  el.textContent = msg;
+  el.style.cssText = "position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--color-primary);color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;z-index:9";
+  document.body.appendChild(el); setTimeout(()=>el.remove(), 1800);
+}
+
+/* ---------- Render ---------- */
+function render() {
+  const { path, params } = parseHash();
+  renderNav(path);
+  const main = document.getElementById("main");
+  let html;
+  if (path === "/today") html = screenToday(params);
+  else if (path === "/shipments") html = screenShipments(params);
+  else if (path.startsWith("/shipments/")) html = screenDetails(path.split("/")[2], params);
+  else if (path === "/problems") html = screenStub("Problem cases", "Queue of delayed and held shipments with row actions. Next feature to add — see <code>docs/brief.md</code>.");
+  else if (path === "/messages") html = screenStub("Messages", "Thread per shipment between dispatcher and driver. Third layout type — not built yet.");
+  else if (path === "/new") html = screenStub("New shipment", "Booking form: customer, route, cargo, pickup window. Not built yet.");
+  else html = screenStub("Not found", "There is nothing at <code>" + path + "</code>.");
+  main.innerHTML = html;
+  if (path === "/shipments") bindFilters(params);
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange", render);
+render();
+</script>
+</body>
+</html>

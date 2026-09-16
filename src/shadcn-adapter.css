@@ -113,3 +113,48 @@
 :root {
   --radius: var(--ds-radius-md, 0.5rem);
 }
+
+/*
+ * DEFAULT BORDER COLOUR — the rule `shadcn init` writes and this repository never ran.
+ *
+ * Registry components write a bare `border` and rely on the base layer to colour it.
+ * Tailwind v4's own default is `currentColor`, so without this rule every card, table
+ * row and outline button draws its border in the TEXT colour — near-black. Found on the
+ * first real screen built from this tier (prototypes/waypoint); visible on earlier
+ * catalogue screenshots too, and missed there.
+ *
+ * In @layer base, so any explicit `border-outline-*` utility still wins. Checked before
+ * adding: nothing under src/components, src/stories, src/showcase or the prototypes
+ * uses a bare `border` and relies on currentColor, so no governed rendering moves.
+ */
+@layer base {
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-border);
+  }
+}
+
+/*
+ * CARD RADIUS — the one place the two radius scales collide visibly.
+ *
+ * The names match and the values do not. Registry Card uses `rounded-xl`, which in
+ * shadcn's own scale is about 14px; in this design system --radius-xl is 32px, so staged
+ * cards rendered as lozenges. Redefining --radius-xl is not an option — that is a DS
+ * token, and this file never defines one. The DS already states its intent for cards in
+ * a dedicated token, --ds-radius-card (10px), so the adapter binds that — the same job it
+ * does for colour roles.
+ *
+ * Scoped by `data-slot`, so only the registry Card is affected. It sits in the utilities
+ * layer after Tailwind's own output, so it beats `rounded-xl` by source order — and, by
+ * the same rule, a caller's `rounded-*` on a Card is also overridden. Use `!rounded-*`
+ * if a prototype genuinely needs a different card corner.
+ *
+ * Other registry surfaces use `rounded-lg`, which lands on the DS's 16px. Larger than
+ * shadcn intended, but a real step of this scale rather than an outlier; left alone.
+ */
+@layer utilities {
+  [data-slot='card'] {
+    border-radius: var(--ds-radius-card);
+  }
+}
