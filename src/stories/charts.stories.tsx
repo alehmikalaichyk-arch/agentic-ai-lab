@@ -52,7 +52,7 @@ function Charts() {
         title="A five-series bar, rendered"
         note="Shown rather than described, because distinguishability is the one property of a palette that cannot be judged from a list of swatches."
       >
-        <div className="flex h-40 max-w-2xl items-end gap-3 rounded-md border border-outline-subtle bg-surface-default p-4">
+        <div className="flex h-40 max-w-2xl items-end gap-3 rounded-md border border-outline-default bg-surface-default p-4">
           {chartSlots.slice(0, 5).map(({ slot }, i) => (
             <div key={slot} className="flex flex-1 flex-col items-center gap-2">
               <div

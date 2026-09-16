@@ -5,7 +5,7 @@ import { contrast, type TokenEntry } from './token-data';
 
 export function Page({ title, lede, children }: { title: string; lede?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="min-h-screen bg-surface-page p-8 font-sans text-fg-default">
+    <div className="min-h-screen bg-surface-default p-8 font-sans text-fg-default">
       <h1 className="mb-2 text-2xl">{title}</h1>
       {lede ? <div className="mb-8 max-w-3xl text-sm text-fg-subtle">{lede}</div> : null}
       {children}

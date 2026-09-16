@@ -1,0 +1,115 @@
+/*
+ * shadcn role names, expressed in this design system's semantic tokens.
+ *
+ * WHAT THIS IS FOR
+ * ----------------
+ * Components in src/ui-staging/ come from the shadcn registry unmodified. They are
+ * written against ~20 role names — `bg-background`, `text-muted-foreground`,
+ * `border-input`, `ring-ring` — that this repository does not define, because its own
+ * semantic layer uses different names (surface-*, fg-*, outline-*).
+ *
+ * The alternative to this file was editing those class names in ~50 component files,
+ * and then re-editing them on every registry update. This declares the roles once
+ * instead. No staged component's source is touched.
+ *
+ * WHAT IT DOES NOT DO
+ * -------------------
+ * It does NOT reopen the palette. `--color-*: initial` in styles.css runs before this
+ * and still holds: `bg-red-500`, `text-slate-700` and the rest of Tailwind's built-in
+ * palette remain non-existent. Only the named roles below are added, and each one
+ * resolves to a semantic token — so the primitive -> semantic chain is intact, with
+ * this file as a translation layer on top of it, never a bypass around it.
+ *
+ * ORDER IS LOAD-BEARING
+ * ---------------------
+ * Imported LAST in styles.css, after generated/tailwind-theme.css. Earlier and the
+ * palette reset would wipe these too.
+ *
+ * NOT GENERATED. Unlike generated/tailwind-theme.css this file is hand-written and
+ * committed: the mapping is a set of design decisions, not a build output.
+ *
+ * THE CLI WRITES HERE. `components.json` points `tailwind.css` at this file rather
+ * than at styles.css, so that `shadcn add` injects its variables into a file we own
+ * instead of into the ordered import chain. It has already done so once, adding raw
+ * hsl() sidebar values; they were removed because every role below resolves to a
+ * token, and a literal here would be the one bypass this layer must not contain.
+ * Re-check `git diff` on this file after every `shadcn add`.
+ */
+
+/* Added by the CLI and kept: registry components use `dark:` utilities, which need
+ * a variant definition. It selects a `.dark` ancestor. Nothing in this repository
+ * sets that class yet — the DS has no dark token set — so `dark:` rules are inert
+ * rather than wrong. */
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* --- page and text ------------------------------------------------------- */
+  --color-background: var(--ds-surface-page);
+  --color-foreground: var(--ds-fg-default);
+
+  /* --- raised containers ---------------------------------------------------
+   * card sits on the page; popover floats above everything. The DS distinguishes
+   * these (raised vs overlay) where shadcn's defaults do not. */
+  --color-card: var(--ds-surface-raised);
+  --color-card-foreground: var(--ds-fg-default);
+  --color-popover: var(--ds-surface-overlay);
+  --color-popover-foreground: var(--ds-fg-default);
+
+  /* --- intent -------------------------------------------------------------- */
+  --color-primary: var(--ds-surface-brand-bold);
+  --color-primary-foreground: var(--ds-fg-inverse);
+  --color-secondary: var(--ds-surface-neutral-subtle);
+  --color-secondary-foreground: var(--ds-fg-default);
+  --color-destructive: var(--ds-surface-status-danger-bold);
+  --color-destructive-foreground: var(--ds-fg-inverse);
+
+  /* --- de-emphasis and highlight -------------------------------------------
+   * shadcn's `muted` is a quiet fill; its `accent` is the hover/active highlight
+   * on menu items and list rows — which is what surface-selected means here.
+   * The name collision with the DS's own `fg-accent-*` (a colour family, not a
+   * role) is shadcn's, not ours. */
+  --color-muted: var(--ds-surface-neutral-subtlest);
+  --color-muted-foreground: var(--ds-fg-subtle);
+  --color-accent: var(--ds-surface-selected);
+  --color-accent-foreground: var(--ds-fg-default);
+
+  /* --- lines ---------------------------------------------------------------
+   * shadcn uses `border` for structural dividers and `input` for form field
+   * outlines. The DS already separates those, so they map to different tokens
+   * rather than both to a generic grey. */
+  --color-border: var(--ds-outline-default);
+  --color-input: var(--ds-outline-input);
+  --color-ring: var(--ds-outline-focus);
+
+  /* --- charts --------------------------------------------------------------
+   * The registry's chart components read chart-1..5 positionally. Bound to the
+   * DS's categorical chart ramp in its documented order. */
+  --color-chart-1: var(--ds-chart-blue-500);
+  --color-chart-2: var(--ds-chart-orange-500);
+  --color-chart-3: var(--ds-chart-red-500);
+  --color-chart-4: var(--ds-chart-teal-500);
+  --color-chart-5: var(--ds-chart-green-500);
+
+  /* --- sidebar -------------------------------------------------------------
+   * The sidebar block ships its own parallel role set. Kept distinct from the
+   * page roles above: a sidebar is a sunken chrome surface here, not the canvas. */
+  --color-sidebar: var(--ds-surface-sunken);
+  --color-sidebar-foreground: var(--ds-fg-default);
+  --color-sidebar-primary: var(--ds-surface-brand-bold);
+  --color-sidebar-primary-foreground: var(--ds-fg-inverse);
+  --color-sidebar-accent: var(--ds-surface-selected);
+  --color-sidebar-accent-foreground: var(--ds-fg-default);
+  --color-sidebar-border: var(--ds-outline-subtle);
+  --color-sidebar-ring: var(--ds-outline-focus);
+}
+
+/*
+ * Some registry components reference `var(--radius)` directly — inside calc(), where
+ * a Tailwind utility cannot reach. Declared in :root rather than @theme on purpose:
+ * @theme would additionally publish a `rounded` utility that competes with the DS's
+ * own radius scale. The scale itself (--radius-sm/md/lg/xl) already comes from tokens
+ * and is deliberately NOT redefined here.
+ */
+:root {
+  --radius: var(--ds-radius-md, 0.5rem);
+}

@@ -28,3 +28,12 @@
 
 @import '../generated/tailwind-theme.css';
 @import '../generated/font-utilities.css';
+
+/*
+ * 6. shadcn role names, mapped onto the semantic tokens above.
+ *
+ * Last on purpose. It adds ~30 named roles to the --color-* namespace so that
+ * unmodified registry components in src/ui-staging/ render in this design language.
+ * It does not restore Tailwind's palette — step 3 still holds. See the file header.
+ */
+@import './shadcn-adapter.css';

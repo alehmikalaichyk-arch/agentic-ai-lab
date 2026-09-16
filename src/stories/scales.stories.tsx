@@ -76,7 +76,14 @@ function Scales() {
         title="Elevation"
         note="Surfaces separate by shadow rather than by hue, which is why surface-raised and surface-default are the same colour. Four steps is the whole budget."
       >
-        <div className="flex flex-wrap gap-6 p-2">
+        {/*
+          This row keeps a surface-page backdrop while the page around it is white.
+          The swatches ARE surface-default, and they are separated from each other by
+          shadow alone — on a white page the lightest step would have nothing to cast
+          against and would simply disappear. The tint is the demonstration, not
+          decoration.
+        */}
+        <div className="flex flex-wrap gap-6 rounded-md bg-surface-page p-6">
           {shadows.map((t) => (
             <div key={t.name} className="text-center">
               <div
