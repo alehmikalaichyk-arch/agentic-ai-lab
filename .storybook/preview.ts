@@ -20,19 +20,25 @@ const preview: Preview = {
       storySort: {
         // A nested array orders the entry above it. Two nestings are load-bearing:
         //
-        //   Components › the documentation page above the stage-#6 harness. Input
-        //   carries 19 generated stories and its documentation is a SIBLING entry, not
-        //   a child — see the header of input.showcase.stories.tsx for why nesting was
-        //   rejected. Alphabetically "(documentation)" sorts after "Input", so without
-        //   this line a reader meets the harness before the page explaining it.
+        //   Components › Input › Showcase first. The documentation page and the 19
+        //   stage-#6 stories share the title `Components/Input` from two files; this
+        //   line puts the page above the harness. Without it Showcase sorts LAST,
+        //   because stories otherwise keep file-load order.
         //
         //   Staging › Catalogue first, so the browse-everything pages precede the 30
         //   per-component ones.
+        //
+        // `includeNames` is what makes the first nesting work at all. Without it
+        // Storybook's comparator returns 0 for any two stories with the same title and
+        // never looks at their names, so `['Showcase', '*']` is silently ignored. With
+        // it, stories not named in an order list still compare equal and keep their
+        // file order — nothing else in the sidebar moves.
+        includeNames: true,
         order: [
           'Introduction',
           'Foundations',
           'Components',
-          ['Input (documentation)', '*'],
+          ['Input', ['Showcase', '*']],
           'Staging',
           ['Catalogue', '*'],
           'Prototypes',

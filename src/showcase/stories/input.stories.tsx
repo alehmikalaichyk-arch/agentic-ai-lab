@@ -50,23 +50,30 @@ import { Api, Facts, Note, Page, Provenance, Section, Specimen, Specimens } from
  * `src/ui-staging/stories/`. Outside every classified path: the classifier returns
  * NONE for it.
  *
- * WHY THE TITLE IS A SIBLING AND NOT `Components/Input/Showcase`.
+ * WHY THE TITLE IS `Components/Input` — the same as the stage-#6 file.
  *
- * `Components/<ComponentName>` is taken by input.stories.tsx, and that is not an
- * accident to route around: that file states its title convention comes from the #1
- * Context Snapshot, and it is regenerated whole by stage #6.
+ * The page belongs INSIDE the component entry, as its first item. Storybook accepts two
+ * CSF files sharing a title as long as the story ids differ, so this file's `Showcase`
+ * joins the 19 stage-#6 stories under one node. The stage-#6 file is not edited: it
+ * states its title convention comes from the #1 Context Snapshot and is regenerated
+ * whole.
  *
- * Nesting under it was tried and does not work either — Storybook's explorer renders a
- * component's own stories before any child group, so `Components/Input/Showcase` lands
- * beneath all 19 stage-#6 stories regardless of storySort. A reader opening the
- * component would meet the behavioural harness before the page explaining it.
+ * Two alternatives were tried and rejected:
+ *   - `Components/Input/Showcase` — Storybook's explorer renders a component's own
+ *     stories before any child group, so the page landed beneath all 19.
+ *   - `Components/Input (documentation)` — a sibling node; it sorted first, but split
+ *     one component across two entries in the sidebar.
  *
- * So: a sibling, named by the convention this repository already uses for a
- * non-canonical entry — `Prototypes/HorizontalStepper (draft)`. Order is pinned in
- * .storybook/preview.ts so it sits above `Input` rather than after it.
+ * Order within the node is pinned in .storybook/preview.ts, and it needs
+ * `includeNames: true` there — without that option Storybook never compares stories
+ * that share a title, and Showcase sorts last.
+ *
+ * CONSTRAINT this creates: the export must not be named like any stage-#6 story, or the
+ * two files produce the same story id and the build fails. `Showcase` is not a name
+ * stage #6 generates.
  */
 const meta = {
-  title: 'Components/Input (documentation)',
+  title: 'Components/Input',
   parameters: { layout: 'fullscreen', controls: { disable: true } },
 } satisfies Meta;
 
