@@ -184,6 +184,98 @@ export const Note = ({
   </div>
 );
 
+/* ---------------------------------------------------------------- provenance */
+
+/*
+ * Where this page's claims come from.
+ *
+ * It exists because of the difference between the two tiers. A staging page is one
+ * person's reading of some source; a governed component's page can cite a frozen spec,
+ * a test file and an audit report — and a reader has no way to tell those apart unless
+ * the page says so. Every row here is a path in this repository, so a claim can be
+ * checked rather than trusted.
+ *
+ * Do NOT add a row for a document that does not exist. An empty provenance strip is an
+ * honest answer; a decorative one destroys the point of having it.
+ */
+export const Provenance = ({
+  rows,
+}: {
+  rows: Array<{ what: string; where: string; detail?: string }>;
+}) => (
+  <div className="mb-10 rounded-md border border-outline-default bg-surface-neutral-subtlest p-5">
+    <h2 className="mb-3 text-xs font-semibold uppercase tracking-widest text-fg-subtlest">
+      Sources — every claim on this page is checkable
+    </h2>
+    <dl className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+      {rows.map((r) => (
+        <div key={r.what} className="grid gap-0.5">
+          <dt className="text-sm font-medium text-fg-default">{r.what}</dt>
+          <dd className="font-mono text-xs text-fg-subtle">{r.where}</dd>
+          {r.detail ? <dd className="text-xs text-fg-subtlest">{r.detail}</dd> : null}
+        </div>
+      ))}
+    </dl>
+  </div>
+);
+
+/* ------------------------------------------------------------- generic table */
+
+/*
+ * An arbitrary-column table, for the material the fixed Api shape cannot hold —
+ * measured contrast ratios, a state matrix, a token-to-role mapping. `align` right-
+ * aligns a numeric column; `emphasis` marks a row that must not be skim-read, which in
+ * practice means a known failure.
+ */
+export const Facts = ({
+  head,
+  rows,
+  align,
+}: {
+  head: string[];
+  rows: Array<{ cells: React.ReactNode[]; emphasis?: boolean }>;
+  /** Indices of columns to right-align — numbers, ratios. */
+  align?: number[];
+}) => (
+  <div className="overflow-hidden rounded-md border border-outline-default">
+    <table className="w-full text-left text-sm">
+      <thead className="bg-surface-neutral-subtlest text-xs uppercase tracking-wide text-fg-subtlest">
+        <tr>
+          {head.map((h, i) => (
+            <th
+              key={h}
+              className={`px-4 py-2 font-medium ${align?.includes(i) ? 'text-right' : ''}`}
+            >
+              {h}
+            </th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r, ri) => (
+          <tr
+            key={ri}
+            className={`border-t border-outline-subtle ${
+              r.emphasis ? 'bg-surface-status-warning' : ''
+            }`}
+          >
+            {r.cells.map((c, ci) => (
+              <td
+                key={ci}
+                className={`px-4 py-2 text-fg-subtle ${
+                  align?.includes(ci) ? 'text-right tabular-nums' : ''
+                }`}
+              >
+                {c}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+);
+
 /* -------------------------------------------------------------------- API table */
 
 /*

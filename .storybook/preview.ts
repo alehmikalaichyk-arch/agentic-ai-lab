@@ -18,7 +18,25 @@ const preview: Preview = {
      */
     options: {
       storySort: {
-        order: ['Introduction', 'Foundations', 'Components', 'Staging', ['Catalogue', '*'], 'Prototypes'],
+        // A nested array orders the entry above it. Two nestings are load-bearing:
+        //
+        //   Components › the documentation page above the stage-#6 harness. Input
+        //   carries 19 generated stories and its documentation is a SIBLING entry, not
+        //   a child — see the header of input.showcase.stories.tsx for why nesting was
+        //   rejected. Alphabetically "(documentation)" sorts after "Input", so without
+        //   this line a reader meets the harness before the page explaining it.
+        //
+        //   Staging › Catalogue first, so the browse-everything pages precede the 30
+        //   per-component ones.
+        order: [
+          'Introduction',
+          'Foundations',
+          'Components',
+          ['Input (documentation)', '*'],
+          'Staging',
+          ['Catalogue', '*'],
+          'Prototypes',
+        ],
       },
     },
 
