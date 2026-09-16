@@ -4,6 +4,24 @@ import '../src/styles.css';
 const preview: Preview = {
   parameters: {
     controls: { expanded: true },
+
+    /*
+     * Sidebar order, declared rather than alphabetical.
+     *
+     * Alphabetical puts Components after Foundations and Prototypes before Staging by
+     * accident, which reads as a ranking nobody chose. The order below is the one
+     * argument this Storybook makes: start at the introduction, then the tokens
+     * everything is built from, then the governed components, then the staged ones
+     * that are explicitly not governed, then the throwaway screens.
+     *
+     * Anything not named here sorts after, alphabetically.
+     */
+    options: {
+      storySort: {
+        order: ['Introduction', 'Foundations', 'Components', 'Staging', ['Catalogue', '*'], 'Prototypes'],
+      },
+    },
+
     a11y: {
       // Findings surface in the panel rather than failing the run. The blocking
       // accessibility pass is stage #7, which reads the spec's a11y contract; this

@@ -92,7 +92,7 @@ import { Case, Grid, Row } from './shared';
  * surface-raised) than the page behind them.
  */
 const meta = {
-  title: 'Staging/Overlays',
+  title: 'Staging/Catalogue/Overlays',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 

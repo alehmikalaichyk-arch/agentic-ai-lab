@@ -51,7 +51,7 @@ import { Case, Grid } from './shared';
  * Staging tier — navigation. Menus open on click; nothing here is a static picture.
  */
 const meta = {
-  title: 'Staging/Navigation',
+  title: 'Staging/Catalogue/Navigation',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 

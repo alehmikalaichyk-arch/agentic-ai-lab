@@ -44,7 +44,7 @@ import {
  * enforced — which is the one regression this file exists to catch.
  */
 const meta = {
-  title: 'Staging/Adapter check',
+  title: 'Staging/Catalogue/Adapter check',
   parameters: { layout: 'padded' },
 } satisfies Meta;
 

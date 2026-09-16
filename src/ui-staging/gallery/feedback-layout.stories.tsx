@@ -48,7 +48,7 @@ import { Case, Grid, Row } from './shared';
  * block never reached the stylesheet.
  */
 const meta = {
-  title: 'Staging/Feedback & layout',
+  title: 'Staging/Catalogue/Feedback & layout',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 

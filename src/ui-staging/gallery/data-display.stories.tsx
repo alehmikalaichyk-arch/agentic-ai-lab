@@ -51,7 +51,7 @@ import { Case, Col, Grid, Row } from './shared';
  * tier is and is not.
  */
 const meta = {
-  title: 'Staging/Data display',
+  title: 'Staging/Catalogue/Data display',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 

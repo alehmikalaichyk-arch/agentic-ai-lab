@@ -39,7 +39,7 @@ import { Case, Col, Grid, Row } from './shared';
  * governed one.
  */
 const meta = {
-  title: 'Staging/Forms',
+  title: 'Staging/Catalogue/Forms',
   parameters: { layout: 'fullscreen' },
 } satisfies Meta;
 
