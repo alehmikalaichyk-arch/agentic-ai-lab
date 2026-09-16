@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { ArrowRightIcon, PlusIcon, TrashIcon } from 'lucide-react';
 
-import { Api, Note, Page, Section, Specimen, Specimens } from '../../../.storybook/showcase';
+import { Api, Note, Page, Section, Specimen, Specimens } from '@/showcase';
 import { Button } from '@/ui-staging/button';
 
 /*
