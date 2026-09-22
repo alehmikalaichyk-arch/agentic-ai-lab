@@ -42,35 +42,55 @@
  * rather than wrong. */
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * HOW EACH ROLE IS CHOSEN: by the DS token's own $description in
+ * tokens/color/semantic.json, not by what its name suggests. Five mappings in the
+ * first version of this file were chosen by name and were wrong — most visibly
+ * `popover -> surface-overlay`, which is the MODAL SCRIM (#0d1119): every dropdown,
+ * select and popover rendered near-black text on a near-black panel. Each role below
+ * now quotes the description that justifies it. Changing a mapping means finding the
+ * token whose description says the role, not the one whose name sounds closest.
+ */
+
 @theme inline {
   /* --- page and text ------------------------------------------------------- */
   --color-background: var(--ds-surface-page);
   --color-foreground: var(--ds-fg-default);
 
-  /* --- raised containers ---------------------------------------------------
-   * card sits on the page; popover floats above everything. The DS distinguishes
-   * these (raised vs overlay) where shadcn's defaults do not. */
-  --color-card: var(--ds-surface-raised);
+  /* --- containers ----------------------------------------------------------
+   * card    surface-default  "Primary card, panel, modal surface"
+   * popover surface-raised   "Elevated surface — nav sidebar, popover, dropdown"
+   * NOT surface-overlay for popover: that token is "Modal scrim. Pair with
+   * opacity-50 / opacity-60" — the dark backdrop behind a dialog, not a panel. */
+  --color-card: var(--ds-surface-default);
   --color-card-foreground: var(--ds-fg-default);
-  --color-popover: var(--ds-surface-overlay);
+  --color-popover: var(--ds-surface-raised);
   --color-popover-foreground: var(--ds-fg-default);
 
   /* --- intent -------------------------------------------------------------- */
   --color-primary: var(--ds-surface-brand-bold);
   --color-primary-foreground: var(--ds-fg-inverse);
-  --color-secondary: var(--ds-surface-neutral-subtle);
+  /* secondary  surface-neutral-bold  "Secondary / default button bg" */
+  --color-secondary: var(--ds-surface-neutral-bold);
   --color-secondary-foreground: var(--ds-fg-default);
   --color-destructive: var(--ds-surface-status-danger-bold);
   --color-destructive-foreground: var(--ds-fg-inverse);
 
   /* --- de-emphasis and highlight -------------------------------------------
-   * shadcn's `muted` is a quiet fill; its `accent` is the hover/active highlight
-   * on menu items and list rows — which is what surface-selected means here.
-   * The name collision with the DS's own `fg-accent-*` (a colour family, not a
-   * role) is shadcn's, not ours. */
+   * muted   surface-neutral-subtlest  a quiet fill — table footers, tab lists
+   * accent  surface-neutral-subtle    "Very light hover area — table rows, list
+   *                                    items, icon ghost button bg"
+   * shadcn's `accent` is the HOVER / focus highlight on menu items, ghost buttons
+   * and list rows, and also the skeleton fill. It is NOT selection: it was first
+   * mapped to surface-selected ("Selected item tint"), which painted every hovered
+   * menu item — and every loading skeleton — in the brand tint. shadcn's own default
+   * for this role is a neutral grey. Selection, where a component means it, is
+   * carried by sidebar-accent below.
+   * The name collision with the DS's own `fg-accent-*` (a colour family, not a role)
+   * is shadcn's, not ours. */
   --color-muted: var(--ds-surface-neutral-subtlest);
   --color-muted-foreground: var(--ds-fg-subtle);
-  --color-accent: var(--ds-surface-selected);
+  --color-accent: var(--ds-surface-neutral-subtle);
   --color-accent-foreground: var(--ds-fg-default);
 
   /* --- lines ---------------------------------------------------------------
@@ -91,9 +111,13 @@
   --color-chart-5: var(--ds-chart-green-500);
 
   /* --- sidebar -------------------------------------------------------------
-   * The sidebar block ships its own parallel role set. Kept distinct from the
-   * page roles above: a sidebar is a sunken chrome surface here, not the canvas. */
-  --color-sidebar: var(--ds-surface-sunken);
+   * The sidebar block ships its own parallel role set.
+   * sidebar         surface-raised    "Elevated surface — nav sidebar, …"
+   *                 (not surface-sunken: "Recessed / inset surface — code block,
+   *                 aside, sidebar inner" — the inside of a sidebar, not the rail)
+   * sidebar-accent  surface-selected  "Selected item tint" — the ACTIVE nav item,
+   *                 which really is a selection, unlike the page-level `accent`. */
+  --color-sidebar: var(--ds-surface-raised);
   --color-sidebar-foreground: var(--ds-fg-default);
   --color-sidebar-primary: var(--ds-surface-brand-bold);
   --color-sidebar-primary-foreground: var(--ds-fg-inverse);

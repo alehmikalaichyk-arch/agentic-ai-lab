@@ -87,9 +87,9 @@ import { Case, Grid, Row } from './shared';
  * Staging tier — overlays and disclosure.
  *
  * Everything here is closed at rest, which is the honest resting state. Click through
- * them: an overlay's colour mapping is only visible once it is open, and the popover
- * and dialog surfaces are mapped to DIFFERENT tokens (surface-overlay vs
- * surface-raised) than the page behind them.
+ * them: an overlay's colour mapping is only visible once it is open — which is exactly
+ * how a near-black popover panel (the first adapter mapped popover to the modal scrim)
+ * went unnoticed here. Popovers and menus now sit on surface-raised.
  */
 const meta = {
   title: 'Staging/Catalogue/Overlays',
@@ -209,7 +209,7 @@ export const Overlays: Story = {
               <Button variant="outline">Popover</Button>
             </PopoverTrigger>
             <PopoverContent className="text-sm">
-              Mapped to surface-overlay, not surface-raised.
+              Popover panel on surface-raised.
             </PopoverContent>
           </Popover>
 
