@@ -54,7 +54,8 @@ Verified in the built stylesheet rather than assumed:
 | Class | Resolves to |
 |---|---|
 | `bg-primary` | `var(--ds-surface-brand-bold)` |
-| `bg-card` | `var(--ds-surface-raised)` |
+| `bg-card` | `var(--ds-surface-default)` |
+| `bg-popover` | `var(--ds-surface-raised)` |
 | `text-muted-foreground` | `var(--ds-fg-subtle)` |
 | `border-input` | `var(--ds-outline-input)` |
 | `ring-ring` | `var(--ds-outline-focus)` |
