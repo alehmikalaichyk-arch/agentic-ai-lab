@@ -130,10 +130,13 @@ function Shell({
   route,
   go,
   children,
+  footer,
 }: {
   route: Route;
   go: Go;
   children: React.ReactNode;
+  /** Pinned to the bottom of the content column. Used by the Demo bar. */
+  footer?: React.ReactNode;
 }) {
   // Details belongs to Shipments in the nav, as it does in the reference.
   const active = route.screen === 'details' ? 'shipments' : route.screen;
@@ -185,7 +188,10 @@ function Shell({
           <SidebarTrigger />
           <span className="text-sm font-medium">Waypoint</span>
         </header>
-        <main className="mx-auto w-full max-w-6xl p-6 md:p-8">{children}</main>
+        {/* A div, not <main>: SidebarInset already renders the page's <main>, and a
+            second one nested inside it is a duplicate landmark. */}
+        <div className="mx-auto w-full max-w-6xl flex-1 p-6 md:p-8">{children}</div>
+        {footer}
       </SidebarInset>
       <Toaster />
     </SidebarProvider>
@@ -787,6 +793,13 @@ function StubScreen({ which }: { which: keyof typeof STUBS }) {
  * The reference's "demo bar" — a way to flip a screen into each of its states during a
  * walkthrough. Kept, because in a workshop it is the fastest way to show that every
  * state was designed. Rendered with ToggleGroup, and clearly marked as not product UI.
+ *
+ * PINNED to the bottom of the content column, not placed after the content. In the
+ * reference it sat below the page, so on a long list it scrolled out of reach exactly
+ * when a presenter wanted it, and on a short state (loading, empty) it floated
+ * mid-screen and moved every time the state changed. `sticky bottom-0` keeps it on the
+ * viewport edge while scrolling; `mt-auto` holds it at the bottom when the page is
+ * short. It lives inside SidebarInset, so it never covers the sidebar.
  */
 function DemoBar({
   state,
@@ -800,25 +813,31 @@ function DemoBar({
   const states: DemoState[] = ['populated', 'loading', 'error', 'empty'];
   if (withFiltered) states.push('empty-filtered');
   return (
-    <div className="mt-10 flex flex-wrap items-center gap-3 border-t border-dashed border-outline-default pt-4">
-      <span className="rounded-sm border border-dashed border-outline-default px-1.5 text-xs font-semibold uppercase tracking-wide text-fg-subtlest">
-        Demo
-      </span>
-      <span className="text-xs text-fg-subtle">state</span>
-      <ToggleGroup
-        type="single"
-        size="sm"
-        variant="outline"
-        value={state}
-        onValueChange={(v) => v && setState(v as DemoState)}
-        aria-label="Demo state"
-      >
-        {states.map((s) => (
-          <ToggleGroupItem key={s} value={s} className="px-2.5 text-xs">
-            {s}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+    <div
+      role="region"
+      aria-label="Demo controls"
+      className="sticky bottom-0 z-10 mt-auto border-t border-outline-default bg-surface-default"
+    >
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center gap-3 px-6 py-3 md:px-8">
+        <span className="rounded-sm border border-dashed border-outline-default px-1.5 text-xs font-semibold uppercase tracking-wide text-fg-subtlest">
+          Demo
+        </span>
+        <span className="text-xs text-fg-subtle">state</span>
+        <ToggleGroup
+          type="single"
+          size="sm"
+          variant="outline"
+          value={state}
+          onValueChange={(v) => v && setState(v as DemoState)}
+          aria-label="Demo state"
+        >
+          {states.map((s) => (
+            <ToggleGroupItem key={s} value={s} className="px-2.5 text-xs">
+              {s}
+            </ToggleGroupItem>
+          ))}
+        </ToggleGroup>
+      </div>
     </div>
   );
 }
@@ -865,11 +884,16 @@ export function Waypoint({
   }
 
   return (
-    <Shell route={route} go={go}>
+    <Shell
+      route={route}
+      go={go}
+      footer={
+        showDemoBar && hasStates ? (
+          <DemoBar state={state} setState={setState} withFiltered={route.screen === 'shipments'} />
+        ) : null
+      }
+    >
       {screen}
-      {showDemoBar && hasStates ? (
-        <DemoBar state={state} setState={setState} withFiltered={route.screen === 'shipments'} />
-      ) : null}
     </Shell>
   );
 }

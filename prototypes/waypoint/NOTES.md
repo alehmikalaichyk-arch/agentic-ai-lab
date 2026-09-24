@@ -46,7 +46,7 @@ Each is a candidate for a requirements brief, with this screen as the demonstrat
 | Cards at 14px | `radius-card`, 10px | See the adapter fix below. |
 | Status hex pairs | Accent `-subtlest` surface + `-boldest` foreground | On a soft accent surface only `-boldest` clears AA — the rule `status-board` recorded. |
 | Whole table row is clickable | The shipment ID is the link | A clickable `<tr>` is mouse-only: not focusable, no key handling. Same destination, reachable by Tab. |
-| Demo bar of text links | `ToggleGroup`, marked **Demo** | Kept: in a walkthrough it is the fastest way to show every state was designed. |
+| Demo bar of text links, below the page | `ToggleGroup`, marked **Demo**, pinned to the bottom of the content column | Kept: in a walkthrough it is the fastest way to show every state was designed. Pinned because below the page it scrolled out of reach on long lists and jumped around on short states. |
 | Hash routing | In-memory route state | Storybook renders the screen in an iframe it owns. Each state also has its own story. |
 | Mobile: nav becomes a horizontal top bar | Nav becomes a sheet behind a trigger | What the staging Sidebar does. Not re-designed. |
 | Letter-spacing `-0.01em` on headings | None | The DS publishes only `tracking-normal` and `tracking-wide`. |
