@@ -10,6 +10,7 @@ import {
   SearchIcon,
   SearchXIcon,
   TruckIcon,
+  XIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -40,7 +41,12 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/ui-staging/empty';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/ui-staging/input-group';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/ui-staging/input-group';
 import {
   Select,
   SelectContent,
@@ -459,6 +465,7 @@ export function ShipmentsScreen({
   initial?: { status?: Status; city?: string; q?: string };
 }) {
   const [q, setQ] = React.useState(initial?.q ?? '');
+  const searchRef = React.useRef<HTMLInputElement>(null);
   const [status, setStatus] = React.useState<string>(initial?.status ?? ALL);
   const [city, setCity] = React.useState<string>(initial?.city ?? ALL);
 
@@ -497,11 +504,29 @@ export function ShipmentsScreen({
             <SearchIcon />
           </InputGroupAddon>
           <InputGroupInput
+            ref={searchRef}
             aria-label="Search shipments"
             placeholder="Search by ID, customer or PO…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
+          {/* Only while there is something to clear — an always-visible × on an empty
+              field is a control that does nothing. Focus returns to the field, so the
+              natural next action (type a new query) needs no extra click. */}
+          {q ? (
+            <InputGroupAddon align="inline-end">
+              <InputGroupButton
+                size="icon-xs"
+                aria-label="Clear search"
+                onClick={() => {
+                  setQ('');
+                  searchRef.current?.focus();
+                }}
+              >
+                <XIcon />
+              </InputGroupButton>
+            </InputGroupAddon>
+          ) : null}
         </InputGroup>
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger aria-label="Filter by status" className="w-40">
