@@ -48,13 +48,6 @@ import {
   InputGroupInput,
 } from '@/ui-staging/input-group';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/ui-staging/select';
-import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
@@ -81,8 +74,9 @@ import {
 } from '@/ui-staging/table';
 import { ToggleGroup, ToggleGroupItem } from '@/ui-staging/toggle-group';
 
+import { FilterBar } from './filter-bar';
+import { applyFilters, type Selection } from './filters';
 import {
-  CITIES,
   SHIPMENTS,
   STATUS_LABEL,
   STATUS_TOKENS,
@@ -91,6 +85,7 @@ import {
   type DemoState,
   type Route,
   type Shipment,
+  type ShipmentsRoute,
   type Status,
 } from './data';
 
@@ -310,7 +305,7 @@ function NothingMatches({ onClear, what }: { onClear: () => void; what: React.Re
         </EmptyHeader>
         <EmptyContent>
           <Button variant="outline" onClick={onClear}>
-            Clear filters
+            Clear filters and search
           </Button>
         </EmptyContent>
       </Empty>
@@ -325,7 +320,16 @@ function NothingMatches({ onClear, what }: { onClear: () => void; what: React.Re
  * focusable and has no key handling — so the shipment id is the link here, and the row
  * only carries the hover. Same destination, reachable by Tab.
  */
-function ShipmentTable({ rows, go }: { rows: Shipment[]; go: Go }) {
+function ShipmentTable({
+  rows,
+  go,
+  back,
+}: {
+  rows: Shipment[];
+  go: Go;
+  /** The list state to return to. Omitted on Today, which is not the list. */
+  back?: ShipmentsRoute;
+}) {
   return (
     <Table>
       <TableHeader>
@@ -344,7 +348,7 @@ function ShipmentTable({ rows, go }: { rows: Shipment[]; go: Go }) {
               <Button
                 variant="link"
                 className="h-auto p-0 font-semibold tabular-nums text-fg-default"
-                onClick={() => go({ screen: 'details', id: s.id })}
+                onClick={() => go({ screen: 'details', id: s.id, back })}
               >
                 {s.id}
               </Button>
@@ -453,8 +457,6 @@ export function TodayScreen({ state, go }: { state: DemoState; go: Go }) {
 
 /* ------------------------------------------------------------------- shipments */
 
-const ALL = 'all';
-
 export function ShipmentsScreen({
   state,
   go,
@@ -462,29 +464,26 @@ export function ShipmentsScreen({
 }: {
   state: DemoState;
   go: Go;
-  initial?: { status?: Status; city?: string; q?: string };
+  /** The list state this screen was entered with — a deep link, or a return trip. */
+  initial?: { q?: string; sel?: Selection };
 }) {
   const [q, setQ] = React.useState(initial?.q ?? '');
   const searchRef = React.useRef<HTMLInputElement>(null);
-  const [status, setStatus] = React.useState<string>(initial?.status ?? ALL);
-  const [city, setCity] = React.useState<string>(initial?.city ?? ALL);
+  const [sel, setSel] = React.useState<Selection>(initial?.sel ?? {});
 
-  const needle = q.trim().toLowerCase();
-  const list = SHIPMENTS.filter(
-    (s) =>
-      (!needle ||
-        s.id.toLowerCase().includes(needle) ||
-        s.customer.toLowerCase().includes(needle) ||
-        s.ref.toLowerCase().includes(needle)) &&
-      (status === ALL || s.status === status) &&
-      (city === ALL || s.from === city || s.to === city || s.via.includes(city)),
-  );
-  const filtersOn = Boolean(needle) || status !== ALL || city !== ALL;
-  const clear = () => {
+  // §2 / §8.1 — one composition, defined in filters.ts and pinned by filters.test.ts.
+  const list = applyFilters(SHIPMENTS, sel, q);
+
+  // §4.10 — the bar's own "Clear filters" leaves the query alone. This combined reset is
+  // offered only in the empty state, and its label says that it clears both.
+  const clearEverything = () => {
+    setSel({});
     setQ('');
-    setStatus(ALL);
-    setCity(ALL);
   };
+
+  // The list state as a route, so a row click carries it into the detail view and the
+  // breadcrumb carries it back (§6).
+  const here: ShipmentsRoute = { screen: 'shipments', q: q || undefined, sel };
 
   // `empty-filtered` is forced by the demo switch; otherwise it is whatever the filters produce.
   const forcedNoMatch = state === 'empty-filtered';
@@ -498,76 +497,57 @@ export function ShipmentsScreen({
         actions={<NewShipmentButton go={go} />}
       />
 
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <InputGroup className="w-full sm:w-72">
-          <InputGroupAddon>
-            <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupInput
-            ref={searchRef}
-            aria-label="Search shipments"
-            placeholder="Search by ID, customer or PO…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-          />
-          {/* Only while there is something to clear — an always-visible × on an empty
-              field is a control that does nothing. Focus returns to the field, so the
-              natural next action (type a new query) needs no extra click. */}
-          {q ? (
-            <InputGroupAddon align="inline-end">
-              <InputGroupButton
-                size="icon-xs"
-                aria-label="Clear search"
-                onClick={() => {
-                  setQ('');
-                  searchRef.current?.focus();
-                }}
-              >
-                <XIcon />
-              </InputGroupButton>
+      <FilterBar
+        className="mb-4"
+        sel={sel}
+        onChange={setSel}
+        leading={
+          <InputGroup className="w-full sm:w-72">
+            <InputGroupAddon>
+              <SearchIcon />
             </InputGroupAddon>
-          ) : null}
-        </InputGroup>
-        <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger aria-label="Filter by status" className="w-40">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>All statuses</SelectItem>
-            {(Object.keys(STATUS_LABEL) as Status[]).map((k) => (
-              <SelectItem key={k} value={k}>
-                {STATUS_LABEL[k]}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Select value={city} onValueChange={setCity}>
-          <SelectTrigger aria-label="Filter by city" className="w-36">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value={ALL}>Any city</SelectItem>
-            {CITIES.map((c) => (
-              <SelectItem key={c} value={c}>
-                {c}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        {filtersOn ? (
-          <Button variant="ghost" size="sm" onClick={clear}>
-            Clear
-          </Button>
-        ) : null}
-        <span className="ml-auto text-sm tabular-nums text-fg-subtle" aria-live="polite">
-          {list.length} of {SHIPMENTS.length}
-        </span>
-      </div>
+            <InputGroupInput
+              ref={searchRef}
+              aria-label="Search shipments"
+              placeholder="Search by ID, customer or PO…"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+            />
+            {/* Only while there is something to clear — an always-visible × on an empty
+                field is a control that does nothing. */}
+            {q ? (
+              <InputGroupAddon align="inline-end">
+                <InputGroupButton
+                  size="icon-xs"
+                  aria-label="Clear search"
+                  onClick={() => {
+                    setQ('');
+                    searchRef.current?.focus();
+                  }}
+                >
+                  <XIcon />
+                </InputGroupButton>
+              </InputGroupAddon>
+            ) : null}
+          </InputGroup>
+        }
+        trailing={
+          /* §4.13 — a filter change moves this number, and it is announced. */
+          <span className="text-sm tabular-nums text-fg-subtle" aria-live="polite">
+            {list.length} of {SHIPMENTS.length}
+          </span>
+        }
+      />
 
       {block ??
         (forcedNoMatch || list.length === 0 ? (
+          /*
+           * §4.12 — "nothing matched your filters" and "there is nothing here" are
+           * different statements. The demo's `empty` state is the second; this is the
+           * first, and only this one offers the reset.
+           */
           <NothingMatches
-            onClear={clear}
+            onClear={clearEverything}
             what={
               forcedNoMatch ? (
                 <>
@@ -580,7 +560,7 @@ export function ShipmentsScreen({
           />
         ) : (
           <Card className="py-0">
-            <ShipmentTable rows={list} go={go} />
+            <ShipmentTable rows={list} go={go} back={here} />
           </Card>
         ))}
     </>
@@ -658,7 +638,7 @@ function Timeline({ s }: { s: Shipment }) {
   );
 }
 
-export function DetailsScreen({ id, go }: { id: string; go: Go }) {
+export function DetailsScreen({ id, go, back }: { id: string; go: Go; back?: ShipmentsRoute }) {
   const s = SHIPMENTS.find((x) => x.id === id);
 
   const crumbs = (
@@ -666,7 +646,7 @@ export function DetailsScreen({ id, go }: { id: string; go: Go }) {
       <BreadcrumbList>
         <BreadcrumbItem>
           <BreadcrumbLink asChild>
-            <button type="button" onClick={() => go({ screen: 'shipments' })}>
+            <button type="button" onClick={() => go(back ?? { screen: 'shipments' })}>
               Shipments
             </button>
           </BreadcrumbLink>
@@ -690,7 +670,7 @@ export function DetailsScreen({ id, go }: { id: string; go: Go }) {
               <EmptyDescription>It may have been archived, or the link is wrong.</EmptyDescription>
             </EmptyHeader>
             <EmptyContent>
-              <Button variant="outline" onClick={() => go({ screen: 'shipments' })}>
+              <Button variant="outline" onClick={() => go(back ?? { screen: 'shipments' })}>
                 Back to shipments
               </Button>
             </EmptyContent>
@@ -902,7 +882,7 @@ export function Waypoint({
       hasStates = true;
       break;
     case 'details':
-      screen = <DetailsScreen id={route.id} go={go} />;
+      screen = <DetailsScreen id={route.id} go={go} back={route.back} />;
       break;
     default:
       screen = <StubScreen which={route.screen} />;

@@ -1,3 +1,5 @@
+import type { Selection } from './filters';
+
 /** Fixtures, ported verbatim from reference.html. Hardcoded on purpose: a prototype
  *  that fetches is a prototype that can fail for reasons unrelated to its question. */
 
@@ -92,10 +94,18 @@ export const STATUS_TOKENS: Record<Status, { surface: string; fg: string; dot: s
 };
 
 export type DemoState = 'populated' | 'loading' | 'error' | 'empty' | 'empty-filtered';
+/** The list's own state: facets plus the free-text query (§6 of the filtering spec). */
+export type ShipmentsRoute = { screen: 'shipments'; q?: string; sel?: Selection };
+
 export type Route =
   | { screen: 'today' }
-  | { screen: 'shipments'; status?: Status; city?: string; q?: string }
-  | { screen: 'details'; id: string }
+  | ShipmentsRoute
+  /*
+   * `back` carries the list's filter state into the detail view and out again.
+   * §6: "any return-to-the-list affordance must carry the filter state", or the reader
+   * loses their work on every round trip (failure #16) — which this prototype did.
+   */
+  | { screen: 'details'; id: string; back?: ShipmentsRoute }
   | { screen: 'problems' }
   | { screen: 'messages' }
   | { screen: 'new' };
