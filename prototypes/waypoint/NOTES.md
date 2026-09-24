@@ -41,7 +41,7 @@ Each is a candidate for a requirements brief, with this screen as the demonstrat
 
 | Reference | Here | Why |
 |---|---|---|
-| Near-black primary (`#1f2937`) | Brand green | The DS brand token. |
+| Near-black primary (`#1f2937`) | Brand blue (`oslo-600`) | The DS brand token. Green until 2026-09-22. |
 | Pill buttons and inputs (`999px`) | `radius-md`, 8px | What the staging Button and Input render with. There is no pill radius token. |
 | Cards at 14px | `radius-card`, 10px | See the adapter fix below. |
 | Status hex pairs | Accent `-subtlest` surface + `-boldest` foreground | On a soft accent surface only `-boldest` clears AA — the rule `status-board` recorded. |

@@ -10,7 +10,7 @@ import { create } from '@storybook/theming';
  * defaults. These are copies, and copies drift — the token name is recorded next to
  * each one so a mismatch can be found by grep rather than by eye.
  *
- * Source: generated/tokens.css, read 2026-09-16.
+ * Source: generated/tokens.css, read 2026-09-22 (brand moved to oslo-600 that day).
  */
 export default create({
   base: 'light',
@@ -19,8 +19,8 @@ export default create({
   brandUrl: 'https://github.com/alehmikalaichyk-arch/agentic-ai-lab',
   brandTarget: '_self',
 
-  colorPrimary: '#099468', // --ds-surface-brand-bold
-  colorSecondary: '#099468', // --ds-surface-brand-bold
+  colorPrimary: '#04639A', // --ds-surface-brand-bold
+  colorSecondary: '#04639A', // --ds-surface-brand-bold
 
   appBg: '#f7f9fc', // --ds-surface-page
   appContentBg: '#ffffff', // --ds-surface-default
@@ -32,8 +32,8 @@ export default create({
   textMutedColor: '#51586b', // --ds-fg-subtle
 
   barTextColor: '#51586b', // --ds-fg-subtle
-  barSelectedColor: '#099468', // --ds-surface-brand-bold
-  barHoverColor: '#099468', // --ds-surface-brand-bold
+  barSelectedColor: '#04639A', // --ds-surface-brand-bold
+  barHoverColor: '#04639A', // --ds-surface-brand-bold
   barBg: '#ffffff', // --ds-surface-default
 
   inputBg: '#ffffff', // --ds-surface-default

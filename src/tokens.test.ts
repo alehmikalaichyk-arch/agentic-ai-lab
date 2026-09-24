@@ -155,6 +155,17 @@ describe('contrast floor', () => {
     // family; it does not promise a dark background. `surface-inverse` is the one
     // that carries inverse text.
     ['fg-inverse', 'surface-inverse'],
+    // Brand pairs, moved here from KNOWN_BELOW_AA in 2026-09 when the brand moved from
+    // the green primitive to oslo. That list asserts its pairs FAIL, so the move turned
+    // it red — which is the list doing its job: a palette change that fixes a pair has
+    // to be a decision someone records, not a silent shift. Recorded here.
+    //   white on the primary button fill  3.85:1 -> 6.45:1
+    //   brand-bold text on the brand tint 4.10:1 -> 7.40:1
+    ['fg-inverse', 'surface-brand-bold'],
+    ['fg-brand-bold', 'surface-brand-subtlest'],
+    // Newly guarded: fg-brand was a large-text exception at 3.85:1 and now clears AA
+    // on the page surface. Pinned so the next palette change cannot quietly undo it.
+    ['fg-brand', 'surface-page'],
   ];
 
   // NON-TEXT pairs: the visual information identifying a component's boundary. WCAG
@@ -174,6 +185,9 @@ describe('contrast floor', () => {
     // it is seen against both surfaces at once.
     ['outline-input-focused', 'surface-page'],
     ['outline-input-error', 'surface-page'],
+    // The shared focus ring, used by every control that is not Input.
+    ['outline-focus', 'surface-default'],
+    ['outline-focus', 'surface-page'],
   ];
 
   // Pairings that look right and are NOT. Asserted as failing, so that a palette
@@ -182,10 +196,11 @@ describe('contrast floor', () => {
   const KNOWN_BELOW_AA: Array<[string, string]> = [
     ['fg-accent-red', 'surface-accent-red-subtlest'],
     ['fg-accent-blue', 'surface-accent-blue-subtlest'],
-    ['fg-brand-bold', 'surface-brand-subtlest'],
-    // White on the bold brand fill is 3.85:1 — the pairing every "primary button"
-    // reaches for first, and it does not clear AA in this palette.
-    ['fg-inverse', 'surface-brand-bold'],
+    // White on the SUCCESS fill is 3.85:1. Until 2026-09 this list held the same pair
+    // for the brand fill, because the brand and success shared brand-700. The brand
+    // moved to oslo and cleared AA (see PAIRS); success stayed green and did not —
+    // so the exception lives on here under its remaining name.
+    ['fg-inverse', 'surface-status-success-bold'],
   ];
 
   it.each(PAIRS)('%s on %s meets WCAG AA (4.5:1)', (fg, bg) => {

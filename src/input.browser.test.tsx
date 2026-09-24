@@ -124,7 +124,15 @@ describe('Input — focus indicator (AC6, A11Y-008)', () => {
     // D3: the ring binds outline-input-focused, NOT outline-focus. The green-on-blue
     // pairing that produced was rendered and rejected by the owner on 2026-09-02.
     expect(styles.outlineColor).toBe(hexToRgb(tokenValue('--ds-outline-input-focused')));
-    expect(styles.outlineColor).not.toBe(hexToRgb(tokenValue('--ds-outline-focus')));
+    // The "NOT outline-focus" half is asserted on the BINDING, not on the rendered
+    // colour. It used to be `outlineColor !== --ds-outline-focus`, a proxy that held only
+    // while the two tokens had different values. The 2026-09 move of the brand to oslo
+    // made outline-focus resolve to oslo-600 — the same value as outline-input-focused —
+    // so the proxy failed on an unchanged component. D3 is a decision about which token
+    // the ring is wired to; this checks the wiring, and stays correct whatever the
+    // palette does to either value.
+    expect(field().className).toContain('focus:outline-outline-input-focused');
+    expect(field().className).not.toMatch(/(^|\s)(\S+:)?outline-outline-focus(\s|$)/);
   });
 
   it('keeps the ring in the ERROR token when focused in error, so no second hue appears', async () => {
