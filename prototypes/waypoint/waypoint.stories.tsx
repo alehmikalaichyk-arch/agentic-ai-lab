@@ -39,8 +39,8 @@ export const Shipments: Story = {
   args: { initialRoute: { screen: 'shipments' } },
 };
 export const ShipmentsFiltered: Story = {
-  name: 'Shipments — filtered to On hold',
-  args: { initialRoute: { screen: 'shipments', status: 'held' } },
+  name: 'Shipments — deep link, filtered to On hold',
+  args: { initialRoute: { screen: 'shipments', sel: { status: ['held'] } } },
 };
 export const ShipmentsNoMatch: Story = {
   name: 'Shipments — nothing matches',
