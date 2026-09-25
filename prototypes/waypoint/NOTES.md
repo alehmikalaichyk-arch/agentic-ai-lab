@@ -37,6 +37,68 @@ Each is a candidate for a requirements brief, with this screen as the demonstrat
    component asking to exist.
 5. **Key–value list.** The details panel is a hand-rolled `<dl>` grid.
 
+## Faceted filtering on the Shipments list
+
+Built from the faceted-list-filtering specification supplied on 2026-09-24 (not in this
+repository — ask if it should be versioned here). The model is `filters.ts`, its
+obligations are `filters.test.ts` (35 tests), the interface is `filter-bar.tsx`.
+
+**The question it answers:** the spec says its dangerous facet kinds fail *silently* —
+green tests, plausible screens. Does a prototype built strictly to it actually catch
+them, and which of its rules survive in a screen with no backend?
+
+All five facet kinds from §3 are present, because the two dangerous ones are the point:
+
+| Facet | §3 kind | What it demonstrates |
+|---|---|---|
+| Status, Carrier, Route city | A enumerated | the ordinary case |
+| Attention | B derived | the `delayed \|\| held` rule, which this prototype had written **twice** |
+| Schedule | C discriminated | Expected / Delivered, both containing "Today" |
+| Customer | D open | search against a directory larger than the list |
+| Driver | E sentinel | "Unassigned" for a missing driver, OR-ed with named ones |
+
+**Schedule is the one to open in a walkthrough.** Both groups have a value labelled
+"Today". Selecting *Delivered · Today* returns one shipment, not the four others that are
+also due today — because every sub-predicate is gated on the discriminant (§3.C). Drop
+that gate and the screen still looks right. `filters.test.ts` asserts it directly.
+
+**What does not apply here, and is not pretended.** §8.2 (predicate placement), §8.3
+(binding vs interpolation) and §7 (pagination) assume a data store and a pager; this
+screen filters an array of twelve rows. §9.5's "inspect the generated query" and §9.7's
+pagination determinism go with them. All five are named in `filters.ts` and at the foot
+of `filters.test.ts` rather than quietly skipped.
+
+**What does apply, and surprised us:** §8.1 bracketing is not a SQL quirk. JavaScript's
+`&&` binds tighter than `||` in exactly the same way, so a flattened composition widens
+the result here too. The test writes the mutation out and asserts the widened set, which
+is how it proves the correct assertion can see the defect at all.
+
+**Two defects this prototype already had, both in the spec's catalogue:**
+
+- **#16, return path loses the filter state.** Opening a shipment and coming back via the
+  breadcrumb dropped every filter. The list state now travels into the detail route and
+  back out. Navigating from the sidebar still opens the unfiltered list — that is a fresh
+  visit, not a return.
+- The `delayed || held` rule existed in two places (the sidebar badge and the Today
+  table), which is the drift §3.B warns about. One definition now, called by both.
+
+**Found by driving it, not by a test:** the first option row was a `<button>` containing
+a Radix Checkbox, which renders a button of its own — nested buttons, reported in the
+browser console and asserted on by nothing. It is a `<label>` now.
+
+**Demo affordance:** typing `fail` into the Customer search produces the error state on
+demand, so §3.D's three distinct states (loading, retryable error, no results) can be
+shown in a walkthrough. A product would not have that.
+
+**The rule row is a panel.** The page surface is grey, so the rules sit on a white
+surface-default card with a border, matching the reference screen the owner supplied: the
+chips, then a `+` that opens the same facet picker as the toolbar button, then *Clear
+filters* on the right edge. The `+` always opens at the facet LIST — adding a rule is a
+different intent from editing the one a chip already shows.
+
+**What the staging tier still could not supply** — two more entries for the list below:
+a segmented rule chip, and the two-level facet popover itself. Both were built inline.
+
 ## Differences from the reference — the design system wins each time
 
 | Reference | Here | Why |

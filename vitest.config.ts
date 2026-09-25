@@ -42,7 +42,22 @@ export default defineConfig({
           globals: true,
           environment: 'jsdom',
           setupFiles: ['./src/test-setup.ts'],
-          include: ['src/**/*.test.{ts,tsx}'],
+          /*
+           * `prototypes/` is included deliberately, and it is the one place a prototype
+           * reaches into the repository's quality machinery.
+           *
+           * The zone is ungated by design: no spec, no review budget, no gates. Tests
+           * are not a gate — they are how a prototype answers its own question. The
+           * Waypoint filter model carries defects that are invisible without them (the
+           * spec it is built from says so in §9, and the composition test proves it), so
+           * a prototype holding that model without tests answers nothing.
+           *
+           * THE COST, stated: these tests now run in `npm test`, which the DS quality
+           * gate invokes by name. A broken prototype test therefore reds the repository's
+           * build. That is the trade — narrow this glob if the zone should stay fully
+           * outside CI.
+           */
+          include: ['src/**/*.test.{ts,tsx}', 'prototypes/**/*.test.{ts,tsx}'],
           exclude: [...defaultExclude, BROWSER_TESTS],
         },
       },
