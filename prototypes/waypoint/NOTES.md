@@ -90,6 +90,12 @@ browser console and asserted on by nothing. It is a `<label>` now.
 demand, so §3.D's three distinct states (loading, retryable error, no results) can be
 shown in a walkthrough. A product would not have that.
 
+**The rule row is a panel.** The page surface is grey, so the rules sit on a white
+surface-default card with a border, matching the reference screen the owner supplied: the
+chips, then a `+` that opens the same facet picker as the toolbar button, then *Clear
+filters* on the right edge. The `+` always opens at the facet LIST — adding a rule is a
+different intent from editing the one a chip already shows.
+
 **What the staging tier still could not supply** — two more entries for the list below:
 a segmented rule chip, and the two-level facet popover itself. Both were built inline.
 

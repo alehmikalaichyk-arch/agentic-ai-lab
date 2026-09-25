@@ -1,5 +1,13 @@
 import * as React from 'react';
-import { AlertTriangleIcon, ChevronLeftIcon, ChevronRightIcon, ListFilterIcon, SearchIcon, XIcon } from 'lucide-react';
+import {
+  AlertTriangleIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ListFilterIcon,
+  PlusIcon,
+  SearchIcon,
+  XIcon,
+} from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/ui-staging/badge';
@@ -236,6 +244,14 @@ function FacetValues({
 
 /* --------------------------------------------------------------- the popover */
 
+/*
+ * The facet picker, hung off whichever control opened it.
+ *
+ * TWO controls open it now — the "Filters" button and the "+" on the rule panel — and
+ * Radix allows one trigger per Popover root. So the trigger is a prop and the component
+ * is mounted twice, sharing `openFacet` so the two never disagree about which facet is
+ * being shown. Each keeps its own open flag, because each anchors its own panel.
+ */
 function FilterPopover({
   sel,
   onChange,
@@ -243,6 +259,7 @@ function FilterPopover({
   setOpenFacet,
   open,
   setOpen,
+  trigger,
 }: {
   sel: Selection;
   onChange: (next: Selection) => void;
@@ -250,9 +267,9 @@ function FilterPopover({
   setOpenFacet: (id: FacetId | null) => void;
   open: boolean;
   setOpen: (v: boolean) => void;
+  trigger: React.ReactNode;
 }) {
   const facet = openFacet ? facetById(openFacet) : null;
-  const count = activeFacetCount(sel);
 
   return (
     <Popover
@@ -264,14 +281,7 @@ function FilterPopover({
         if (!v) setOpenFacet(null);
       }}
     >
-      <PopoverTrigger asChild>
-        <Button variant="outline">
-          <ListFilterIcon />
-          Filters
-          {/* §4.9 — facets with a selection, not values, and never the query. */}
-          {count > 0 ? <Badge variant="secondary">{count}</Badge> : null}
-        </Button>
-      </PopoverTrigger>
+      <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent align="start" className="w-72 p-2">
         {facet === null ? (
           <div role="menu" aria-label="Choose a filter">
@@ -390,7 +400,9 @@ export function FilterBar({
   className?: string;
 }) {
   const [open, setOpen] = React.useState(false);
+  const [addOpen, setAddOpen] = React.useState(false);
   const [openFacet, setOpenFacet] = React.useState<FacetId | null>(null);
+  const count = activeFacetCount(sel);
 
   const openFor = (id: FacetId) => {
     setOpenFacet(id);
@@ -398,10 +410,14 @@ export function FilterBar({
   };
 
   /*
-   * The rule row is a FULL-WIDTH row under the controls, not a column beside them. The
-   * first version let the screen lay out the search field and the count, which squeezed
-   * the chips into whatever space was left over — so the bar owns the toolbar and takes
-   * those two as slots.
+   * The rule row is its own PANEL, not a bare row: the page surface is grey, so the
+   * rules sit on surface-default with a border, the way the reference screen does it.
+   *
+   * It carries three things, left to right: the chips, a "+" that opens the same facet
+   * picker as the toolbar button, and "Clear filters" pinned to the right edge.
+   *
+   * §4.6 still holds — the whole panel is absent when no facet has a selection, so the
+   * "+" and the clear control come and go with it rather than sitting on an empty strip.
    */
   return (
     <div className={cn('grid gap-2', className)}>
@@ -414,19 +430,20 @@ export function FilterBar({
           setOpenFacet={setOpenFacet}
           open={open}
           setOpen={setOpen}
+          trigger={
+            <Button variant="outline">
+              <ListFilterIcon />
+              Filters
+              {/* §4.9 — facets with a selection, not values, and never the query. */}
+              {count > 0 ? <Badge variant="secondary">{count}</Badge> : null}
+            </Button>
+          }
         />
-        {/* §4.10 — clears the facets and leaves the free-text query alone. */}
-        {hasAnySelection(sel) ? (
-          <Button variant="ghost" size="sm" onClick={() => onChange({})}>
-            Clear filters
-          </Button>
-        ) : null}
         {trailing ? <div className="ml-auto">{trailing}</div> : null}
       </div>
 
-      {/* §4.6 — the rule row is not rendered at all when nothing is selected. */}
       {hasAnySelection(sel) ? (
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 rounded-md border border-outline-default bg-surface-default p-2">
           {FACETS.filter((f) => selectedValues(sel, f.id).length > 0).map((f) => (
             <RuleChip
               key={f.id}
@@ -436,6 +453,30 @@ export function FilterBar({
               onRemove={() => onChange(clearFacet(sel, f.id))}
             />
           ))}
+
+          {/* The second way in. It opens at the facet list, never at a facet — adding a
+              rule is a different intent from editing the one a chip already shows. */}
+          <FilterPopover
+            sel={sel}
+            onChange={onChange}
+            openFacet={openFacet}
+            setOpenFacet={setOpenFacet}
+            open={addOpen}
+            setOpen={(v) => {
+              if (v) setOpenFacet(null);
+              setAddOpen(v);
+            }}
+            trigger={
+              <Button variant="outline" size="icon-xs" aria-label="Add a filter">
+                <PlusIcon />
+              </Button>
+            }
+          />
+
+          {/* §4.10 — clears the facets and leaves the free-text query alone. */}
+          <Button variant="link" size="sm" className="ml-auto" onClick={() => onChange({})}>
+            Clear filters
+          </Button>
         </div>
       ) : null}
     </div>
