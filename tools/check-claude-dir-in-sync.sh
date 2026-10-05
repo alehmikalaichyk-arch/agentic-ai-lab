@@ -21,19 +21,30 @@
 #
 # The failure this prevents: editing one copy. The skills are the process, so two
 # processes that disagree is worse than one that is merely out of date.
+#
+# TWO KITS, ONE LIVE DIRECTORY. `.claude/skills` is the union of
+#
+#   ds-pipeline-kit/plugin/skills    the component pipeline
+#   research-kit/plugin/skills       teardown / compare / landscape
+#
+# and each kit is compared skill by skill against its live copy. The earlier version
+# diffed ONE kit against the whole live directory, so the first skill from anywhere
+# else read as drift. The count check at the end is what still catches the opposite
+# mistake: a skill living in `.claude/skills` that no kit owns.
 # =============================================================================
 set -euo pipefail
 
 cd "$(git rev-parse --show-toplevel)"
 
 KIT_SKILLS="ds-pipeline-kit/plugin/skills"
+RESEARCH_SKILLS="research-kit/plugin/skills"
 KIT_AGENT="ds-pipeline-kit/plugin/agents/ds-pipeline-orchestrator.md"
 LIVE_SKILLS=".claude/skills"
 LIVE_AGENT=".claude/agents/ds-pipeline-orchestrator.md"
 
 fail=0
 
-for path in "$KIT_SKILLS" "$LIVE_SKILLS" "$KIT_AGENT" "$LIVE_AGENT"; do
+for path in "$KIT_SKILLS" "$RESEARCH_SKILLS" "$LIVE_SKILLS" "$KIT_AGENT" "$LIVE_AGENT"; do
   if [ ! -e "$path" ]; then
     echo "::error::$path is missing — the two copies of the pipeline cannot be compared."
     exit 1
@@ -43,12 +54,17 @@ done
 # Compare the skill trees in full, not just the SKILL.md files: a skill's
 # references/ directory is part of it, and a missing reference file is exactly the
 # kind of difference that only shows up when the skill is invoked.
-if ! diff -r "$KIT_SKILLS" "$LIVE_SKILLS" > /tmp/claude-sync-skills.diff 2>&1; then
-  echo "::error::.claude/skills has drifted from $KIT_SKILLS. Both copies must be identical — edit the kit, then re-copy:"
-  echo "           cp -r $KIT_SKILLS/. $LIVE_SKILLS/"
-  sed -n '1,20p' /tmp/claude-sync-skills.diff | sed 's/^/           /'
-  fail=1
-fi
+for kit in "$KIT_SKILLS" "$RESEARCH_SKILLS"; do
+  for skill_dir in "$kit"/*/; do
+    skill=$(basename "$skill_dir")
+    if ! diff -r "$kit/$skill" "$LIVE_SKILLS/$skill" > /tmp/claude-sync-skills.diff 2>&1; then
+      echo "::error::.claude/skills/$skill has drifted from $kit/$skill. Both copies must be identical — edit the kit, then re-copy:"
+      echo "           cp -r $kit/$skill/. $LIVE_SKILLS/$skill/"
+      sed -n '1,20p' /tmp/claude-sync-skills.diff | sed 's/^/           /'
+      fail=1
+    fi
+  done
+done
 
 if ! diff "$KIT_AGENT" "$LIVE_AGENT" > /tmp/claude-sync-agent.diff 2>&1; then
   echo "::error::.claude/agents/ds-pipeline-orchestrator.md has drifted from the kit's copy:"
@@ -60,13 +76,14 @@ fi
 # directory, but a skill added to the kit and never copied across is the case worth
 # naming explicitly, because it reads as "the pipeline has ten skills" either way.
 kit_count=$(find "$KIT_SKILLS" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
+research_count=$(find "$RESEARCH_SKILLS" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
 live_count=$(find "$LIVE_SKILLS" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')
-if [ "$kit_count" != "$live_count" ]; then
-  echo "::error::the kit ships $kit_count skills and .claude/skills has $live_count."
+if [ "$((kit_count + research_count))" != "$live_count" ]; then
+  echo "::error::the kits ship $kit_count + $research_count skills and .claude/skills has $live_count — a skill there belongs to no kit, or one was never copied across."
   fail=1
 fi
 
 if [ "$fail" -eq 0 ]; then
-  echo "In sync: $kit_count skills and the orchestrator are identical in both copies."
+  echo "In sync: $kit_count pipeline skills, $research_count research skills and the orchestrator are identical in both copies."
 fi
 exit "$fail"

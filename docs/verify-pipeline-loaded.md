@@ -41,6 +41,8 @@ Then open a **new** Claude Code session in that directory and paste the prompt b
 This repository is supposed to ship a design-system component pipeline that loads
 automatically: ten skills under .claude/skills/, an orchestrator agent under
 .claude/agents/, and a PreToolUse hook wired in .claude/settings.json.
+(.claude/skills/ also holds three research skills — teardown, compare, landscape.
+They are not part of the pipeline; expect thirteen directories, ten of them pipeline.)
 
 Verify that it actually loaded. Do not tell me what should be there — show me what is.
 

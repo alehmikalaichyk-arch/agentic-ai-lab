@@ -35,3 +35,8 @@ scratch/
 # document to review or maintain on main. Ignoring them also guarantees a report
 # can never appear in a diff and so can never change a PR's classification.
 .pipeline-reports/
+
+# Output of `claude plugin eval`: transcripts and reports from one paid run. Evidence
+# for that run, not something to review — and a transcript records whatever the model
+# was shown, which is not vetted for this repository.
+research-kit/plugin/evals/results/
