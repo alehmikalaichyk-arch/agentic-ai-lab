@@ -1,0 +1,19 @@
+{
+  "name": "research-kit",
+  "description": "Portable research skills: accumulating competitor teardowns, pre-registered comparisons, and a competitive landscape built from dossiers.",
+  "owner": {
+    "name": "Research Kit"
+  },
+  "plugins": [
+    {
+      "name": "research",
+      "description": "Research skills: competitor teardowns that accumulate, pre-registered comparisons of options, and a competitive landscape (SWOT, ERRC, strategy canvas) built from dossiers.",
+      "version": "0.1.0",
+      "author": {
+        "name": "Research Kit"
+      },
+      "source": "./plugin",
+      "category": "productivity"
+    }
+  ]
+}

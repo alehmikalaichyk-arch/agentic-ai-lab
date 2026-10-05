@@ -15,8 +15,9 @@ read them in pairs.
 
 | Path | What it is |
 |---|---|
-| `.claude/` | The pipeline **in effect here**: 10 skills, 3 agents, the write-time guard, and the directory-triggered rule. Present on clone; no install step. |
+| `.claude/` | The pipeline **in effect here**: 10 pipeline skills, 3 agents, the write-time guard, and the directory-triggered rule. Present on clone; no install step. Also holds the 3 research skills from `research-kit/`. |
 | `ds-pipeline-kit/` | The same pipeline as a **portable kit**, as it would be handed to another repository. Skills, orchestrator, guard, CI gates, and its own [INSTALL.md](ds-pipeline-kit/INSTALL.md) / [QUICKSTART.md](ds-pipeline-kit/QUICKSTART.md). |
+| `research-kit/` | Three research skills — `teardown`, `compare`, `landscape` — packaged the same way: a portable plugin, plus a live copy in `.claude/skills/`. Not part of the component pipeline. See [its README](research-kit/README.md). |
 | `ds-kit.config.yml` | The only file that binds the kit to *this* repository. Paths, branch, script names, check names. |
 | `tokens/` | DTCG token sources. Primitive → semantic → component, in that order, with no shortcuts. |
 | `generated/` | Built from `tokens/`. **Not committed** — every script that needs it runs `build:tokens` first. |
@@ -100,6 +101,7 @@ the failure the kit's own measurements record.
 
 `.claude/` and `ds-pipeline-kit/plugin/` hold the same ten skills and the same
 orchestrator, and `tools/check-claude-dir-in-sync.sh` fails CI if they ever differ.
+The same check covers the three research skills against `research-kit/plugin/skills/`.
 
 The kit is designed to install as a plugin, and a plugin has to be *installed* —
 `claude plugin marketplace add` then `install`, once per machine, per person. Pointing
